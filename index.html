@@ -4,15 +4,25 @@
 <meta charset="UTF-8">
 <title>Task Manager</title>
 <style>
-body { font-family: Arial, sans-serif; margin: 0; padding: 0; }
-header { background: #6200ea; color: #fff; padding: 1rem; text-align: center; }
+body { font-family: 'Segoe UI', Tahoma, sans-serif; margin: 0; padding: 0; }
+header {
+  background: #fff;
+  color: #007bff;
+  padding: 1rem;
+  text-align: center;
+  border-bottom: 1px solid #ddd;
+}
 section { padding: 1rem; }
 .toggle {
   cursor: pointer;
   background: #eee;
   padding: 0.5rem;
   border-radius: 4px;
+  margin: 1rem 0;
+  text-align: center;
 }
+.section-header { font-size: 1.2rem; font-weight: bold; }
+.subtoggle { font-size: 1rem; margin-top: 0.5rem; }
 .hidden { display: none; }
 #deletedBox, #archivedBox {
   max-height: 150px;
@@ -63,7 +73,7 @@ section { padding: 1rem; }
 
   <div id="toast" class="hidden"></div>
   <section>
-    <div class="toggle" onclick="toggle('settings')">Settings</div>
+    <div class="toggle section-header" onclick="toggle('settings')">Settings</div>
       <div id="settings" class="hidden">
         <h3>Add Project</h3>
         <input type="text" id="projectName" placeholder="Project name">
@@ -82,7 +92,8 @@ section { padding: 1rem; }
   </section>
 
   <section>
-    <h2>Weekly Tasks</h2>
+    <div class="toggle section-header" onclick="toggle('weeklySection')">Weekly Tasks</div>
+    <div id="weeklySection">
     <div class="week-controls">
       <button onclick="changeWeek(-1)">&#8592;</button>
       <span id="weekLabel"></span>
@@ -99,7 +110,7 @@ section { padding: 1rem; }
       <div>Sun</div>
     </div>
     <div class="toggle" onclick="toggle('addWeekly')">Add Weekly Task</div>
-    <div id="addWeekly" class="hidden">
+    <div id="addWeekly" class="hidden subtoggle">
       <input type="text" id="weeklyName" placeholder="Name"><br>
       <select id="weeklyProject"></select><br>
       Importance:
@@ -128,13 +139,15 @@ section { padding: 1rem; }
       <label><input type="checkbox" value="Sun">Sun</label><br>
       <button onclick="addWeeklyTask()">Submit</button>
     </div>
+    </div><!-- end weeklySection -->
   </section>
 
   <section>
-    <h2>One-Off Tasks</h2>
+    <div class="toggle section-header" onclick="toggle('oneOffSection')">One-Off Tasks</div>
+    <div id="oneOffSection">
     <div id="oneOffList"></div>
-    <div class="toggle" onclick="toggle('addOneOff')">Add One-Off Task</div>
-    <div id="addOneOff" class="hidden">
+    <div class="toggle subtoggle" onclick="toggle('addOneOff')">Add One-Off Task</div>
+    <div id="addOneOff" class="hidden subtoggle">
       <input type="text" id="oneOffName" placeholder="Name"><br>
       <select id="oneOffProject"></select><br>
       Importance:
@@ -156,13 +169,15 @@ section { padding: 1rem; }
       Due Date: <input type="date" id="oneOffDue"><br>
       <button onclick="addOneOffTask()">Submit</button>
     </div>
+    </div><!-- end oneOffSection -->
   </section>
 
   <section>
-    <h2>Recurring Tasks</h2>
+    <div class="toggle section-header" onclick="toggle('recurringSection')">Recurring Tasks</div>
+    <div id="recurringSection">
     <div id="recurringList"></div>
-    <div class="toggle" onclick="toggle('addRecurring')">Add Recurring Task</div>
-    <div id="addRecurring" class="hidden">
+    <div class="toggle subtoggle" onclick="toggle('addRecurring')">Add Recurring Task</div>
+    <div id="addRecurring" class="hidden subtoggle">
       <input type="text" id="recurringName" placeholder="Name"><br>
       <select id="recurringProject"></select><br>
       Importance:
@@ -197,6 +212,7 @@ section { padding: 1rem; }
       </select><br>
       <button onclick="addRecurringTask()">Submit</button>
     </div>
+    </div><!-- end recurringSection -->
   </section>
 
   <script>
