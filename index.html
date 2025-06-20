@@ -53,6 +53,7 @@ section { padding: 1rem; }
 .tick { font-size: 14px; }
 .controls button { margin-left: 0.25rem; font-size: 0.7rem; }
 .week-controls { margin-bottom: 0.5rem; text-align: center; }
+#toast { position: fixed; bottom: 1rem; left: 50%; transform: translateX(-50%); background: #333; color: #fff; padding: 0.5rem 1rem; border-radius: 4px; }
 </style>
 </head>
 <body>
@@ -60,6 +61,7 @@ section { padding: 1rem; }
     <h1>Task Manager</h1>
   </header>
 
+  <div id="toast" class="hidden"></div>
   <section>
     <div class="toggle" onclick="toggle('settings')">Settings</div>
       <div id="settings" class="hidden">
@@ -218,6 +220,13 @@ function startOfWeek(date) {
 function formatISO(date) {
   return date.toISOString().split('T')[0];
 }
+function showMessage(msg) {
+  const toast = document.getElementById("toast");
+  toast.textContent = msg;
+  toast.classList.remove("hidden");
+  setTimeout(() => toast.classList.add("hidden"), 3000);
+}
+
 
 function updateWeekLabel() {
   const label = document.getElementById('weekLabel');
@@ -259,6 +268,7 @@ function addProject() {
   projects.push({ name, color, closed: false });
   document.getElementById('projectName').value = '';
   renderProjects();
+  showMessage("Project added");
 }
 
 function renderProjects() {
@@ -271,21 +281,24 @@ function renderProjects() {
   ];
   selects.forEach(sel => sel.innerHTML = '');
   projects.forEach(p => {
-    const li = document.createElement('li');
-    li.textContent = p.name + (p.closed ? ' (closed)' : '');
+    const li = document.createElement("li");
     li.style.color = p.color;
-    if (!p.closed) {
-      const btn = document.createElement('button');
-      btn.textContent = 'Close';
-      if (hasOpenTasks(p.name)) btn.disabled = true;
+    if (p.closed) {
+      li.textContent = p.name + " (closed)";
+    } else if (hasOpenTasks(p.name)) {
+      li.textContent = p.name + " - tasks currently allocated";
+    } else {
+      li.textContent = p.name + " - no open tasks allocated";
+      const btn = document.createElement("button");
+      btn.textContent = "Close";
       btn.onclick = () => closeProject(p.name);
-      li.appendChild(document.createTextNode(' '));
+      li.appendChild(document.createTextNode(" "));
       li.appendChild(btn);
     }
     ul.appendChild(li);
     selects.forEach(sel => {
       if (!p.closed) {
-        const opt = document.createElement('option');
+        const opt = document.createElement("option");
         opt.value = p.name;
         opt.textContent = p.name;
         sel.appendChild(opt);
@@ -333,10 +346,10 @@ function addWeeklyTask() {
   };
   nextId++;
   weeklyTasks.push(task);
+  showMessage("Task added");
   document.getElementById('weeklyName').value = '';
   document.querySelectorAll('#addWeekly input[type=checkbox]').forEach(cb => cb.checked = false);
   renderWeekly();
-  setTimeout(() => alert('Task added'), 100); // simple feedback
 }
 
 function renderWeekly() {
@@ -453,6 +466,7 @@ function addOneOffTask() {
   oneOffTasks.push(task);
   document.getElementById('oneOffName').value = '';
   document.getElementById('oneOffDue').value = '';
+  showMessage("Task added");
   renderOneOff();
 }
 
@@ -566,6 +580,7 @@ function addRecurringTask() {
   recurringTasks.push(task);
   document.getElementById('recurringName').value = '';
   document.getElementById('recurringDue').value = '';
+  showMessage("Task added");
   renderRecurring();
 }
 
