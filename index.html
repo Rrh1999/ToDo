@@ -1,0 +1,310 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<title>Task Manager</title>
+<style>
+body { font-family: Arial, sans-serif; margin: 0; padding: 0; }
+header { background: #6200ea; color: #fff; padding: 1rem; text-align: center; }
+section { padding: 1rem; }
+.toggle {
+  cursor: pointer;
+  background: #eee;
+  padding: 0.5rem;
+  border-radius: 4px;
+}
+.hidden { display: none; }
+#projects li {
+  list-style: none;
+  padding: 0.25rem;
+}
+.task-grid {
+  display: grid;
+  grid-template-columns: repeat(8, 1fr);
+  gap: 0.25rem;
+  margin-bottom: 1rem;
+  align-items: center;
+}
+.task-grid div {
+  padding: 0.25rem;
+  border: 1px solid #ccc;
+  text-align: center;
+}
+.circle {
+  width: 20px;
+  height: 20px;
+  border-radius: 50%;
+  display: inline-block;
+  cursor: pointer;
+}
+.purple { background: #e1bee7; }
+.grey { background: #ccc; }
+.green { background: #81c784; }
+.controls button { margin-left: 0.25rem; font-size: 0.7rem; }
+.week-controls { margin-bottom: 0.5rem; text-align: center; }
+</style>
+</head>
+<body>
+  <header>
+    <h1>Task Manager</h1>
+  </header>
+
+  <section>
+    <div class="toggle" onclick="toggle('settings')">Settings</div>
+    <div id="settings" class="hidden">
+      <h3>Add Project</h3>
+      <input type="text" id="projectName" placeholder="Project name">
+      <input type="color" id="projectColor" value="#ff0000">
+      <button onclick="addProject()">Add</button>
+      <ul id="projects"></ul>
+    </div>
+  </section>
+
+  <section>
+    <h2>Weekly Tasks</h2>
+    <div class="week-controls">
+      <button onclick="changeWeek(-1)">&#8592;</button>
+      <span id="weekLabel"></span>
+      <button onclick="changeWeek(1)">&#8594;</button>
+    </div>
+    <div id="weeklyGrid" class="task-grid">
+      <div>Task</div>
+      <div>Mon</div>
+      <div>Tue</div>
+      <div>Wed</div>
+      <div>Thu</div>
+      <div>Fri</div>
+      <div>Sat</div>
+      <div>Sun</div>
+    </div>
+    <div class="toggle" onclick="toggle('addWeekly')">Add Weekly Task</div>
+    <div id="addWeekly" class="hidden">
+      <input type="text" id="weeklyName" placeholder="Name"><br>
+      <select id="weeklyProject"></select><br>
+      Importance:
+      <select id="weeklyImportance">
+        <option>High</option>
+        <option>High/Medium</option>
+        <option>Medium</option>
+        <option>Medium/Low</option>
+        <option>Low</option>
+      </select><br>
+      Urgency:
+      <select id="weeklyUrgency">
+        <option>High</option>
+        <option>High/Medium</option>
+        <option>Medium</option>
+        <option>Medium/Low</option>
+        <option>Low</option>
+      </select><br>
+      Days:<br>
+      <label><input type="checkbox" value="Mon">Mon</label>
+      <label><input type="checkbox" value="Tue">Tue</label>
+      <label><input type="checkbox" value="Wed">Wed</label>
+      <label><input type="checkbox" value="Thu">Thu</label>
+      <label><input type="checkbox" value="Fri">Fri</label>
+      <label><input type="checkbox" value="Sat">Sat</label>
+      <label><input type="checkbox" value="Sun">Sun</label><br>
+      <button onclick="addWeeklyTask()">Submit</button>
+    </div>
+  </section>
+
+<script>
+let projects = [];
+let weeklyTasks = [];
+let nextId = 1;
+let currentWeekStart = startOfWeek(new Date());
+
+function startOfWeek(date) {
+  const d = new Date(date);
+  const day = d.getDay();
+  const diff = (day === 0 ? -6 : 1 - day);
+  d.setDate(d.getDate() + diff);
+  d.setHours(0,0,0,0);
+  return d;
+}
+
+function formatISO(date) {
+  return date.toISOString().split('T')[0];
+}
+
+function updateWeekLabel() {
+  const label = document.getElementById('weekLabel');
+  label.textContent = `Week of ${formatISO(currentWeekStart)}`;
+}
+
+function changeWeek(offset) {
+  currentWeekStart.setDate(currentWeekStart.getDate() + offset * 7);
+  renderWeekly();
+}
+
+function updateMissed(task) {
+  const last = new Date(task.dateLastChecked);
+  const today = new Date();
+  let d = new Date(last);
+  while (d <= today) {
+    const dayName = ['Sun','Mon','Tue','Wed','Thu','Fri','Sat'][d.getDay()];
+    const iso = formatISO(d);
+    if (d > last && task.days.includes(dayName)) {
+      if (!task.completedDates.includes(iso) && !task.missedDates.includes(iso)) {
+        task.missedDates.push(iso);
+      }
+    }
+    d.setDate(d.getDate() + 1);
+  }
+  task.dateLastChecked = formatISO(today);
+}
+
+function toggle(id) {
+  const el = document.getElementById(id);
+  el.classList.toggle('hidden');
+}
+
+function addProject() {
+  const name = document.getElementById('projectName').value;
+  const color = document.getElementById('projectColor').value;
+  if (!name) return;
+  projects.push({ name, color });
+  document.getElementById('projectName').value = '';
+  renderProjects();
+}
+
+function renderProjects() {
+  const ul = document.getElementById('projects');
+  ul.innerHTML = '';
+  const select = document.getElementById('weeklyProject');
+  select.innerHTML = '';
+  projects.forEach(p => {
+    const li = document.createElement('li');
+    li.textContent = p.name;
+    li.style.color = p.color;
+    ul.appendChild(li);
+    const opt = document.createElement('option');
+    opt.value = p.name;
+    opt.textContent = p.name;
+    select.appendChild(opt);
+  });
+}
+
+function addWeeklyTask() {
+  const name = document.getElementById('weeklyName').value;
+  const project = document.getElementById('weeklyProject').value;
+  const importance = document.getElementById('weeklyImportance').value;
+  const urgency = document.getElementById('weeklyUrgency').value;
+  const dayElems = document.querySelectorAll('#addWeekly input[type=checkbox]:checked');
+  const days = Array.from(dayElems).map(cb => cb.value);
+  if (!name) return;
+  const task = {
+    id: String(nextId).padStart(8, '0'),
+    name,
+    project,
+    importance,
+    urgency,
+    days,
+    completedDates: [],
+    missedDates: [],
+    status: 'open',
+    startDate: formatISO(new Date()),
+    closedDate: '',
+    dateLastChecked: formatISO(new Date())
+  };
+  nextId++;
+  weeklyTasks.push(task);
+  document.getElementById('weeklyName').value = '';
+  document.querySelectorAll('#addWeekly input[type=checkbox]').forEach(cb => cb.checked = false);
+  renderWeekly();
+  setTimeout(() => alert('Task added'), 100); // simple feedback
+}
+
+function renderWeekly() {
+  updateWeekLabel();
+  const grid = document.getElementById('weeklyGrid');
+  grid.innerHTML = '<div>Task</div><div>Mon</div><div>Tue</div><div>Wed</div><div>Thu</div><div>Fri</div><div>Sat</div><div>Sun</div>';
+  const openTasks = weeklyTasks.filter(t => t.status === 'open');
+  if (openTasks.length === 0) {
+    const row = document.createElement('div');
+    row.textContent = 'No weekly tasks';
+    row.style.gridColumn = '1 / -1';
+    grid.appendChild(row);
+    return;
+  }
+  openTasks.forEach(task => {
+    updateMissed(task);
+    grid.appendChild(taskCell(task));
+    ['Mon','Tue','Wed','Thu','Fri','Sat','Sun'].forEach((day, idx) => {
+      const cell = document.createElement('div');
+      const date = new Date(currentWeekStart);
+      date.setDate(currentWeekStart.getDate() + idx);
+      const iso = formatISO(date);
+      if (task.days.includes(day)) {
+        const state = task.completedDates.includes(iso) ? 'green' : 'purple';
+        const circle = document.createElement('span');
+        circle.className = 'circle ' + state;
+        circle.onclick = () => toggleComplete(task.id, iso);
+        cell.appendChild(circle);
+      } else {
+        const circle = document.createElement('span');
+        circle.className = 'circle grey';
+        cell.appendChild(circle);
+      }
+      grid.appendChild(cell);
+    });
+  });
+}
+
+function taskCell(task) {
+  const cell = document.createElement('div');
+  cell.innerHTML = `<strong>${task.name}</strong><br>${task.project}<br>${task.importance}/${task.urgency}`;
+  const controls = document.createElement('div');
+  controls.className = 'controls';
+  const closeBtn = document.createElement('button');
+  closeBtn.textContent = 'Archive';
+  closeBtn.onclick = () => closeTask(task.id);
+  const delBtn = document.createElement('button');
+  delBtn.textContent = 'Delete';
+  delBtn.onclick = () => deleteTask(task.id);
+  controls.appendChild(closeBtn);
+  controls.appendChild(delBtn);
+  cell.appendChild(controls);
+  return cell;
+}
+
+function toggleComplete(id, day) {
+  const task = weeklyTasks.find(t => t.id === id);
+  if (!task) return;
+  if (task.completedDates.includes(day)) {
+    task.completedDates = task.completedDates.filter(d => d !== day);
+    if (new Date(day) < new Date()) {
+      if (!task.missedDates.includes(day)) task.missedDates.push(day);
+    }
+  } else {
+    task.completedDates.push(day);
+    task.missedDates = task.missedDates.filter(d => d !== day);
+  }
+  renderWeekly();
+}
+
+function closeTask(id) {
+  const task = weeklyTasks.find(t => t.id === id);
+  if (!task) return;
+  if (confirm('You are about to close this task. Continue?')) {
+    task.status = 'closed';
+    task.closedDate = formatISO(new Date());
+    renderWeekly();
+  }
+}
+
+function deleteTask(id) {
+  const idx = weeklyTasks.findIndex(t => t.id === id);
+  if (idx === -1) return;
+  if (confirm('Delete this task permanently?')) {
+    weeklyTasks.splice(idx, 1);
+    renderWeekly();
+  }
+}
+
+renderProjects();
+renderWeekly();
+</script>
+</body>
+</html>
