@@ -1,15 +1,15 @@
 # Task Manager Demo
 
-This repository contains a very small demo of a task manager. Open `index.html` in a browser to see a simple interface for managing projects and weekly tasks.
+This repository contains a small demo of a task manager. Run `npm start` and open `http://localhost:3000` in a browser to try it out. Data is stored on the server in `data.json` so tasks remain available across browsers and devices.
 
-The demo stores data in memory and will lose changes on refresh. It implements:
+Features include:
 
-- A header with the title "Task Manager".
-- A collapsible settings section for adding projects.
-- A weekly task section with an 8 column grid (task + Monday to Sunday).
-- Week navigation to view previous and next weeks.
-- Each task row includes archive and delete buttons.
-- A form to add new weekly tasks.
-- Clickable day icons to mark completion of tasks for a given date.
-
-Other features mentioned in the spec are not fully implemented.
+- Header with the title "Task Manager".
+- Collapsible settings area with project management, color selection, and toggleable lists of deleted and archived tasks.
+- Weekly tasks grid (task + Monday to Sunday) with week navigation and a form to add new weekly tasks.
+- Clickable day icons to mark completion, including optional completions on grey days.
+- One-off tasks list with due date editing, archive and delete options.
+- Recurring tasks list showing next due date, last completion and over/under metrics with skip or complete actions.
+- Projects can be closed when no open tasks reference them; closed projects are hidden from task forms.
+- Project list displays whether open tasks are allocated and only offers the close button when none are open.
+- Toast notifications appear when projects or tasks are added or modified.
