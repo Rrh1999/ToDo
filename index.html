@@ -208,16 +208,24 @@ let deletedTasks = [];
 let nextId = 1;
 let currentWeekStart = startOfWeek(new Date());
 
-function saveData() {
+async function saveData() {
   const data = { projects, weeklyTasks, oneOffTasks, recurringTasks, deletedTasks, nextId };
-  localStorage.setItem('taskManagerData', JSON.stringify(data));
+  try {
+    await fetch('/api/data', {
+      method: 'POST',
+      headers: { 'Content-Type': 'application/json' },
+      body: JSON.stringify(data)
+    });
+  } catch (e) {
+    console.error('Failed to save data', e);
+  }
 }
 
-function loadData() {
-  const raw = localStorage.getItem('taskManagerData');
-  if (!raw) return;
+async function loadData() {
   try {
-    const obj = JSON.parse(raw);
+    const res = await fetch('/api/data');
+    if (!res.ok) return;
+    const obj = await res.json();
     projects = obj.projects || [];
     weeklyTasks = obj.weeklyTasks || [];
     oneOffTasks = obj.oneOffTasks || [];
@@ -736,15 +744,18 @@ function renderArchived() {
   });
 }
 
-loadData();
-weeklyTasks.filter(t => t.status === 'open').forEach(updateMissed);
-saveData();
-renderProjects();
-renderWeekly();
-renderOneOff();
-renderRecurring();
-renderDeleted();
-renderArchived();
+async function init() {
+  await loadData();
+  weeklyTasks.filter(t => t.status === 'open').forEach(updateMissed);
+  await saveData();
+  renderProjects();
+  renderWeekly();
+  renderOneOff();
+  renderRecurring();
+  renderDeleted();
+  renderArchived();
+}
+init();
 </script>
 </body>
 </html>
