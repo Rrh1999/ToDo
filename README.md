@@ -1,11 +1,12 @@
 # Task Manager Demo
 
-This repository contains a small demo of a task manager. Run `npm start` and open `http://localhost:3000` in a browser to try it out. Data is stored on the server in `data.json` so tasks remain available across browsers and devices.
+This repository contains a small demo of a task manager. Run `npm start` and open `http://localhost:3000` in a browser to try it out. Data is stored on the server in `data.json` so tasks remain available across browsers and devices. When hosting on platforms with an ephemeral file system (such as the free Render tier) you will need a persistent disk or database to retain this file between restarts.
 
 Features include:
 
-- Header with the title "Task Manager".
+- Sleek header with the title "Task Manager" in blue using a Segoe UI font.
 - Collapsible settings area with project management, color selection, and toggleable lists of deleted and archived tasks.
+- Each main task section (Weekly, One-Off, Recurring) can be collapsed by clicking its header.
 - Weekly tasks grid (task + Monday to Sunday) with week navigation and a form to add new weekly tasks.
 - Clickable day icons to mark completion, including optional completions on grey days.
 - One-off tasks list with due date editing, archive and delete options.
