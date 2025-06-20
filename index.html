@@ -42,12 +42,15 @@ section { padding: 1rem; }
   width: 20px;
   height: 20px;
   border-radius: 50%;
-  display: inline-block;
+  display: flex;
+  align-items: center;
+  justify-content: center;
   cursor: pointer;
 }
 .purple { background: #e1bee7; }
 .grey { background: #ccc; }
-.green { background: #81c784; }
+.green { background: #81c784; color: #fff; }
+.tick { font-size: 14px; }
 .controls button { margin-left: 0.25rem; font-size: 0.7rem; }
 .week-controls { margin-bottom: 0.5rem; text-align: center; }
 </style>
@@ -356,17 +359,14 @@ function renderWeekly() {
       const date = new Date(currentWeekStart);
       date.setDate(currentWeekStart.getDate() + idx);
       const iso = formatISO(date);
-      if (task.days.includes(day)) {
-        const state = task.completedDates.includes(iso) ? 'green' : 'purple';
-        const circle = document.createElement('span');
-        circle.className = 'circle ' + state;
-        circle.onclick = () => toggleComplete(task.id, iso);
-        cell.appendChild(circle);
-      } else {
-        const circle = document.createElement('span');
-        circle.className = 'circle grey';
-        cell.appendChild(circle);
-      }
+      const due = task.days.includes(day);
+      const completed = task.completedDates.includes(iso);
+      const circle = document.createElement('span');
+      circle.className = 'circle ' +
+        (completed ? 'green tick' : due ? 'purple' : 'grey');
+      circle.innerHTML = completed ? '&#10004;' : '';
+      circle.onclick = () => toggleComplete(task.id, iso, due);
+      cell.appendChild(circle);
       grid.appendChild(cell);
     });
   });
@@ -389,17 +389,19 @@ function taskCell(task) {
   return cell;
 }
 
-function toggleComplete(id, day) {
+function toggleComplete(id, day, due) {
   const task = weeklyTasks.find(t => t.id === id);
   if (!task) return;
   if (task.completedDates.includes(day)) {
     task.completedDates = task.completedDates.filter(d => d !== day);
-    if (new Date(day) < new Date()) {
+    if (due && new Date(day) < new Date()) {
       if (!task.missedDates.includes(day)) task.missedDates.push(day);
     }
   } else {
     task.completedDates.push(day);
-    task.missedDates = task.missedDates.filter(d => d !== day);
+    if (due) {
+      task.missedDates = task.missedDates.filter(d => d !== day);
+    }
   }
   renderWeekly();
 }
