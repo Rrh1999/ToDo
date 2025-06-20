@@ -51,13 +51,17 @@ section { padding: 1rem; }
 
   <section>
     <div class="toggle" onclick="toggle('settings')">Settings</div>
-    <div id="settings" class="hidden">
-      <h3>Add Project</h3>
-      <input type="text" id="projectName" placeholder="Project name">
-      <input type="color" id="projectColor" value="#ff0000">
-      <button onclick="addProject()">Add</button>
-      <ul id="projects"></ul>
-    </div>
+      <div id="settings" class="hidden">
+        <h3>Add Project</h3>
+        <input type="text" id="projectName" placeholder="Project name">
+        <input type="color" id="projectColor" value="#ff0000">
+        <button onclick="addProject()">Add</button>
+        <ul id="projects"></ul>
+        <button onclick="toggle('deletedBox')">Deleted Tasks</button>
+        <div id="deletedBox" class="hidden">
+          <ul id="deletedList"></ul>
+        </div>
+      </div>
   </section>
 
   <section>
@@ -109,9 +113,81 @@ section { padding: 1rem; }
     </div>
   </section>
 
-<script>
-let projects = [];
+  <section>
+    <h2>One-Off Tasks</h2>
+    <div id="oneOffList"></div>
+    <div class="toggle" onclick="toggle('addOneOff')">Add One-Off Task</div>
+    <div id="addOneOff" class="hidden">
+      <input type="text" id="oneOffName" placeholder="Name"><br>
+      <select id="oneOffProject"></select><br>
+      Importance:
+      <select id="oneOffImportance">
+        <option>High</option>
+        <option>High/Medium</option>
+        <option>Medium</option>
+        <option>Medium/Low</option>
+        <option>Low</option>
+      </select><br>
+      Urgency:
+      <select id="oneOffUrgency">
+        <option>High</option>
+        <option>High/Medium</option>
+        <option>Medium</option>
+        <option>Medium/Low</option>
+        <option>Low</option>
+      </select><br>
+      Due Date: <input type="date" id="oneOffDue"><br>
+      <button onclick="addOneOffTask()">Submit</button>
+    </div>
+  </section>
+
+  <section>
+    <h2>Recurring Tasks</h2>
+    <div id="recurringList"></div>
+    <div class="toggle" onclick="toggle('addRecurring')">Add Recurring Task</div>
+    <div id="addRecurring" class="hidden">
+      <input type="text" id="recurringName" placeholder="Name"><br>
+      <select id="recurringProject"></select><br>
+      Importance:
+      <select id="recurringImportance">
+        <option>High</option>
+        <option>High/Medium</option>
+        <option>Medium</option>
+        <option>Medium/Low</option>
+        <option>Low</option>
+      </select><br>
+      Urgency:
+      <select id="recurringUrgency">
+        <option>High</option>
+        <option>High/Medium</option>
+        <option>Medium</option>
+        <option>Medium/Low</option>
+        <option>Low</option>
+      </select><br>
+      Due Date: <input type="date" id="recurringDue"><br>
+      Frequency:
+      <select id="recurringFrequency">
+        <option value="daily">Daily</option>
+        <option value="weekly">Weekly</option>
+        <option value="monthly">Monthly</option>
+        <option value="yearly">Yearly</option>
+      </select><br>
+      Interval: <input type="number" id="recurringInterval" min="1" value="1"><br>
+      Next due from:
+      <select id="recurringFrom">
+        <option value="intended">Intended due date</option>
+        <option value="today">Today's date</option>
+      </select><br>
+      <button onclick="addRecurringTask()">Submit</button>
+    </div>
+  </section>
+
+  <script>
+let projects = []; // {name, color, closed:false}
 let weeklyTasks = [];
+let oneOffTasks = [];
+let recurringTasks = [];
+let deletedTasks = [];
 let nextId = 1;
 let currentWeekStart = startOfWeek(new Date());
 
@@ -164,7 +240,8 @@ function addProject() {
   const name = document.getElementById('projectName').value;
   const color = document.getElementById('projectColor').value;
   if (!name) return;
-  projects.push({ name, color });
+  if (projects.find(p => p.name === name)) return;
+  projects.push({ name, color, closed: false });
   document.getElementById('projectName').value = '';
   renderProjects();
 }
@@ -172,18 +249,47 @@ function addProject() {
 function renderProjects() {
   const ul = document.getElementById('projects');
   ul.innerHTML = '';
-  const select = document.getElementById('weeklyProject');
-  select.innerHTML = '';
+  const selects = [
+    document.getElementById('weeklyProject'),
+    document.getElementById('oneOffProject'),
+    document.getElementById('recurringProject')
+  ];
+  selects.forEach(sel => sel.innerHTML = '');
   projects.forEach(p => {
     const li = document.createElement('li');
-    li.textContent = p.name;
+    li.textContent = p.name + (p.closed ? ' (closed)' : '');
     li.style.color = p.color;
+    if (!p.closed) {
+      const btn = document.createElement('button');
+      btn.textContent = 'Close';
+      if (hasOpenTasks(p.name)) btn.disabled = true;
+      btn.onclick = () => closeProject(p.name);
+      li.appendChild(document.createTextNode(' '));
+      li.appendChild(btn);
+    }
     ul.appendChild(li);
-    const opt = document.createElement('option');
-    opt.value = p.name;
-    opt.textContent = p.name;
-    select.appendChild(opt);
+    selects.forEach(sel => {
+      if (!p.closed) {
+        const opt = document.createElement('option');
+        opt.value = p.name;
+        opt.textContent = p.name;
+        sel.appendChild(opt);
+      }
+    });
   });
+}
+
+function hasOpenTasks(projectName) {
+  const lists = [weeklyTasks, oneOffTasks, recurringTasks];
+  return lists.some(list => list.some(t => t.project === projectName && t.status === 'open'));
+}
+
+function closeProject(name) {
+  const proj = projects.find(p => p.name === name);
+  if (!proj) return;
+  if (hasOpenTasks(name)) return;
+  proj.closed = true;
+  renderProjects();
 }
 
 function addWeeklyTask() {
@@ -194,6 +300,8 @@ function addWeeklyTask() {
   const dayElems = document.querySelectorAll('#addWeekly input[type=checkbox]:checked');
   const days = Array.from(dayElems).map(cb => cb.value);
   if (!name) return;
+  const proj = projects.find(p => p.name === project);
+  if (proj && proj.closed) return;
   const task = {
     id: String(nextId).padStart(8, '0'),
     name,
@@ -298,13 +406,255 @@ function deleteTask(id) {
   const idx = weeklyTasks.findIndex(t => t.id === id);
   if (idx === -1) return;
   if (confirm('Delete this task permanently?')) {
+    deletedTasks.push(weeklyTasks[idx]);
     weeklyTasks.splice(idx, 1);
     renderWeekly();
+    renderDeleted();
   }
+}
+
+function addOneOffTask() {
+  const name = document.getElementById('oneOffName').value;
+  const project = document.getElementById('oneOffProject').value;
+  const importance = document.getElementById('oneOffImportance').value;
+  const urgency = document.getElementById('oneOffUrgency').value;
+  const due = document.getElementById('oneOffDue').value;
+  if (!name) return;
+  const proj = projects.find(p => p.name === project);
+  if (proj && proj.closed) return;
+  const task = {
+    id: String(nextId).padStart(8, '0'),
+    name, project, importance, urgency,
+    dueDate: due,
+    startDate: formatISO(new Date()),
+    status: 'open',
+    closedDate: '',
+    taskType: 'One-off',
+    completedDates: [],
+    missedDates: []
+  };
+  nextId++;
+  oneOffTasks.push(task);
+  document.getElementById('oneOffName').value = '';
+  document.getElementById('oneOffDue').value = '';
+  renderOneOff();
+}
+
+function renderOneOff() {
+  const list = document.getElementById('oneOffList');
+  list.innerHTML = '';
+  const open = oneOffTasks.filter(t => t.status === 'open');
+  if (open.length === 0) { list.textContent = 'No one-off tasks'; return; }
+  const table = document.createElement('table');
+  const head = document.createElement('tr');
+  head.innerHTML = '<th>Task</th><th>Project</th><th>Due</th><th></th>';
+  table.appendChild(head);
+  open.forEach(t => {
+    const tr = document.createElement('tr');
+    tr.innerHTML = `<td>${t.name}</td><td>${t.project}</td><td>${t.dueDate||''}</td>`;
+    const td = document.createElement('td');
+    const comp = document.createElement('button');
+    comp.textContent = 'Complete';
+    comp.onclick = () => completeOneOff(t.id);
+    const edit = document.createElement('button');
+    edit.textContent = 'Edit Due';
+    edit.onclick = () => editOneOffDue(t.id);
+    const closeB = document.createElement('button');
+    closeB.textContent = 'Archive';
+    closeB.onclick = () => closeOneOff(t.id);
+    const del = document.createElement('button');
+    del.textContent = 'Delete';
+    del.onclick = () => deleteOneOff(t.id);
+    td.appendChild(comp);
+    td.appendChild(edit);
+    td.appendChild(closeB);
+    td.appendChild(del);
+    tr.appendChild(td);
+    table.appendChild(tr);
+  });
+  list.appendChild(table);
+}
+
+function completeOneOff(id) {
+  const task = oneOffTasks.find(t => t.id === id);
+  if (!task) return;
+  task.completedDates.push(formatISO(new Date()));
+  task.status = 'closed';
+  task.closedDate = formatISO(new Date());
+  renderOneOff();
+}
+
+function closeOneOff(id) {
+  const task = oneOffTasks.find(t => t.id === id);
+  if (!task) return;
+  if (confirm('You are about to close this task. Continue?')) {
+    task.status = 'closed';
+    task.closedDate = formatISO(new Date());
+    renderOneOff();
+  }
+}
+
+function deleteOneOff(id) {
+  const idx = oneOffTasks.findIndex(t => t.id === id);
+  if (idx === -1) return;
+  if (confirm('Delete this task permanently?')) {
+    deletedTasks.push(oneOffTasks[idx]);
+    oneOffTasks.splice(idx, 1);
+    renderOneOff();
+    renderDeleted();
+  }
+}
+
+function editOneOffDue(id) {
+  const task = oneOffTasks.find(t => t.id === id);
+  if (!task) return;
+  const newDate = prompt('New due date (YYYY-MM-DD):', task.dueDate);
+  if (newDate !== null) {
+    task.dueDate = newDate;
+    renderOneOff();
+  }
+}
+
+function addRecurringTask() {
+  const name = document.getElementById('recurringName').value;
+  const project = document.getElementById('recurringProject').value;
+  const importance = document.getElementById('recurringImportance').value;
+  const urgency = document.getElementById('recurringUrgency').value;
+  const due = document.getElementById('recurringDue').value;
+  const freq = document.getElementById('recurringFrequency').value;
+  const interval = parseInt(document.getElementById('recurringInterval').value, 10);
+  const from = document.getElementById('recurringFrom').value;
+  if (!name || !due) return;
+  const proj = projects.find(p => p.name === project);
+  if (proj && proj.closed) return;
+  const task = {
+    id: String(nextId).padStart(8, '0'),
+    name, project, importance, urgency,
+    dueDate: due,
+    frequency: freq,
+    interval,
+    from,
+    startDate: due,
+    status: 'open',
+    closedDate: '',
+    taskType: 'Recurring',
+    completedDates: [],
+    missedDates: [],
+    lastCompleted: '',
+    lastDiff: 0
+  };
+  nextId++;
+  recurringTasks.push(task);
+  document.getElementById('recurringName').value = '';
+  document.getElementById('recurringDue').value = '';
+  renderRecurring();
+}
+
+function computeNextDue(task, actionDate) {
+  const base = (task.from === 'today') ? new Date(actionDate) : new Date(task.dueDate);
+  let d = new Date(base);
+  if (task.frequency === 'daily') d.setDate(d.getDate() + task.interval);
+  if (task.frequency === 'weekly') d.setDate(d.getDate() + 7 * task.interval);
+  if (task.frequency === 'monthly') d.setMonth(d.getMonth() + task.interval);
+  if (task.frequency === 'yearly') d.setFullYear(d.getFullYear() + task.interval);
+  return formatISO(d);
+}
+
+function renderRecurring() {
+  const list = document.getElementById('recurringList');
+  list.innerHTML = '';
+  const open = recurringTasks.filter(t => t.status === 'open');
+  if (open.length === 0) { list.textContent = 'No recurring tasks'; return; }
+  const table = document.createElement('table');
+  const head = document.createElement('tr');
+  head.innerHTML = '<th>Task</th><th>Next Due</th><th>Last Done</th><th>Over/Under</th><th></th>';
+  table.appendChild(head);
+  open.forEach(t => {
+    const tr = document.createElement('tr');
+    tr.innerHTML = `<td>${t.name}</td><td>${t.dueDate}</td><td>${t.lastCompleted || ''}</td><td>${t.lastDiff}</td>`;
+    const td = document.createElement('td');
+    const comp = document.createElement('button');
+    comp.textContent = 'Complete';
+    comp.onclick = () => completeRecurring(t.id);
+    const skip = document.createElement('button');
+    skip.textContent = 'Skip';
+    skip.onclick = () => skipRecurring(t.id);
+    const closeB = document.createElement('button');
+    closeB.textContent = 'Archive';
+    closeB.onclick = () => closeRecurring(t.id);
+    const del = document.createElement('button');
+    del.textContent = 'Delete';
+    del.onclick = () => deleteRecurring(t.id);
+    td.appendChild(comp);
+    td.appendChild(skip);
+    td.appendChild(closeB);
+    td.appendChild(del);
+    tr.appendChild(td);
+    table.appendChild(tr);
+  });
+  list.appendChild(table);
+}
+
+function completeRecurring(id) {
+  const task = recurringTasks.find(t => t.id === id);
+  if (!task) return;
+  task.completedDates.push(task.dueDate);
+  const today = new Date();
+  const due = new Date(task.dueDate);
+  task.lastDiff = Math.floor((today - due) / (1000*60*60*24));
+  task.lastCompleted = formatISO(today);
+  task.dueDate = computeNextDue(task, today);
+  renderRecurring();
+}
+
+function skipRecurring(id) {
+  const task = recurringTasks.find(t => t.id === id);
+  if (!task) return;
+  const today = new Date();
+  const due = new Date(task.dueDate);
+  task.lastDiff = Math.floor((today - due) / (1000*60*60*24));
+  task.missedDates.push(task.dueDate);
+  task.dueDate = computeNextDue(task, today);
+  renderRecurring();
+}
+
+function closeRecurring(id) {
+  const task = recurringTasks.find(t => t.id === id);
+  if (!task) return;
+  if (confirm('You are about to close this task. Continue?')) {
+    task.status = 'closed';
+    task.closedDate = formatISO(new Date());
+    renderRecurring();
+  }
+}
+
+function deleteRecurring(id) {
+  const idx = recurringTasks.findIndex(t => t.id === id);
+  if (idx === -1) return;
+  if (confirm('Delete this task permanently?')) {
+    deletedTasks.push(recurringTasks[idx]);
+    recurringTasks.splice(idx, 1);
+    renderRecurring();
+    renderDeleted();
+  }
+}
+
+function renderDeleted() {
+  const list = document.getElementById('deletedList');
+  if (!list) return;
+  list.innerHTML = '';
+  deletedTasks.forEach(t => {
+    const li = document.createElement('li');
+    li.textContent = `${t.name} (${t.project})`;
+    list.appendChild(li);
+  });
 }
 
 renderProjects();
 renderWeekly();
+renderOneOff();
+renderRecurring();
+renderDeleted();
 </script>
 </body>
 </html>
