@@ -14,6 +14,14 @@ section { padding: 1rem; }
   border-radius: 4px;
 }
 .hidden { display: none; }
+#deletedBox, #archivedBox {
+  max-height: 150px;
+  overflow-y: auto;
+  border: 1px solid #ccc;
+  padding: 0.5rem;
+  margin-top: 0.5rem;
+}
+.box {}
 #projects li {
   list-style: none;
   padding: 0.25rem;
@@ -58,8 +66,12 @@ section { padding: 1rem; }
         <button onclick="addProject()">Add</button>
         <ul id="projects"></ul>
         <button onclick="toggle('deletedBox')">Deleted Tasks</button>
-        <div id="deletedBox" class="hidden">
+        <div id="deletedBox" class="hidden box">
           <ul id="deletedList"></ul>
+        </div>
+        <button onclick="toggle('archivedBox')">Archived Tasks</button>
+        <div id="archivedBox" class="hidden box">
+          <ul id="archivedList"></ul>
         </div>
       </div>
   </section>
@@ -399,6 +411,7 @@ function closeTask(id) {
     task.status = 'closed';
     task.closedDate = formatISO(new Date());
     renderWeekly();
+    renderArchived();
   }
 }
 
@@ -410,6 +423,7 @@ function deleteTask(id) {
     weeklyTasks.splice(idx, 1);
     renderWeekly();
     renderDeleted();
+    renderArchived();
   }
 }
 
@@ -482,6 +496,7 @@ function completeOneOff(id) {
   task.status = 'closed';
   task.closedDate = formatISO(new Date());
   renderOneOff();
+  renderArchived();
 }
 
 function closeOneOff(id) {
@@ -491,6 +506,7 @@ function closeOneOff(id) {
     task.status = 'closed';
     task.closedDate = formatISO(new Date());
     renderOneOff();
+    renderArchived();
   }
 }
 
@@ -502,6 +518,7 @@ function deleteOneOff(id) {
     oneOffTasks.splice(idx, 1);
     renderOneOff();
     renderDeleted();
+    renderArchived();
   }
 }
 
@@ -625,6 +642,7 @@ function closeRecurring(id) {
     task.status = 'closed';
     task.closedDate = formatISO(new Date());
     renderRecurring();
+    renderArchived();
   }
 }
 
@@ -636,6 +654,7 @@ function deleteRecurring(id) {
     recurringTasks.splice(idx, 1);
     renderRecurring();
     renderDeleted();
+    renderArchived();
   }
 }
 
@@ -650,11 +669,24 @@ function renderDeleted() {
   });
 }
 
+function renderArchived() {
+  const list = document.getElementById('archivedList');
+  if (!list) return;
+  list.innerHTML = '';
+  const closed = [...weeklyTasks, ...oneOffTasks, ...recurringTasks].filter(t => t.status === 'closed');
+  closed.forEach(t => {
+    const li = document.createElement('li');
+    li.textContent = `${t.name} (${t.project})`;
+    list.appendChild(li);
+  });
+}
+
 renderProjects();
 renderWeekly();
 renderOneOff();
 renderRecurring();
 renderDeleted();
+renderArchived();
 </script>
 </body>
 </html>
