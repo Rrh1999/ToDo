@@ -12,17 +12,25 @@ header {
   text-align: center;
   border-bottom: 1px solid #ddd;
 }
-section { padding: 1rem; }
+section {
+  padding: 1rem;
+  border-bottom: 1px solid pink;
+}
 .toggle {
   cursor: pointer;
-  background: #eee;
+  background: #f4f4f4;
   padding: 0.5rem;
   border-radius: 4px;
   margin: 1rem 0;
   text-align: center;
 }
-.section-header { font-size: 1.2rem; font-weight: bold; }
-.subtoggle { font-size: 1rem; margin-top: 0.5rem; }
+.add-toggle { background: #eee; font-size: 0.9rem; }
+.section-header {
+  font-size: 1.2rem;
+  font-weight: bold;
+  background: #cfe2ff;
+}
+.subtoggle { font-size: 0.9rem; margin-top: 0.5rem; }
 .hidden { display: none; }
 #deletedBox, #archivedBox {
   max-height: 150px;
@@ -38,16 +46,21 @@ section { padding: 1rem; }
 }
 .task-grid {
   display: grid;
-  grid-template-columns: repeat(8, 1fr);
+  grid-template-columns: 2fr repeat(7, 1fr);
   gap: 0.25rem;
   margin-bottom: 1rem;
-  align-items: center;
+  align-items: stretch;
 }
 .task-grid div {
   padding: 0.25rem;
   border: 1px solid #ccc;
-  text-align: center;
+  display: flex;
+  align-items: center;
+  justify-content: center;
 }
+.task-info { display: block; text-align: left; }
+.task-name { font-size: 0.9rem; }
+.task-meta { font-size: 0.7rem; }
 .circle {
   width: 20px;
   height: 20px;
@@ -64,6 +77,11 @@ section { padding: 1rem; }
 .controls button { margin-left: 0.25rem; font-size: 0.7rem; }
 .week-controls { margin-bottom: 0.5rem; text-align: center; }
 #toast { position: fixed; bottom: 1rem; left: 50%; transform: translateX(-50%); background: #333; color: #fff; padding: 0.5rem 1rem; border-radius: 4px; }
+.task-table { width: 100%; border-collapse: collapse; }
+.task-table th, .task-table td { border: 1px solid #ccc; padding: 0.25rem; text-align: left; }
+.form-grid { display: grid; grid-template-columns: repeat(auto-fill, minmax(150px, 1fr)); gap: 0.5rem; align-items: center; }
+.form-grid label { display: flex; flex-direction: column; font-size: 0.85rem; }
+.form-grid input, .form-grid select { width: 100%; }
 </style>
 </head>
 <body>
@@ -109,35 +127,37 @@ section { padding: 1rem; }
       <div>Sat</div>
       <div>Sun</div>
     </div>
-    <div class="toggle" onclick="toggle('addWeekly')">Add Weekly Task</div>
-    <div id="addWeekly" class="hidden subtoggle">
-      <input type="text" id="weeklyName" placeholder="Name"><br>
-      <select id="weeklyProject"></select><br>
-      Importance:
-      <select id="weeklyImportance">
+    <div class="toggle add-toggle" onclick="toggle('addWeekly')">Add Weekly Task</div>
+    <div id="addWeekly" class="hidden subtoggle form-grid">
+      <label>Name<input type="text" id="weeklyName"></label>
+      <label>Project<select id="weeklyProject"></select></label>
+      <label>Importance<select id="weeklyImportance">
         <option>High</option>
         <option>High/Medium</option>
         <option>Medium</option>
         <option>Medium/Low</option>
         <option>Low</option>
-      </select><br>
-      Urgency:
-      <select id="weeklyUrgency">
+      </select></label>
+      <label>Urgency<select id="weeklyUrgency">
         <option>High</option>
         <option>High/Medium</option>
         <option>Medium</option>
         <option>Medium/Low</option>
         <option>Low</option>
-      </select><br>
-      Days:<br>
-      <label><input type="checkbox" value="Mon">Mon</label>
-      <label><input type="checkbox" value="Tue">Tue</label>
-      <label><input type="checkbox" value="Wed">Wed</label>
-      <label><input type="checkbox" value="Thu">Thu</label>
-      <label><input type="checkbox" value="Fri">Fri</label>
-      <label><input type="checkbox" value="Sat">Sat</label>
-      <label><input type="checkbox" value="Sun">Sun</label><br>
-      <button onclick="addWeeklyTask()">Submit</button>
+      </select></label>
+      <div class="days">
+        <span>Days:</span><br>
+        <label><input type="checkbox" value="Mon">Mon</label>
+        <label><input type="checkbox" value="Tue">Tue</label>
+        <label><input type="checkbox" value="Wed">Wed</label>
+        <label><input type="checkbox" value="Thu">Thu</label>
+        <label><input type="checkbox" value="Fri">Fri</label>
+        <label><input type="checkbox" value="Sat">Sat</label>
+        <label><input type="checkbox" value="Sun">Sun</label>
+      </div>
+      <div style="grid-column:1/-1;text-align:center;">
+        <button onclick="addWeeklyTask()">Submit</button>
+      </div>
     </div>
     </div><!-- end weeklySection -->
   </section>
@@ -146,28 +166,28 @@ section { padding: 1rem; }
     <div class="toggle section-header" onclick="toggle('oneOffSection')">One-Off Tasks</div>
     <div id="oneOffSection">
     <div id="oneOffList"></div>
-    <div class="toggle subtoggle" onclick="toggle('addOneOff')">Add One-Off Task</div>
-    <div id="addOneOff" class="hidden subtoggle">
-      <input type="text" id="oneOffName" placeholder="Name"><br>
-      <select id="oneOffProject"></select><br>
-      Importance:
-      <select id="oneOffImportance">
+    <div class="toggle add-toggle" onclick="toggle('addOneOff')">Add One-Off Task</div>
+    <div id="addOneOff" class="hidden subtoggle form-grid">
+      <label>Name<input type="text" id="oneOffName"></label>
+      <label>Project<select id="oneOffProject"></select></label>
+      <label>Importance<select id="oneOffImportance">
         <option>High</option>
         <option>High/Medium</option>
         <option>Medium</option>
         <option>Medium/Low</option>
         <option>Low</option>
-      </select><br>
-      Urgency:
-      <select id="oneOffUrgency">
+      </select></label>
+      <label>Urgency<select id="oneOffUrgency">
         <option>High</option>
         <option>High/Medium</option>
         <option>Medium</option>
         <option>Medium/Low</option>
         <option>Low</option>
-      </select><br>
-      Due Date: <input type="date" id="oneOffDue"><br>
-      <button onclick="addOneOffTask()">Submit</button>
+      </select></label>
+      <label>Due Date<input type="date" id="oneOffDue"></label>
+      <div style="grid-column:1/-1;text-align:center;">
+        <button onclick="addOneOffTask()">Submit</button>
+      </div>
     </div>
     </div><!-- end oneOffSection -->
   </section>
@@ -176,41 +196,39 @@ section { padding: 1rem; }
     <div class="toggle section-header" onclick="toggle('recurringSection')">Recurring Tasks</div>
     <div id="recurringSection">
     <div id="recurringList"></div>
-    <div class="toggle subtoggle" onclick="toggle('addRecurring')">Add Recurring Task</div>
-    <div id="addRecurring" class="hidden subtoggle">
-      <input type="text" id="recurringName" placeholder="Name"><br>
-      <select id="recurringProject"></select><br>
-      Importance:
-      <select id="recurringImportance">
+    <div class="toggle add-toggle" onclick="toggle('addRecurring')">Add Recurring Task</div>
+    <div id="addRecurring" class="hidden subtoggle form-grid">
+      <label>Name<input type="text" id="recurringName"></label>
+      <label>Project<select id="recurringProject"></select></label>
+      <label>Importance<select id="recurringImportance">
         <option>High</option>
         <option>High/Medium</option>
         <option>Medium</option>
         <option>Medium/Low</option>
         <option>Low</option>
-      </select><br>
-      Urgency:
-      <select id="recurringUrgency">
+      </select></label>
+      <label>Urgency<select id="recurringUrgency">
         <option>High</option>
         <option>High/Medium</option>
         <option>Medium</option>
         <option>Medium/Low</option>
         <option>Low</option>
-      </select><br>
-      Due Date: <input type="date" id="recurringDue"><br>
-      Frequency:
-      <select id="recurringFrequency">
+      </select></label>
+      <label>Due Date<input type="date" id="recurringDue"></label>
+      <label>Frequency<select id="recurringFrequency">
         <option value="daily">Daily</option>
         <option value="weekly">Weekly</option>
         <option value="monthly">Monthly</option>
         <option value="yearly">Yearly</option>
-      </select><br>
-      Interval: <input type="number" id="recurringInterval" min="1" value="1"><br>
-      Next due from:
-      <select id="recurringFrom">
+      </select></label>
+      <label>Interval<input type="number" id="recurringInterval" min="1" value="1"></label>
+      <label>Next due from<select id="recurringFrom">
         <option value="intended">Intended due date</option>
         <option value="today">Today's date</option>
-      </select><br>
-      <button onclick="addRecurringTask()">Submit</button>
+      </select></label>
+      <div style="grid-column:1/-1;text-align:center;">
+        <button onclick="addRecurringTask()">Submit</button>
+      </div>
     </div>
     </div><!-- end recurringSection -->
   </section>
@@ -436,7 +454,12 @@ function renderWeekly() {
 
 function taskCell(task) {
   const cell = document.createElement('div');
-  cell.innerHTML = `<strong>${task.name}</strong><br>${task.project}<br>${task.importance}/${task.urgency}`;
+  cell.className = 'task-info';
+  const proj = projects.find(p => p.name === task.project);
+  const color = proj ? proj.color : '#000';
+  cell.innerHTML = `<span class="task-name">${task.name}</span><br>` +
+    `<span class="task-meta" style="color:${color}">${task.project}</span><br>` +
+    `<span class="task-meta">Importance: ${task.importance}<br>Urgency: ${task.urgency}</span>`;
   const controls = document.createElement('div');
   controls.className = 'controls';
   const closeBtn = document.createElement('button');
@@ -529,12 +552,16 @@ function renderOneOff() {
   const open = oneOffTasks.filter(t => t.status === 'open');
   if (open.length === 0) { list.textContent = 'No one-off tasks'; return; }
   const table = document.createElement('table');
+  table.className = 'task-table';
+  table.className = 'task-table';
   const head = document.createElement('tr');
   head.innerHTML = '<th>Task</th><th>Project</th><th>Due</th><th></th>';
   table.appendChild(head);
   open.forEach(t => {
     const tr = document.createElement('tr');
-    tr.innerHTML = `<td>${t.name}</td><td>${t.project}</td><td>${t.dueDate||''}</td>`;
+    const proj = projects.find(p => p.name === t.project);
+    const color = proj ? proj.color : '#000';
+    tr.innerHTML = `<td>${t.name}</td><td style="color:${color}">${t.project}</td><td>${t.dueDate||''}</td>`;
     const td = document.createElement('td');
     const comp = document.createElement('button');
     comp.textContent = 'Complete';
@@ -659,11 +686,13 @@ function renderRecurring() {
   if (open.length === 0) { list.textContent = 'No recurring tasks'; return; }
   const table = document.createElement('table');
   const head = document.createElement('tr');
-  head.innerHTML = '<th>Task</th><th>Next Due</th><th>Last Done</th><th>Over/Under</th><th></th>';
+  head.innerHTML = '<th>Task</th><th>Project</th><th>Next Due</th><th>Last Done</th><th>Over/Under</th><th></th>';
   table.appendChild(head);
   open.forEach(t => {
     const tr = document.createElement('tr');
-    tr.innerHTML = `<td>${t.name}</td><td>${t.dueDate}</td><td>${t.lastCompleted || ''}</td><td>${t.lastDiff}</td>`;
+    const proj = projects.find(p => p.name === t.project);
+    const color = proj ? proj.color : '#000';
+    tr.innerHTML = `<td>${t.name}</td><td style="color:${color}">${t.project}</td><td>${t.dueDate}</td><td>${t.lastCompleted || ''}</td><td>${t.lastDiff}</td>`;
     const td = document.createElement('td');
     const comp = document.createElement('button');
     comp.textContent = 'Complete';
