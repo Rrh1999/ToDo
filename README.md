@@ -1,6 +1,7 @@
+# ToDo
 # Task Manager Demo
 
-This repository contains a small demo of a task manager. First install the dependencies with `npm install`, then run `npm start` and open `http://localhost:3000` in a browser to try it out. By default data is saved to `data.json` on disk so your tasks persist between restarts.
+This repository contains a small demo of a task manager. Run `npm start` and open `http://localhost:3000` in a browser to try it out. By default data is saved to `data.json` on disk so your tasks persist between restarts.Add commentMore actions
 
 If you would like to share the same data across multiple devices, provide a MongoDB connection string via the `MONGO_URI` environment variable (and optionally `MONGO_DB` for the database name which defaults to `taskdb`). When `MONGO_URI` is set the server will store and load the state from MongoDB instead of the local file.
 
@@ -17,6 +18,3 @@ Features include:
 - Project list displays whether open tasks are allocated and only offers the close button when none are open.
 - Toast notifications appear when projects or tasks are added or modified.
 - Data is persisted in `data.json` by default or in MongoDB when `MONGO_URI` is provided.
-- Filter tasks by project using the selector in Settings (defaults to all).
-- Navigation menu links to a Spending & Finances page that stores shopping lists alongside tasks.
-- Task forms are streamlined with only name, project and scheduling fields.
