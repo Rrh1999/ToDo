@@ -6,7 +6,7 @@ If you would like to share the same data across multiple devices, provide a Mong
 
 Features include:
 
-- Sleek header with the title "Task Manager" in blue using a Segoe UI font.
+- Sleek header with the title "Task Manager" in pink using a Segoe UI font.
 - Collapsible settings area with project management, color selection, and toggleable lists of deleted and archived tasks.
 - Each main task section (Weekly, One-Off, Recurring) can be collapsed by clicking its header.
 - Weekly tasks grid (task + Monday to Sunday) with week navigation and a form to add new weekly tasks.
