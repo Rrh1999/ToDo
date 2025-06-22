@@ -7,7 +7,6 @@ If you would like to share the same data across multiple devices, provide a Mong
 Features include:
 
 - Sleek header with the title "Task Manager" in pink using a Segoe UI font.
-
 - Collapsible settings area with project management, color selection, and toggleable lists of deleted and archived tasks.
 - Each main task section (Weekly, One-Off, Recurring) can be collapsed by clicking its header.
 - Weekly tasks grid (task + Monday to Sunday) with week navigation and a form to add new weekly tasks.
@@ -17,5 +16,4 @@ Features include:
 - Projects can be closed when no open tasks reference them; closed projects are hidden from task forms.
 - Project list displays whether open tasks are allocated and only offers the close button when none are open.
 - Toast notifications appear when projects or tasks are added or modified.
-
 - Data is persisted in `data.json` by default or in MongoDB when `MONGO_URI` is provided.
