@@ -14,7 +14,7 @@ header {
 }
 section {
   padding: 1rem;
-  border-bottom: 1px solid pink;
+  border-bottom: 10px solid pink;
 }
 .toggle {
   cursor: pointer;
@@ -145,16 +145,15 @@ section {
         <option>Medium/Low</option>
         <option>Low</option>
       </select></label>
-      <div class="days">
-        <span>Days:</span><br>
-        <label><input type="checkbox" value="Mon">Mon</label>
-        <label><input type="checkbox" value="Tue">Tue</label>
-        <label><input type="checkbox" value="Wed">Wed</label>
-        <label><input type="checkbox" value="Thu">Thu</label>
-        <label><input type="checkbox" value="Fri">Fri</label>
-        <label><input type="checkbox" value="Sat">Sat</label>
-        <label><input type="checkbox" value="Sun">Sun</label>
-      </div>
+      <label>Days<select id="weeklyDays" multiple>
+        <option value="Mon">Mon</option>
+        <option value="Tue">Tue</option>
+        <option value="Wed">Wed</option>
+        <option value="Thu">Thu</option>
+        <option value="Fri">Fri</option>
+        <option value="Sat">Sat</option>
+        <option value="Sun">Sun</option>
+      </select></label>
       <div style="grid-column:1/-1;text-align:center;">
         <button onclick="addWeeklyTask()">Submit</button>
       </div>
@@ -391,8 +390,8 @@ function addWeeklyTask() {
   const project = document.getElementById('weeklyProject').value;
   const importance = document.getElementById('weeklyImportance').value;
   const urgency = document.getElementById('weeklyUrgency').value;
-  const dayElems = document.querySelectorAll('#addWeekly input[type=checkbox]:checked');
-  const days = Array.from(dayElems).map(cb => cb.value);
+  const daySelect = document.getElementById('weeklyDays');
+  const days = Array.from(daySelect.selectedOptions).map(o => o.value);
   if (!name) return;
   const proj = projects.find(p => p.name === project);
   if (proj && proj.closed) return;
@@ -414,7 +413,7 @@ function addWeeklyTask() {
   weeklyTasks.push(task);
   showMessage("Task added");
   document.getElementById('weeklyName').value = '';
-  document.querySelectorAll('#addWeekly input[type=checkbox]').forEach(cb => cb.checked = false);
+  Array.from(daySelect.options).forEach(o => o.selected = false);
   saveData();
   renderWeekly();
 }
@@ -553,7 +552,6 @@ function renderOneOff() {
   if (open.length === 0) { list.textContent = 'No one-off tasks'; return; }
   const table = document.createElement('table');
   table.className = 'task-table';
-  table.className = 'task-table';
   const head = document.createElement('tr');
   head.innerHTML = '<th>Task</th><th>Project</th><th>Due</th><th></th>';
   table.appendChild(head);
@@ -685,6 +683,7 @@ function renderRecurring() {
   const open = recurringTasks.filter(t => t.status === 'open');
   if (open.length === 0) { list.textContent = 'No recurring tasks'; return; }
   const table = document.createElement('table');
+  table.className = 'task-table';
   const head = document.createElement('tr');
   head.innerHTML = '<th>Task</th><th>Project</th><th>Next Due</th><th>Last Done</th><th>Over/Under</th><th></th>';
   table.appendChild(head);
