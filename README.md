@@ -17,3 +17,6 @@ Features include:
 - Project list displays whether open tasks are allocated and only offers the close button when none are open.
 - Toast notifications appear when projects or tasks are added or modified.
 - Data is persisted in `data.json` by default or in MongoDB when `MONGO_URI` is provided.
+- Filter tasks by project using the selector in Settings (defaults to all).
+- Navigation menu links to a Spending & Finances page that stores shopping lists alongside tasks.
+- Task forms are streamlined with only name, project and scheduling fields.

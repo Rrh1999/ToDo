@@ -4,5 +4,8 @@
   "oneOffTasks": [],
   "recurringTasks": [],
   "deletedTasks": [],
+  "shoppingList": [],
+  "longTermList": [],
+  "canBuyList": [],
   "nextId": 1
 }
