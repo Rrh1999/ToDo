@@ -9,12 +9,7 @@ const DB_NAME = process.env.MONGO_DB || 'taskdb';
 app.use(express.json());
 app.use(express.static(__dirname));
 
-// explicit root handler in case static middleware fails
-app.get('/', (req, res) => {
-  res.sendFile(path.join(__dirname, 'index.html'));
-});
-
-let data = { projects: [], weeklyTasks: [], oneOffTasks: [], recurringTasks: [], deletedTasks: [], shoppingList: [], longTermList: [], canBuyList: [], nextId: 1 };
+let data = { projects: [], weeklyTasks: [], oneOffTasks: [], recurringTasks: [], deletedTasks: [], nextId: 1 };
 let collection;
 const DATA_FILE = path.join(__dirname, 'data.json');
 let useMongo = !!MONGO_URI;
@@ -28,7 +23,7 @@ async function initDb() {
       collection = db.collection('state');
       const doc = await collection.findOne({ _id: 'main' });
       if (doc && doc.data) {
-        data = Object.assign(data, doc.data);
+        data = doc.data;
       } else {
         await collection.updateOne({ _id: 'main' }, { $set: { data } }, { upsert: true });
       }
@@ -41,7 +36,7 @@ async function initDb() {
   // fallback to file storage
   if (fs.existsSync(DATA_FILE)) {
     try {
-      data = Object.assign(data, JSON.parse(fs.readFileSync(DATA_FILE, 'utf8')));
+      data = JSON.parse(fs.readFileSync(DATA_FILE, 'utf8'));
     } catch (err) {
       console.error('Failed to read data file', err);
     }
