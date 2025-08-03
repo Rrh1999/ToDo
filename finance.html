@@ -1111,10 +1111,12 @@ function parseFile(file, accountType, accountName){
   if(ext === 'csv') reader.readAsText(file); else reader.readAsBinaryString(file);
 }
 
-loadFinance();
-document.getElementById('tab-upload').addEventListener('click', () => showTab('upload'));
-document.getElementById('tab-code').addEventListener('click', () => showTab('code'));
-document.getElementById('tab-budgets').addEventListener('click', () => showTab('budgets'));
+window.addEventListener('DOMContentLoaded', () => {
+  loadFinance();
+  document.getElementById('tab-upload').addEventListener('click', () => showTab('upload'));
+  document.getElementById('tab-code').addEventListener('click', () => showTab('code'));
+  document.getElementById('tab-budgets').addEventListener('click', () => showTab('budgets'));
+});
 document.getElementById('add-account').addEventListener('click', () => {
   const name = document.getElementById('new-account').value.trim();
   if(!name || financeData.accounts.includes(name)) return;
