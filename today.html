@@ -1,0 +1,589 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>Today</title>
+<style>
+body { font-family: 'Segoe UI', Tahoma, sans-serif; margin: 0; padding: 0; }
+header {
+  background: #fff;
+  color: #333;
+  padding: 1rem;
+  text-align: center;
+  border-bottom: 1px solid #ddd;
+}
+#container { display: flex; }
+#side { width: 40%; padding: 1rem; border-left: 1px solid #ccc; }
+#main { flex: 1; padding: 1rem; }
+.task-list { list-style: none; padding: 0; }
+.task-list li { margin: 0.25rem 0; padding: 0.25rem; border-bottom: 1px solid #ddd; display:flex; justify-content: space-between; align-items:center; flex-wrap:wrap; }
+#todayListContainer{width:calc(100% - 1rem);padding-right:1rem;}
+.overdue { color: red; }
+.due { color: orange; }
+.due-soon { font-weight: bold; }
+.today-item { cursor: move; }
+@media (max-width: 600px) {
+  html { font-size: 14px; }
+}
+</style>
+</head>
+<body>
+<header>
+  <h1>Today</h1>
+  <div id="nav-placeholder"></div>
+</header>
+<script src="nav-loader.js"></script>
+<div id="container">
+  <div id="side">
+    <h2>Overdue</h2>
+    <ul id="overdueList" class="task-list"></ul>
+    <h2>Due Soon</h2>
+    <ul id="dueList" class="task-list"></ul>
+    <label style="display:block;margin-top:0.5rem;"><input type="checkbox" id="workToggle"> Show Work Tasks</label>
+    <ul id="workTaskList" class="task-list hidden"></ul>
+    <label style="display:block;margin-top:0.5rem;"><input type="checkbox" id="diyToggle"> Show DIY Tasks</label>
+    <ul id="diyTaskList" class="task-list hidden"></ul>
+    <label style="display:block;margin-top:0.5rem;"><input type="checkbox" id="stretchToggle"> Show Stretch Tasks</label>
+    <ul id="stretchTaskList" class="task-list hidden"></ul>
+    <label style="display:block;margin-top:0.5rem;"><input type="checkbox" id="bigToggle"> Show Big Tasks</label>
+    <ul id="bigTaskList" class="task-list hidden"></ul>
+    <label style="display:block;margin-top:0.5rem;"><input type="checkbox" id="diyBigToggle"> Show DIY Big Tasks</label>
+    <ul id="diyBigTaskList" class="task-list hidden"></ul>
+  </div>
+  <div id="main">
+    <h2>Today</h2>
+    <input type="text" id="quickInput" placeholder="New item">
+    <button onclick="addQuickItem()">Add</button>
+    <button onclick="clearToday()">Clear</button>
+    <div id="todayListContainer">
+      <ul id="todayList" class="task-list"></ul>
+    </div>
+  </div>
+</div>
+<script>
+let projects=[], weeklyTasks=[], oneOffTasks=[], recurringTasks=[], stretchTasks=[], bigTasks=[], deletedTasks=[], shoppingList=[], longTermList=[], generalList=[];
+let todayList=[], todayTasks=[], todayQuickHistory=[];
+let overdueTasks=[], dueTasks=[];
+let nextId=1;
+let workDataStore={}, workTasks=[], workCalendar=[];
+let diyDataStore={}, diyTasks=[], diyBigTasks=[], diyCalendar=[];
+function getWorkTaskInfo(id,list=workTasks,depth=0,parent=null){
+  for(const t of list){
+    if(t.id===id) return {task:t,parent,depth};
+    if(t.subtasks){
+      const r=getWorkTaskInfo(id,t.subtasks,depth+1,t);
+      if(r) return r;
+    }
+  }
+  return null;
+}
+function forEachWorkTask(cb,list=workTasks,depth=0,parent=null){
+  list.forEach(t=>{
+    cb(t,depth,parent);
+    if(t.subtasks) forEachWorkTask(cb,t.subtasks,depth+1,t);
+  });
+}
+function getDiyTaskInfo(id,list=diyTasks,depth=0,parent=null){
+  for(const t of list){
+    if(t.id===id) return {task:t,parent,depth};
+    if(t.subtasks){
+      const r=getDiyTaskInfo(id,t.subtasks,depth+1,t);
+      if(r) return r;
+    }
+  }
+  return null;
+}
+function forEachDiyTask(cb,list=diyTasks,depth=0,parent=null){
+  list.forEach(t=>{
+    cb(t,depth,parent);
+    if(t.subtasks) forEachDiyTask(cb,t.subtasks,depth+1,t);
+  });
+}
+function taskScheduledToday(type,id){
+  const today=formatISO(new Date());
+  let events=[];
+  if(type==='work') events=workCalendar;
+  else if(type==='diy') events=diyCalendar;
+  else return false;
+  return events.some(ev=>ev.taskId===id && ev.start.slice(0,10)===today);
+}
+function formatISO(date){const d=new Date(date);const y=d.getFullYear();const m=String(d.getMonth()+1).padStart(2,'0');const day=String(d.getDate()).padStart(2,'0');return `${y}-${m}-${day}`;}
+function formatUK(date){const d=new Date(date);if(isNaN(d)) return date||'';return d.toLocaleDateString('en-GB',{day:'2-digit',month:'long',year:'2-digit'});}
+function startOfWeek(date){const d=new Date(date);const day=d.getDay();const diff=(day===0?-6:1-day);d.setDate(d.getDate()+diff);d.setHours(0,0,0,0);return d;}
+function prevDueDate(task,date){const days=task.days.map(d=>['Sun','Mon','Tue','Wed','Thu','Fri','Sat'].indexOf(d));const d=new Date(date);for(let i=0;i<7;i++){if(days.includes(d.getDay())) return new Date(d);d.setDate(d.getDate()-1);}return null;}
+function nextDueDate(task,date){const days=task.days.map(d=>['Sun','Mon','Tue','Wed','Thu','Fri','Sat'].indexOf(d));const d=new Date(date);for(let i=0;i<7;i++){if(days.includes(d.getDay())) return new Date(d);d.setDate(d.getDate()+1);}return null;}
+function nearestDueDate(task,date){const prev=prevDueDate(task,date);const next=nextDueDate(task,date);if(!prev) return formatISO(next);if(!next) return formatISO(prev);const mid=new Date(prev.getTime()+(next-prev)/2);return date<mid?formatISO(prev):formatISO(next);}
+function lastDueDate(task){return prevDueDate(task,new Date());}
+function updateMissed(task){const last=new Date(task.dateLastChecked);const today=new Date();let d=new Date(last);while(d<=today){const dayName=['Sun','Mon','Tue','Wed','Thu','Fri','Sat'][d.getDay()];const iso=formatISO(d);if(d>last&&task.days.includes(dayName)){if(!task.completedDates.includes(iso)&&!task.missedDates.includes(iso)){task.missedDates.push(iso);}}d.setDate(d.getDate()+1);}task.dateLastChecked=formatISO(today);saveData();}
+async function loadData(){
+  try{
+    const res=await fetch('/api/index-data');
+    if(res.ok){
+      const obj=await res.json();
+      projects=obj.projects||[];weeklyTasks=obj.weeklyTasks||[];oneOffTasks=obj.oneOffTasks||[];recurringTasks=obj.recurringTasks||[];
+      stretchTasks=obj.stretchTasks||[];bigTasks=obj.bigTasks||[];deletedTasks=obj.deletedTasks||[];shoppingList=obj.shoppingList||[];longTermList=obj.longTermList||[];
+      generalList=obj.generalList||[];todayList=obj.todayList||[];todayQuickHistory=obj.todayQuickHistory||[];nextId=obj.nextId||1;
+    }
+    const resW=await fetch('/api/work-data');
+    if(resW.ok){
+      workDataStore=await resW.json();
+      workTasks=workDataStore.workTasks||[];
+      workCalendar=workDataStore.calendarEvents||[];
+    }
+    const resD=await fetch('/api/diy-data');
+    if(resD.ok){
+      diyDataStore=await resD.json();
+      diyTasks=diyDataStore.diyTasks||[];
+      diyBigTasks=diyDataStore.diyBigTasks||[];
+      diyCalendar=diyDataStore.calendarEvents||[];
+    }
+  }catch(e){console.error('Failed to load data',e);}
+}
+async function saveData(){const data={projects,weeklyTasks,oneOffTasks,recurringTasks,stretchTasks,bigTasks,deletedTasks,shoppingList,longTermList,generalList,todayList,nextId,todayQuickHistory};try{await fetch('/api/index-data',{method:'POST',headers:{'Content-Type':'application/json'},body:JSON.stringify(data)});}catch(e){console.error('Failed to save data',e);}}
+async function saveWorkData(){
+  workDataStore.workTasks = workTasks;
+  try{
+    await fetch('/api/work-data',{method:'POST',headers:{'Content-Type':'application/json'},body:JSON.stringify(workDataStore)});
+  }catch(e){console.error('Failed to save work data',e);}
+}
+async function saveDiyData(){
+  diyDataStore.diyTasks = diyTasks;
+  diyDataStore.diyBigTasks = diyBigTasks;
+  try{
+    await fetch('/api/diy-data',{method:'POST',headers:{'Content-Type':'application/json'},body:JSON.stringify(diyDataStore)});
+  }catch(e){console.error('Failed to save diy data',e);}
+}
+function weeklyDueSoon(task){const today=new Date();for(let i=0;i<7;i++){const d=new Date(today);d.setDate(today.getDate()+i);const name=['Sun','Mon','Tue','Wed','Thu','Fri','Sat'][d.getDay()];if(task.days.includes(name))return true;}return false;}
+function weeklyMissed(task){const last=lastDueDate(task);if(!last) return false;const iso=formatISO(last);return task.missedDates&&task.missedDates.includes(iso);}
+function categorize(){
+  overdueTasks=[];
+  dueTasks=[];
+  const today=new Date();
+  const nextWeek=new Date();
+  nextWeek.setDate(today.getDate()+7);
+
+  const pushDue=(type,item,soon)=>dueTasks.push({category:'due',type,item,soon});
+
+  weeklyTasks.filter(t=>t.status==='open').forEach(t=>{updateMissed(t);if(weeklyMissed(t)){overdueTasks.push({category:'overdue',type:'weekly',item:t});}else{pushDue('weekly',t,weeklyDueSoon(t));}});
+
+  oneOffTasks.filter(t=>t.status==='open').forEach(t=>{
+    const due=t.dueDate?new Date(t.dueDate):null;
+    if(due && due<today){
+      overdueTasks.push({category:'overdue',type:'oneoff',item:t});
+    }else{
+      const soon=due && due<=nextWeek;
+      pushDue('oneoff',t,soon);
+    }
+  });
+
+  recurringTasks.filter(t=>t.status==='open').forEach(t=>{
+    const due=new Date(t.dueDate);
+    if(due<today){
+      overdueTasks.push({category:'overdue',type:'recurring',item:t});
+    }else{
+      const soon=due<=nextWeek;
+      pushDue('recurring',t,soon);
+    }
+  });
+}
+function rebuildToday(){
+  todayTasks=[];
+  todayList.forEach(r=>{
+    if(r.type==='quick'){
+      todayTasks.push({category:'quick',type:'quick',item:r});
+      return;
+    }
+    let arr;
+    if(r.type==='oneoff') arr=oneOffTasks;
+    else if(r.type==='recurring') arr=recurringTasks;
+    else if(r.type==='weekly') arr=weeklyTasks;
+    else if(r.type==='stretch') arr=stretchTasks;
+    else if(r.type==='big') arr=bigTasks;
+    else if(r.type==='diybig') arr=diyBigTasks;
+    let task=null, depth=0;
+    if(r.type==='work'){
+      const info=getWorkTaskInfo(r.id);
+      if(info){ task=info.task; depth=info.depth; }
+    }else if(r.type==='diy'){
+      const info=getDiyTaskInfo(r.id);
+      if(info){ task=info.task; depth=info.depth; }
+    }else if(arr){
+      task=arr.find(t=>t.id===r.id);
+    }
+    if(!task) return;
+    if(r.type==='work'){
+      todayTasks.push({category:'work',type:'work',item:task,depth});
+      return;
+    } else if(r.type==='diy'){
+      todayTasks.push({category:'diy',type:'diy',item:task,depth});
+      return;
+    } else if(r.type==='stretch'){
+      todayTasks.push({category:'stretch',type:'stretch',item:task});
+      return;
+    } else if(r.type==='big'){
+      todayTasks.push({category:'big',type:'big',item:task});
+      return;
+    } else if(r.type==='diybig'){
+      todayTasks.push({category:'diybig',type:'diybig',item:task});
+      return;
+    }
+    let i=overdueTasks.findIndex(o=>o.type===r.type&&o.item.id===r.id);
+    if(i!==-1){
+      overdueTasks.splice(i,1);
+      todayTasks.push({category:'overdue',type:r.type,item:task});
+    }else{
+      i=dueTasks.findIndex(o=>o.type===r.type&&o.item.id===r.id);
+      if(i!==-1){
+        dueTasks.splice(i,1);
+        todayTasks.push({category:'due',type:r.type,item:task});
+      }
+    }
+  });
+}
+function renderSide(){
+  const ov=document.getElementById('overdueList');
+  ov.innerHTML='';
+  overdueTasks.forEach((t,i)=>{
+    const li=document.createElement('li');
+    li.className='overdue';
+    li.textContent=`[Todo - ${t.type}] ${t.item.name} (${t.item.project})`;
+    const b=document.createElement('button');
+    b.textContent='Select';
+    b.onclick=()=>selectTask(t,i,'overdue');
+    li.appendChild(b);
+    ov.appendChild(li);
+  });
+
+  const due=document.getElementById('dueList');
+  due.innerHTML='';
+  dueTasks.forEach((t,i)=>{
+    const li=document.createElement('li');
+    li.className='due';
+    if(t.soon) li.classList.add('due-soon');
+    let info='';
+    if(t.type==='weekly'){
+      info='('+t.item.days.join(', ')+')';
+    }else{
+      info='due '+formatUK(t.item.dueDate);
+    }
+    if(t.soon) info+=' (soon)';
+    li.textContent=`[Todo - ${t.type}] ${t.item.name} (${t.item.project}) ${info}`;
+    const b=document.createElement('button');
+    b.textContent='Select';
+    b.onclick=()=>selectTask(t,i,'due');
+    li.appendChild(b);
+    due.appendChild(li);
+  });
+  if(document.getElementById('workToggle').checked) renderWorkTasks();
+  if(document.getElementById('diyToggle').checked) renderDiyTasks();
+  if(document.getElementById('stretchToggle').checked) renderStretchTasks();
+  if(document.getElementById('bigToggle').checked) renderBigTasks();
+  if(document.getElementById('diyBigToggle').checked) renderDiyBigTasks();
+}
+function renderWorkTasks(){
+  const ul=document.getElementById('workTaskList');
+  ul.innerHTML='';
+  forEachWorkTask((t,depth)=>{
+    if(t.status!=='open') return;
+    const li=document.createElement('li');
+    li.style.paddingLeft=(depth)+'rem';
+    li.textContent=`[Work] ${t.name} (${t.project})`;
+    const b=document.createElement('button');
+    b.textContent='Add';
+    b.onclick=()=>addWorkToToday(t.id);
+    li.appendChild(b);
+    ul.appendChild(li);
+  });
+}
+function renderDiyTasks(){
+  const ul=document.getElementById('diyTaskList');
+  ul.innerHTML='';
+  forEachDiyTask((t,depth)=>{
+    if(t.status!=='open') return;
+    const li=document.createElement('li');
+    li.style.paddingLeft=(depth)+'rem';
+    li.textContent=`[DIY] ${t.name} (${t.project})`;
+    const b=document.createElement('button');
+    b.textContent='Add';
+    b.onclick=()=>addDiyToToday(t.id);
+    li.appendChild(b);
+    ul.appendChild(li);
+  });
+}
+function renderStretchTasks(){
+  const ul=document.getElementById('stretchTaskList');
+  ul.innerHTML='';
+  stretchTasks.filter(t=>t.status==='open').forEach(t=>{
+    const li=document.createElement('li');
+    li.textContent=`[Todo - stretch] ${t.name} (${t.project})`;
+    const b=document.createElement('button');
+    b.textContent='Add';
+    b.onclick=()=>addStretchToToday(t.id);
+    li.appendChild(b);
+    ul.appendChild(li);
+  });
+}
+function renderBigTasks(){
+  const ul=document.getElementById('bigTaskList');
+  ul.innerHTML='';
+  bigTasks.filter(t=>t.status==='open').forEach(t=>{
+    const li=document.createElement('li');
+    li.textContent=`[Todo - big] ${t.name} (${t.project})`;
+    const b=document.createElement('button');
+    b.textContent='Add';
+    b.onclick=()=>addBigToToday(t.id);
+    li.appendChild(b);
+    ul.appendChild(li);
+  });
+}
+function renderDiyBigTasks(){
+  const ul=document.getElementById('diyBigTaskList');
+  ul.innerHTML='';
+  diyBigTasks.filter(t=>t.status==='open').forEach(t=>{
+    const li=document.createElement('li');
+    li.textContent=`[DIY - big] ${t.name} (${t.project})`;
+    const b=document.createElement('button');
+    b.textContent='Add';
+    b.onclick=()=>addDiyBigToToday(t.id);
+    li.appendChild(b);
+    ul.appendChild(li);
+  });
+}
+function updateToggles(){
+  const wt=document.getElementById('workToggle');
+  const dt=document.getElementById('diyToggle');
+  const db=document.getElementById('diyBigToggle');
+  document.getElementById('workTaskList').classList.toggle('hidden', !wt.checked);
+  document.getElementById('diyTaskList').classList.toggle('hidden', !dt.checked);
+  document.getElementById('diyBigTaskList').classList.toggle('hidden', !db.checked);
+}
+function renderToday(){
+  const ul=document.getElementById('todayList');
+  ul.innerHTML='';
+  todayTasks.forEach((t,i)=>{
+    const li=document.createElement('li');
+    li.className='today-item';
+    li.draggable=true;
+    li.dataset.index=i;
+    if(t.depth) li.style.paddingLeft=(t.depth)+'rem';
+    const text=document.createElement('span');
+    let page='', label='', prefix='';
+    if(t.type==='quick'){
+      label=t.item.name;
+    }else{
+      if(['oneoff','recurring','weekly','stretch','big'].includes(t.type)) page='Todo';
+      else if(t.type==='work') page='Work';
+      else if(t.type==='diy' || t.type==='diybig') page='DIY';
+      label=`${t.item.name} (${t.item.project})`;
+      if(t.type==='big' || t.type==='diybig') label='[BIG] '+label;
+      let info='';
+      if(page==='Todo'){info=t.type;}
+      else if(page==='Work'){info=t.item.project;}
+      prefix=page?`[${page}${info?` - ${info}`:''}] `:'';
+      if(taskScheduledToday(t.type,t.item.id)) text.style.fontWeight='bold';
+    }
+    text.textContent=prefix+label;
+    const btnBox=document.createElement('span');
+    const up=document.createElement('button');
+    up.textContent='Up';
+    up.onclick=()=>moveTodayUp(i);
+    const down=document.createElement('button');
+    down.textContent='Down';
+    down.onclick=()=>moveTodayDown(i);
+    const btnR=document.createElement('button');
+    btnR.textContent='Remove';
+    btnR.onclick=()=>removeToday(i);
+    const btnC=document.createElement('button');
+    btnC.textContent='Complete';
+    btnC.onclick=()=>completeToday(i);
+    btnBox.appendChild(up);
+    btnBox.appendChild(down);
+    btnBox.appendChild(btnR);
+    btnBox.appendChild(btnC);
+    const num=document.createElement('span');
+    num.textContent=(i+1)+'. ';
+    li.appendChild(num);
+    li.appendChild(text);
+    li.appendChild(btnBox);
+    ul.appendChild(li);
+  });
+  updateToggles();
+}
+function selectTask(t,idx,list){
+  if(list==='overdue')overdueTasks.splice(idx,1);else dueTasks.splice(idx,1);
+  todayTasks.push(t);
+  todayList.push({type:t.type,id:t.item.id});
+  saveData();
+  renderSide();
+  renderToday();
+  updateToggles();
+}
+function addWorkToToday(id){
+  const info=getWorkTaskInfo(id);
+  if(!info) return;
+  todayTasks.push({category:'work',type:'work',item:info.task,depth:info.depth});
+  todayList.push({type:'work',id});
+  saveData();
+  renderToday();
+  updateToggles();
+}
+function addDiyToToday(id){
+  const info=getDiyTaskInfo(id);
+  if(!info) return;
+  todayTasks.push({category:'diy',type:'diy',item:info.task,depth:info.depth});
+  todayList.push({type:'diy',id});
+  saveData();
+  renderToday();
+  updateToggles();
+}
+function addStretchToToday(id){
+  const task=stretchTasks.find(t=>t.id===id);
+  if(!task) return;
+  todayTasks.push({category:'stretch',type:'stretch',item:task});
+  todayList.push({type:'stretch',id});
+  saveData();
+  renderToday();
+}
+function addBigToToday(id){
+  const task=bigTasks.find(t=>t.id===id);
+  if(!task) return;
+  todayTasks.push({category:'big',type:'big',item:task});
+  todayList.push({type:'big',id});
+  saveData();
+  renderToday();
+}
+function addDiyBigToToday(id){
+  const task=diyBigTasks.find(t=>t.id===id);
+  if(!task) return;
+  todayTasks.push({category:'diybig',type:'diybig',item:task});
+  todayList.push({type:'diybig',id});
+  saveData();
+  renderToday();
+}
+
+function moveTodayUp(idx){
+  if(idx<=0) return;
+  [todayTasks[idx-1],todayTasks[idx]]=[todayTasks[idx],todayTasks[idx-1]];
+  [todayList[idx-1],todayList[idx]]=[todayList[idx],todayList[idx-1]];
+  saveData();
+  renderToday();
+}
+
+function moveTodayDown(idx){
+  if(idx>=todayTasks.length-1) return;
+  [todayTasks[idx],todayTasks[idx+1]]=[todayTasks[idx+1],todayTasks[idx]];
+  [todayList[idx],todayList[idx+1]]=[todayList[idx+1],todayList[idx]];
+  saveData();
+  renderToday();
+}
+function addQuickItem(){
+  const input=document.getElementById('quickInput');
+  const name=input.value.trim();
+  if(!name) return;
+  todayList.push({type:'quick',id:nextId++,name,added:formatISO(new Date())});
+  input.value='';
+  rebuildToday();
+  saveData();
+  renderToday();
+}
+function removeToday(idx){
+  const t=todayTasks.splice(idx,1)[0];
+  todayList=todayList.filter(r=>!(r.type===t.type&&r.id===t.item.id));
+  if(t.type==='quick') todayQuickHistory.push({name:t.item.name,added:t.item.added,done:false});
+  else if(t.category==='overdue') overdueTasks.push(t);
+  else if(t.category==='due') dueTasks.push(t);
+  saveData();
+  renderSide();
+  renderToday();
+  updateToggles();
+}
+function clearToday(){
+  todayTasks.forEach(t=>{
+    if(t.type==='quick') todayQuickHistory.push({name:t.item.name,added:t.item.added,done:false});
+    else if(t.category==='overdue') overdueTasks.push(t);
+    else if(t.category==='due') dueTasks.push(t);
+  });
+  todayTasks=[];
+  todayList=[];
+  saveData();
+  renderSide();
+  renderToday();
+  updateToggles();
+}
+function computeNextDue(task,actionDate){const base=(task.from==='today')?new Date(actionDate):new Date(task.dueDate);let d=new Date(base);if(task.frequency==='daily')d.setDate(d.getDate()+task.interval);if(task.frequency==='weekly')d.setDate(d.getDate()+7*task.interval);if(task.frequency==='monthly')d.setMonth(d.getMonth()+task.interval);if(task.frequency==='yearly')d.setFullYear(d.getFullYear()+task.interval);return formatISO(d);}
+function completeToday(idx){
+  const t=todayTasks.splice(idx,1)[0];
+  todayList=todayList.filter(r=>!(r.type===t.type&&r.id===t.item.id));
+  const now=new Date();
+  if(t.type==='quick'){
+    todayQuickHistory.push({name:t.item.name,added:t.item.added,done:true,completed:formatISO(now)});
+  }else if(t.type==='oneoff'){
+    t.item.completedDates.push(formatISO(now));
+    t.item.status='closed';
+    t.item.closedDate=formatISO(now);
+  }else if(t.type==='recurring'){
+    t.item.completedDates.push(t.item.dueDate);
+    t.item.lastDiff=Math.floor((now-new Date(t.item.dueDate))/(1000*60*60*24));
+    t.item.lastCompleted=formatISO(now);
+    t.item.dueDate=computeNextDue(t.item,now);
+  }else if(t.type==='weekly'){
+    const iso=nearestDueDate(t.item,now);
+    if(!t.item.completedDates.includes(iso)) t.item.completedDates.push(iso);
+    t.item.missedDates=t.item.missedDates.filter(d=>d!==iso);
+  }else if(t.type==='work'){
+    if(t.item.recurring){
+      t.item.dueDate=computeNextDue(t.item,now);
+    }else{
+      t.item.status='closed';
+    }
+    saveWorkData();
+  }else if(t.type==='diy'){
+    t.item.status='closed';
+    saveDiyData();
+  }else if(t.type==='stretch'){
+    t.item.completedDates.push(formatISO(now));
+  }else if(t.type==='big'){
+    t.item.completedDates.push(formatISO(now));
+    t.item.status='closed';
+    t.item.closedDate=formatISO(now);
+  }else if(t.type==='diybig'){
+    t.item.status='closed';
+    saveDiyData();
+  }
+  if(t.category==='overdue'){/* do nothing */}
+  else if(t.category==='due'){/* keep order */}
+  saveData();
+  categorize();
+  renderSide();
+  renderToday();
+}
+document.getElementById('todayList').addEventListener('dragstart',e=>{if(e.target.tagName==='LI'){e.dataTransfer.setData('text/plain',e.target.dataset.index);}});document.getElementById('todayList').addEventListener('dragover',e=>{e.preventDefault();});document.getElementById('todayList').addEventListener('drop',e=>{e.preventDefault();const from=+e.dataTransfer.getData('text/plain');const to=e.target.closest('li');if(!to)return;const idx=+to.dataset.index;const item=todayTasks.splice(from,1)[0];const ref=todayList.splice(from,1)[0];todayTasks.splice(idx,0,item);todayList.splice(idx,0,ref);saveData();renderToday();});
+document.getElementById('workToggle').addEventListener('change',e=>{
+  document.getElementById('workTaskList').classList.toggle('hidden',!e.target.checked);
+  if(e.target.checked) renderWorkTasks();
+  updateToggles();
+});
+document.getElementById('diyToggle').addEventListener('change',e=>{
+  document.getElementById('diyTaskList').classList.toggle('hidden',!e.target.checked);
+  if(e.target.checked) renderDiyTasks();
+  updateToggles();
+});
+document.getElementById('stretchToggle').addEventListener('change',e=>{
+  document.getElementById('stretchTaskList').classList.toggle('hidden',!e.target.checked);
+  if(e.target.checked) renderStretchTasks();
+});
+document.getElementById('bigToggle').addEventListener('change',e=>{
+  document.getElementById('bigTaskList').classList.toggle('hidden',!e.target.checked);
+  if(e.target.checked) renderBigTasks();
+});
+document.getElementById('diyBigToggle').addEventListener('change',e=>{
+  document.getElementById('diyBigTaskList').classList.toggle('hidden',!e.target.checked);
+  if(e.target.checked) renderDiyBigTasks();
+  updateToggles();
+});
+async function init(){await loadData();categorize();rebuildToday();renderSide();renderToday();}
+init();
+</script>
+</body>
+</html>

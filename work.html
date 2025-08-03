@@ -1,0 +1,772 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>Work Tasks</title>
+<link href="https://cdn.jsdelivr.net/npm/fullcalendar@5.11.3/main.min.css" rel="stylesheet">
+<style>
+body { font-family: 'Segoe UI', Tahoma, sans-serif; margin:0; padding:0; }
+header {
+  background:#fff;
+  color:#ff69b4;
+  padding:1rem;
+  text-align:center;
+  border-bottom:1px solid #ddd;
+}
+section { padding:1rem; border-bottom:10px solid pink; }
+.toggle { cursor:pointer; background:#f4f4f4; padding:0.5rem; border-radius:4px; margin:1rem 0; text-align:center; }
+.add-toggle{ background:#eee; font-size:0.8rem; }
+.section-header{ font-size:1.2rem; font-weight:bold; background:#cfe2ff; }
+.form-grid{ display:grid; grid-template-columns:repeat(auto-fill,minmax(200px,1fr)); gap:0.5rem; align-items:center; }
+.form-grid label{ display:flex; flex-direction:column; font-size:0.9rem; }
+.form-grid input,.form-grid select{ width:100%; font-size:1rem; padding:0.4rem; }
+.hidden{ display:none !important; }
+#taskHeader.task-header,.task-row{ display:grid; grid-template-columns:2fr 1fr 1fr 1fr 1fr; gap:0.25rem; align-items:center; }
+.task-row{ border:1px solid #ccc; padding:0.25rem; margin-top:0.25rem; }
+#taskHeader.task-header{ font-weight:bold; background:#eee; border:1px solid #ccc; position:sticky; top:0; z-index:1; }
+#taskList{max-height:400px;overflow-y:auto;overflow-x:hidden;width:calc(100% - 1rem);padding-right:1rem;}
+.task-row div{word-break:break-word;}
+.subtask{ margin-left:1rem; }
+.controls button{ margin-left:0.25rem; font-size:0.7rem; }
+.filter-grid{ display:flex; gap:0.5rem; flex-wrap:wrap; margin-bottom:0.5rem; }
+/* priority styles */
+.urgency-high{ background:#ffb3b3; }
+.urgency-high-medium{ background:#ffd9b3; }
+.urgency-medium{ background:#fff0b3; }
+.urgency-medium-low{ background:#d9ffb3; }
+.urgency-low{ background:#b3e6ff; }
+.importance-high{ font-weight:bold; }
+.importance-high-medium{ font-weight:bold; font-style:italic; }
+.importance-medium{ font-style:italic; }
+.importance-medium-low{ opacity:0.8; }
+.importance-low{ opacity:0.6; }
+.calendar-container{display:flex;gap:1rem;flex-wrap:wrap;}
+#calendar{flex:1 1 300px;min-width:300px;}
+#calendarTaskList{flex:1 1 200px;min-width:200px;border:1px solid #ccc;padding:0.5rem;max-height:400px;overflow-y:auto;}
+.fc-task{background:#f4f4f4;margin:0.25rem 0;padding:0.25rem;border:1px solid #ccc;cursor:grab;}
+.subtoggle{font-size:0.9rem;margin-top:0.5rem;}
+.meeting-grid{display:flex;gap:1rem;flex-wrap:wrap;align-items:flex-start;}
+.meeting-col{flex:1 1 200px;min-width:200px;}
+.meeting-card{border:1px solid #ccc;padding:0.5rem;margin:0.25rem 0;border-radius:4px;cursor:pointer;}
+.meeting-past{background:#f0f0f0;}
+.meeting-today{background:#d0ffd0;}
+.meeting-upcoming{background:#f0f8ff;}
+.modal{position:fixed;top:0;left:0;width:100%;height:100%;display:flex;align-items:center;justify-content:center;background:rgba(0,0,0,0.5);}
+.modal-content{background:#fff;padding:1rem;border-radius:4px;max-width:90%;width:320px;}
+.modal-content input,.modal-content textarea,.modal-content select{width:100%;margin-bottom:0.5rem;}
+@media (max-width: 600px) {
+  html { font-size: 14px; }
+}
+</style>
+</head>
+<body>
+  <header>
+    <h1>Work Tasks</h1>
+    <div id="nav-placeholder"></div>
+  </header>
+  <script src="nav-loader.js"></script>
+  <script src="https://cdn.jsdelivr.net/npm/fullcalendar@5.11.3/main.min.js"></script>
+  <script src="https://cdn.jsdelivr.net/npm/@fullcalendar/interaction@5.11.3/main.min.js"></script>
+
+  <section>
+    <div class="toggle section-header" onclick="toggle('projSection')">Projects</div>
+    <div id="projSection" class="hidden">
+      <label>Project Name <input type="text" id="workProjectName"></label>
+      <label>Color <input type="color" id="workProjectColor" value="#ff0000"></label>
+      <button onclick="addWorkProject()">Add</button>
+      <label>Max Subtask Depth <input type="number" id="subtaskDepth" min="1" max="7"></label>
+      <ul id="workProjectList"></ul>
+    </div>
+  </section>
+
+  <section>
+    <div class="toggle section-header" onclick="toggle('taskSection')">Tasks</div>
+  <div id="taskSection" class="hidden" ondragover="allowDrop(event)" ondrop="dropOnRoot(event)">
+      <div class="filter-grid">
+        <label>Project<select id="filterProject"><option value="all">All</option></select></label>
+        <label>Urgency<select id="filterUrgency"><option value="all">All</option><option>High</option><option>High/Medium</option><option>Medium</option><option>Medium/Low</option><option>Low</option></select></label>
+        <label>Importance<select id="filterImportance"><option value="all">All</option><option>High</option><option>High/Medium</option><option>Medium</option><option>Medium/Low</option><option>Low</option></select></label>
+        <label>Due<select id="filterDue"><option value="all">All</option><option value="overdue">Overdue</option><option value="today">Today</option></select></label>
+        <label>Color By<select id="colorMode" onchange="renderTasks()"><option value="urgency">Urgency</option><option value="project">Project</option></select></label>
+        <button onclick="renderTasks()">Apply</button>
+      </div>
+
+      <div id="taskHeader" class="task-header">
+        <div>Task</div><div>Project</div><div>Due</div><div>Importance</div><div>Urgency</div>
+      </div>
+      <div id="taskList"></div>
+
+      <div class="toggle add-toggle" onclick="toggle('addTaskForm')">Add Task</div>
+      <div id="addTaskForm" class="hidden form-grid">
+        <label>Name<input type="text" id="taskName"></label>
+        <label>Project<select id="taskProject"></select></label>
+        <label>Due Date<input type="date" id="taskDue"></label>
+        <label>Importance<select id="taskImportance">
+          <option>High</option>
+          <option>High/Medium</option>
+          <option>Medium</option>
+          <option>Medium/Low</option>
+          <option>Low</option>
+        </select></label>
+        <label>Urgency<select id="taskUrgency">
+          <option>High</option>
+          <option>High/Medium</option>
+          <option>Medium</option>
+          <option>Medium/Low</option>
+          <option>Low</option>
+        </select></label>
+        <label><input type="checkbox" id="taskRecurring"> Recurring</label>
+        <label class="recurring-field hidden">Frequency<select id="taskFreq">
+          <option value="daily">Daily</option>
+          <option value="weekly">Weekly</option>
+          <option value="monthly">Monthly</option>
+        </select></label>
+        <label class="recurring-field hidden">Interval<input type="number" id="taskInterval" value="1" min="1"></label>
+        <label class="recurring-field hidden">Next due from<select id="taskFrom">
+          <option value="intended">Intended due date</option>
+          <option value="today">Completion date</option>
+        </select></label>
+        <div style="grid-column:1/-1;text-align:center;">
+          <button onclick="addTask()">Submit</button>
+        </div>
+      </div>
+    </div>
+  </section>
+
+  <section>
+    <div class="toggle section-header" onclick="toggle('calendarSection')">Calendar</div>
+    <div id="calendarSection" class="hidden">
+      <div class="calendar-container">
+        <div id="calendar"></div>
+        <div>
+          <h3>Tasks</h3>
+          <div id="calendarTaskList"></div>
+        </div>
+      </div>
+    </div>
+  </section>
+
+  <section>
+    <div class="toggle section-header" onclick="toggle('meetingSection')">Meetings</div>
+    <div id="meetingSection" class="hidden">
+      <button onclick="openMeetingModal()">Add Meeting</button>
+      <div id="meetingColumns" class="meeting-grid"></div>
+      <div style="margin-top:1rem;">
+        <div class="toggle subtoggle" onclick="toggle('allMeetings')">View All Meetings</div>
+        <div id="allMeetings" class="hidden meeting-grid"></div>
+      </div>
+    </div>
+  </section>
+
+  <div id="meetingModal" class="modal hidden">
+    <div class="modal-content">
+      <label>Title<input id="meetTitle"></label>
+      <label>Project<select id="meetProject"></select></label>
+      <label>Date<input type="date" id="meetDate"></label>
+      <label>Attendees<textarea id="meetAttendees"></textarea></label>
+      <label>Content<textarea id="meetContent"></textarea></label>
+      <label>Outcomes<textarea id="meetOutcomes"></textarea></label>
+      <div id="attachList"></div>
+      <input id="attachInput" placeholder="Attachment URL"><button onclick="addAttachment()">Add</button>
+      <div style="text-align:right;margin-top:0.5rem;">
+        <button onclick="saveMeeting()">Save</button>
+        <button onclick="deleteMeeting()">Delete</button>
+        <button onclick="addFollowUp()">Add Follow-Up</button>
+        <button onclick="addOutcomeTask()">Add as Task</button>
+        <button onclick="closeMeetingModal()">Close</button>
+      </div>
+    </div>
+    </div>
+  </div>
+
+  <div id="taskModal" class="modal hidden">
+    <div class="modal-content">
+      <label>Name<input id="taskModalName"></label>
+      <label>Project<select id="taskModalProject"></select></label>
+      <label>Due Date<input type="date" id="taskModalDue"></label>
+      <label>Importance<select id="taskModalImportance">
+        <option>High</option>
+        <option>High/Medium</option>
+        <option>Medium</option>
+        <option>Medium/Low</option>
+        <option>Low</option>
+      </select></label>
+      <label>Urgency<select id="taskModalUrgency">
+        <option>High</option>
+        <option>High/Medium</option>
+        <option>Medium</option>
+        <option>Medium/Low</option>
+        <option>Low</option>
+      </select></label>
+      <label>Notes<textarea id="taskModalNotes"></textarea></label>
+      <div style="text-align:right;margin-top:0.5rem;">
+        <button onclick="saveTaskModal()">Save</button>
+        <button onclick="closeTaskModal()">Cancel</button>
+      </div>
+    </div>
+  </div>
+
+  <script>
+let dataStore = {};
+let workProjects = [];
+let workTasks = [];
+let workNextId = 1;
+let maxSubDepth = 7;
+let calendarEvents = [];
+let calendarNextId = 1;
+let calendar;
+let calendarDraggable = null;
+let meetings = [];
+let meetingNextId = 1;
+let currentMeeting = null;
+
+function toggle(id){
+  document.getElementById(id).classList.toggle('hidden');
+}
+
+function showRecurringFields(){
+  const checked = document.getElementById('taskRecurring').checked;
+  document.querySelectorAll('.recurring-field').forEach(el=>{
+    if(checked) el.classList.remove('hidden');
+    else el.classList.add('hidden');
+  });
+}
+document.getElementById('taskRecurring').addEventListener('change', showRecurringFields);
+
+async function loadData(){
+  try{
+    const res = await fetch('/api/work-data');
+    if(!res.ok) return;
+    dataStore = await res.json();
+    workProjects = dataStore.workProjects || [];
+    workTasks = dataStore.workTasks || [];
+    workNextId = dataStore.workNextId || 1;
+    maxSubDepth = dataStore.maxSubDepth || 7;
+    calendarEvents = dataStore.calendarEvents || [];
+    calendarNextId = dataStore.calendarNextId || 1;
+    meetings = dataStore.meetings || [];
+    meetingNextId = dataStore.meetingNextId || 1;
+    renderProjects();
+    renderTasks();
+    renderCalendarTasks();
+    renderMeetings();
+    initCalendar();
+  }catch(e){ console.error('load fail',e); }
+}
+
+async function saveData(){
+  dataStore.workProjects = workProjects;
+  dataStore.workTasks = workTasks;
+  dataStore.workNextId = workNextId;
+  dataStore.maxSubDepth = maxSubDepth;
+  dataStore.calendarEvents = calendarEvents;
+  dataStore.calendarNextId = calendarNextId;
+  dataStore.meetings = meetings;
+  dataStore.meetingNextId = meetingNextId;
+  try{
+    await fetch('/api/work-data',{method:'POST', headers:{'Content-Type':'application/json'}, body:JSON.stringify(dataStore)});
+  }catch(e){ console.error('save fail',e); }
+}
+
+function addWorkProject(){
+  const name = document.getElementById('workProjectName').value.trim();
+  const color = document.getElementById('workProjectColor').value;
+  if(!name || workProjects.find(p=>p.name===name)) return;
+  workProjects.push({name,color});
+  document.getElementById('workProjectName').value='';
+  renderProjects();
+  renderMeetings();
+  saveData();
+}
+
+function renderProjects(){
+  const ul = document.getElementById('workProjectList');
+  const sel = document.getElementById('taskProject');
+  const filt = document.getElementById('filterProject');
+  const depthInput = document.getElementById('subtaskDepth');
+  if(depthInput){
+    depthInput.value = maxSubDepth;
+    depthInput.onchange = () => { maxSubDepth = parseInt(depthInput.value,10)||1; saveData(); };
+  }
+  ul.innerHTML=''; sel.innerHTML=''; filt.innerHTML='<option value="all">All</option>';
+  workProjects.forEach(p=>{
+    const li=document.createElement('li');
+    li.style.color=p.color; li.textContent=p.name; ul.appendChild(li);
+    const opt=document.createElement('option'); opt.value=p.name; opt.textContent=p.name; sel.appendChild(opt);
+    const opt2=opt.cloneNode(true); filt.appendChild(opt2);
+  });
+}
+
+function addTask(){
+  const name=document.getElementById('taskName').value.trim();
+  const project=document.getElementById('taskProject').value;
+  const due=document.getElementById('taskDue').value;
+  const importance=document.getElementById('taskImportance').value;
+  const urgency=document.getElementById('taskUrgency').value;
+  const rec=document.getElementById('taskRecurring').checked;
+  if(!name) return;
+  const task={
+    id:String(workNextId).padStart(8,'0'),
+    parent:null,
+    name, project, dueDate: due,
+    importance, urgency,
+    recurring: rec,
+    frequency: rec?document.getElementById('taskFreq').value:null,
+    interval: rec?parseInt(document.getElementById('taskInterval').value,10):null,
+    from: rec?document.getElementById('taskFrom').value:null,
+    status:'open',
+    subtasks:[],
+    notes:''
+  };
+  workNextId++;
+  workTasks.push(task);
+  document.getElementById('taskName').value='';
+  document.getElementById('taskDue').value='';
+  document.getElementById('taskRecurring').checked=false;
+  showRecurringFields();
+  saveData();
+  renderTasks();
+}
+
+function priorityVal(v){
+  return {'High':5,'High/Medium':4,'Medium':3,'Medium/Low':2,'Low':1}[v]||1;
+}
+
+function urgencyClass(v){return "urgency-"+v.toLowerCase().replace(/[^a-z]+/g,"-");}
+function importanceClass(v){return "importance-"+v.toLowerCase().replace(/[^a-z]+/g,"-");}
+function getProjectColor(name){const p=workProjects.find(pr=>pr.name===name);return p?p.color:'#000';}
+
+function computeNextDue(task,actionDate){
+  let base=task.from==='today'?new Date(actionDate):new Date(task.dueDate);
+  let d=new Date(base);
+  if(task.frequency==='daily') d.setDate(d.getDate()+task.interval);
+  if(task.frequency==='weekly') d.setDate(d.getDate()+7*task.interval);
+  if(task.frequency==='monthly') d.setMonth(d.getMonth()+task.interval);
+  return d.toISOString().slice(0,10);
+}
+
+function getTaskInfo(id, list=workTasks, depth=0, parent=null){
+  for(const t of list){
+    if(t.id===id) return {task:t,parent,depth};
+    if(t.subtasks){
+      const res=getTaskInfo(id,t.subtasks,depth+1,t);
+      if(res) return res;
+    }
+  }
+  return null;
+}
+
+function forEachTask(cb,list=workTasks,depth=0,parent=null){
+  list.forEach(t=>{
+    cb(t,depth,parent);
+    if(t.subtasks) forEachTask(cb,t.subtasks,depth+1,t);
+  });
+}
+
+function completeTask(id){
+  const info=getTaskInfo(id);
+  if(!info) return;
+  const t=info.task;
+  if(t.recurring){
+    t.dueDate=computeNextDue(t,new Date());
+  }else{
+    t.status='closed';
+  }
+  deleteCalendarEvents(id);
+  saveData();
+  renderTasks();
+}
+
+function deleteTask(id){
+  const info=getTaskInfo(id);
+  if(!info) return;
+  if(confirm('Delete task?')){
+    if(info.parent){
+      info.parent.subtasks=info.parent.subtasks.filter(x=>x!==info.task);
+    }else{
+      workTasks=workTasks.filter(x=>x!==info.task);
+    }
+    deleteCalendarEvents(id);
+    saveData();
+    renderTasks();
+  }
+}
+
+function editTask(id){
+  const info=getTaskInfo(id);
+  if(!info) return;
+  openTaskModal(info.task,true);
+}
+
+function addSubtask(id){
+  const info=getTaskInfo(id);
+  if(!info) return;
+  if(info.depth+1>=maxSubDepth){ alert('Max subtask depth reached'); return; }
+  openTaskModal({project:info.task.project}, false, info.task);
+}
+
+let draggingTaskId=null;
+function startDrag(ev,id){
+  draggingTaskId=id;
+}
+
+function allowDrop(ev){ev.preventDefault();}
+
+function dropOnTask(ev,targetId){
+  ev.preventDefault();
+  if(draggingTaskId && draggingTaskId!==targetId){
+    changeParent(draggingTaskId,targetId);
+  }
+}
+
+function dropOnRoot(ev){
+  ev.preventDefault();
+  if(draggingTaskId){
+    changeParent(draggingTaskId,null);
+  }
+}
+
+function changeParent(taskId,newParentId){
+  const info=getTaskInfo(taskId);
+  if(!info) return;
+  const newParentInfo=newParentId?getTaskInfo(newParentId):null;
+  if(newParentInfo && isDescendant(taskId,newParentId)){
+    alert('Cannot move into its own descendant');
+    return;
+  }
+  const newDepth=newParentInfo?newParentInfo.depth+1:0;
+  if(newDepth>=maxSubDepth){
+    alert('Max subtask depth reached');
+    return;
+  }
+  // remove from current parent
+  if(info.parent){
+    info.parent.subtasks=info.parent.subtasks.filter(t=>t!==info.task);
+  }else{
+    workTasks=workTasks.filter(t=>t!==info.task);
+  }
+  info.task.parent=newParentInfo?newParentInfo.task.id:null;
+  if(newParentInfo){
+    newParentInfo.task.subtasks=newParentInfo.task.subtasks||[];
+    newParentInfo.task.subtasks.push(info.task);
+  }else{
+    workTasks.push(info.task);
+  }
+  saveData();
+  renderTasks();
+}
+
+function isDescendant(rootId,targetId){
+  const startInfo=getTaskInfo(rootId);
+  if(!startInfo) return false;
+  const stack=[startInfo.task];
+  while(stack.length){
+    const t=stack.pop();
+    if(t.id===targetId) return true;
+    if(t.subtasks) t.subtasks.forEach(st=>stack.push(st));
+  }
+  return false;
+}
+
+
+
+function renderTasks(){
+  const list=document.getElementById('taskList');
+  list.innerHTML='';
+  const mode=document.getElementById('colorMode')?document.getElementById('colorMode').value:'urgency';
+  const fProj=document.getElementById('filterProject').value;
+  const fUrg=document.getElementById('filterUrgency').value;
+  const fImp=document.getElementById('filterImportance').value;
+  const fDue=document.getElementById('filterDue').value;
+  const today=new Date().toISOString().slice(0,10);
+
+  function passes(t){
+    if(t.status!=='open') return false;
+    if(fProj!=='all' && t.project!==fProj) return false;
+    if(fUrg!=='all' && t.urgency!==fUrg) return false;
+    if(fImp!=='all' && t.importance!==fImp) return false;
+    if(fDue==='overdue' && t.dueDate && t.dueDate>=today) return false;
+    if(fDue==='today' && t.dueDate!==today) return false;
+    return true;
+  }
+
+  function sortTasks(arr){
+    arr.sort((a,b)=>{
+      const u=priorityVal(b.urgency)-priorityVal(a.urgency);
+      if(u!==0) return u;
+      return priorityVal(b.importance)-priorityVal(a.importance);
+    });
+    arr.forEach(t=>{ if(t.subtasks) sortTasks(t.subtasks); });
+  }
+
+  sortTasks(workTasks);
+  forEachTask((t,depth)=>{
+    if(!passes(t)) return;
+    const row=document.createElement('div');
+    row.className='task-row '+importanceClass(t.importance);
+    if(mode==='urgency') row.classList.add(urgencyClass(t.urgency));
+    else row.style.background='#fff';
+    row.style.marginLeft=(depth)+'rem';
+    row.title=t.notes||'';
+    row.draggable=true;
+    row.ondragstart=ev=>startDrag(ev,t.id);
+    row.ondragover=allowDrop;
+    row.ondrop=ev=>dropOnTask(ev,t.id);
+    const nameDiv=document.createElement('div');
+    nameDiv.textContent=t.name;
+    const projDiv=document.createElement('div');
+    projDiv.textContent=t.project;
+    if(mode==='project'){
+      const color=getProjectColor(t.project);
+      nameDiv.style.color=color;
+      projDiv.style.color=color;
+    }
+    const dueDiv=document.createElement('div'); dueDiv.textContent=t.dueDate||'';
+    const impDiv=document.createElement('div'); impDiv.textContent=t.importance;
+    const urgDiv=document.createElement('div'); urgDiv.textContent=t.urgency;
+    urgDiv.className=urgencyClass(t.urgency);
+    row.appendChild(nameDiv); row.appendChild(projDiv); row.appendChild(dueDiv);
+    row.appendChild(impDiv); row.appendChild(urgDiv);
+    const ctrl=document.createElement('div'); ctrl.className='controls';
+    const info=document.createElement('button'); info.textContent='Info'; info.onclick=()=>showInfo(t);
+    const comp=document.createElement('button'); comp.textContent='Complete'; comp.onclick=()=>completeTask(t.id);
+    const edit=document.createElement('button'); edit.textContent='Edit'; edit.onclick=()=>editTask(t.id);
+    const sub=document.createElement('button'); sub.textContent='Add Sub'; sub.onclick=()=>addSubtask(t.id);
+    const del=document.createElement('button'); del.textContent='Delete'; del.onclick=()=>deleteTask(t.id);
+    ctrl.appendChild(info); ctrl.appendChild(comp); ctrl.appendChild(edit); ctrl.appendChild(sub); ctrl.appendChild(del);
+    row.appendChild(ctrl);
+    list.appendChild(row);
+  });
+  renderCalendarTasks();
+}
+
+function renderCalendarTasks(){
+  const cont=document.getElementById('calendarTaskList');
+  cont.innerHTML='';
+  forEachTask((t,depth)=>{
+    if(t.status!=='open') return;
+    const div=document.createElement('div');
+    div.className='fc-task';
+    div.textContent=t.name;
+    div.dataset.id=t.id;
+    div.dataset.title=t.name;
+    div.style.marginLeft=depth+'rem';
+    cont.appendChild(div);
+  });
+  if(calendarDraggable){
+    calendarDraggable.destroy();
+  }
+  calendarDraggable=new FullCalendar.Draggable(cont,{itemSelector:'.fc-task',eventData:el=>({title:el.dataset.title,taskId:el.dataset.id})});
+}
+
+function initCalendar(){
+  const el=document.getElementById('calendar');
+  calendar=new FullCalendar.Calendar(el,{
+    initialView:'dayGridMonth',
+    height:'auto',
+    editable:true,
+    droppable:true,
+    eventDurationEditable:true,
+    events:calendarEvents,
+    eventReceive:info=>{
+      info.event.setProp('id',String(calendarNextId++));
+      info.event.setExtendedProp('taskId',info.draggedEl.dataset.id);
+      saveCalendar();
+    },
+    eventDrop:saveCalendar,
+    eventResize:saveCalendar,
+    eventClick:info=>{ if(confirm('Remove this scheduled task?')){ info.event.remove(); saveCalendar(); } }
+  });
+  calendar.render();
+}
+
+function saveCalendar(){
+  calendarEvents=calendar.getEvents().map(ev=>({id:ev.id,title:ev.title,start:ev.startStr,end:ev.endStr,taskId:ev.extendedProps.taskId||''}));
+  saveData();
+}
+function deleteCalendarEvents(taskId){
+  if(!calendar) return;
+  calendar.getEvents().forEach(ev=>{if(ev.extendedProps.taskId===taskId) ev.remove();});
+  saveCalendar();
+}
+function showInfo(t){
+  alert(`Name: ${t.name}\nProject: ${t.project}\nDue: ${t.dueDate||''}\nImportance: ${t.importance}\nUrgency: ${t.urgency}\nNotes: ${t.notes||''}`);
+}
+function meetingStatus(date){
+  const today=new Date().toISOString().slice(0,10);
+  if(!date) return 'meeting-upcoming';
+  if(date<today) return 'meeting-past';
+  if(date===today) return 'meeting-today';
+  return 'meeting-upcoming';
+}
+
+function formatShortUK(date){
+  const d=new Date(date);
+  if(isNaN(d)) return '';
+  return d.toLocaleDateString('en-GB',{day:'2-digit',month:'short',year:'2-digit'});
+}
+
+function renderMeetings(){
+  const colsCont=document.getElementById('meetingColumns');
+  const allCont=document.getElementById('allMeetings');
+  colsCont.innerHTML='';
+  allCont.innerHTML='';
+  const projects=[...new Set(meetings.map(m=>m.project||'Ad Hoc'))];
+  projects.forEach(name=>{
+    const projectMeetings=meetings.filter(m=>(m.project||'Ad Hoc')===name);
+    if(projectMeetings.length===0) return;
+    const col=document.createElement('div');
+    col.className='meeting-col';
+    col.innerHTML='<h3>'+name+'</h3>';
+    projectMeetings.forEach(m=>{
+      const card=document.createElement('div');
+      card.className='meeting-card '+meetingStatus(m.date);
+      const date=formatShortUK(m.date);
+      card.textContent=date?`${m.title} - ${date}`:m.title;
+      card.onclick=()=>openMeetingModal(m.id);
+      col.appendChild(card);
+      allCont.appendChild(card.cloneNode(true));
+    });
+    colsCont.appendChild(col);
+  });
+}
+
+function openMeetingModal(id, data){
+  if(id){
+    currentMeeting=meetings.find(m=>m.id===id);
+  }else{
+    currentMeeting=data||{id:String(meetingNextId++),title:'',project:'',date:'',attendees:'',content:'',outcomes:'',attachments:[],followupOf:null};
+  }
+  const projSel=document.getElementById('meetProject');
+  projSel.innerHTML='<option value="">Ad Hoc</option>';
+  workProjects.forEach(p=>{const o=document.createElement('option');o.value=p.name;o.textContent=p.name;projSel.appendChild(o);});
+  document.getElementById('meetTitle').value=currentMeeting.title;
+  document.getElementById('meetProject').value=currentMeeting.project;
+  document.getElementById('meetDate').value=currentMeeting.date;
+  document.getElementById('meetAttendees').value=currentMeeting.attendees;
+  document.getElementById('meetContent').value=currentMeeting.content;
+  document.getElementById('meetOutcomes').value=currentMeeting.outcomes;
+  renderAttachments();
+  document.getElementById('meetingModal').classList.remove('hidden');
+}
+
+function closeMeetingModal(){
+  document.getElementById('meetingModal').classList.add('hidden');
+  currentMeeting=null;
+}
+
+function renderAttachments(){
+  const list=document.getElementById('attachList');
+  list.innerHTML='';
+  if(!currentMeeting.attachments) currentMeeting.attachments=[];
+  currentMeeting.attachments.forEach((a,i)=>{
+    const div=document.createElement('div');
+    const link=document.createElement('a');
+    link.href=a; link.textContent=a; link.target='_blank';
+    const del=document.createElement('button');
+    del.textContent='x';
+    del.style.marginLeft='0.25rem';
+    del.onclick=()=>{currentMeeting.attachments.splice(i,1);renderAttachments();};
+    div.appendChild(link); div.appendChild(del);
+    list.appendChild(div);
+  });
+}
+
+function addAttachment(){
+  const url=document.getElementById('attachInput').value.trim();
+  if(url){ currentMeeting.attachments.push(url); document.getElementById('attachInput').value=''; renderAttachments(); }
+}
+
+function saveMeeting(){
+  currentMeeting.title=document.getElementById('meetTitle').value.trim();
+  currentMeeting.project=document.getElementById('meetProject').value;
+  currentMeeting.date=document.getElementById('meetDate').value;
+  currentMeeting.attendees=document.getElementById('meetAttendees').value;
+  currentMeeting.content=document.getElementById('meetContent').value;
+  currentMeeting.outcomes=document.getElementById('meetOutcomes').value;
+  if(!meetings.find(m=>m.id===currentMeeting.id)){
+    meetings.push(currentMeeting);
+  }
+  saveData();
+  renderMeetings();
+  closeMeetingModal();
+}
+
+function deleteMeeting(){
+  if(!currentMeeting) return;
+  if(confirm('Delete meeting?')){
+    meetings=meetings.filter(m=>m!==currentMeeting);
+    saveData();
+    renderMeetings();
+    closeMeetingModal();
+  }
+}
+
+function addFollowUp(){
+  const follow={id:String(meetingNextId++),title:currentMeeting.title,project:currentMeeting.project,date:'',attendees:currentMeeting.attendees,content:currentMeeting.outcomes, outcomes:'',attachments:[],followupOf:currentMeeting.id};
+  openMeetingModal(null, follow);
+}
+
+function addOutcomeTask(){
+  const ta=document.getElementById('meetOutcomes');
+  const text=ta.value.substring(ta.selectionStart, ta.selectionEnd) || ta.value;
+  if(!text.trim()) return;
+  const task={name:text.trim(),project:currentMeeting.project,dueDate:'',importance:'Medium',urgency:'Medium',notes:'from meeting '+currentMeeting.id};
+  openTaskModal(task);
+}
+
+let pendingTask=null;
+let editingTask=null;
+let modalParent=null;
+function openTaskModal(defaults={}, isEdit=false, parent=null){
+  editingTask=isEdit?defaults:null;
+  modalParent=parent;
+  pendingTask=Object.assign({name:'',project:'',dueDate:'',importance:'Medium',urgency:'Medium',notes:''}, isEdit?defaults||{}:defaults||{});
+  const projSel=document.getElementById('taskModalProject');
+  projSel.innerHTML='<option value="">Ad Hoc</option>';
+  workProjects.forEach(p=>{const o=document.createElement('option');o.value=p.name;o.textContent=p.name;projSel.appendChild(o);});
+  document.getElementById('taskModalName').value=pendingTask.name;
+  document.getElementById('taskModalProject').value=pendingTask.project;
+  document.getElementById('taskModalDue').value=pendingTask.dueDate;
+  document.getElementById('taskModalImportance').value=pendingTask.importance;
+  document.getElementById('taskModalUrgency').value=pendingTask.urgency;
+  document.getElementById('taskModalNotes').value=pendingTask.notes||'';
+  document.getElementById('taskModal').classList.remove('hidden');
+}
+
+function closeTaskModal(){
+  document.getElementById('taskModal').classList.add('hidden');
+  pendingTask=null;
+  editingTask=null;
+  modalParent=null;
+}
+
+function saveTaskModal(){
+  if(!pendingTask) return;
+  const target = editingTask || pendingTask;
+  target.name=document.getElementById('taskModalName').value.trim();
+  target.project=document.getElementById('taskModalProject').value;
+  target.dueDate=document.getElementById('taskModalDue').value;
+  target.importance=document.getElementById('taskModalImportance').value;
+  target.urgency=document.getElementById('taskModalUrgency').value;
+  target.notes=document.getElementById('taskModalNotes').value;
+  if(!editingTask){
+    const full={id:String(workNextId).padStart(8,'0'),parent:modalParent?modalParent.id:null,recurring:false,frequency:null,interval:null,from:null,status:'open',subtasks:[],...target};
+    workNextId++;
+    if(modalParent){
+      modalParent.subtasks=modalParent.subtasks||[];
+      modalParent.subtasks.push(full);
+    }else{
+      workTasks.push(full);
+    }
+  }
+  saveData();
+  renderTasks();
+  closeTaskModal();
+}
+
+loadData();
+</script>
+</body>
+</html>

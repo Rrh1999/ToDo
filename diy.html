@@ -1,0 +1,559 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>DIY Tasks</title>
+<link href="https://cdn.jsdelivr.net/npm/fullcalendar@5.11.3/main.min.css" rel="stylesheet">
+<style>
+body{font-family:'Segoe UI',Tahoma,sans-serif;margin:0;padding:0;}
+header{background:#fff;color:#ff69b4;padding:1rem;text-align:center;border-bottom:1px solid #ddd;}
+section{padding:1rem;border-bottom:10px solid pink;}
+.toggle{cursor:pointer;background:#f4f4f4;padding:0.5rem;border-radius:4px;margin:1rem 0;text-align:center;}
+.add-toggle{background:#eee;font-size:0.8rem;}
+.section-header{font-size:1.2rem;font-weight:bold;background:#cfe2ff;}
+.form-grid{display:grid;grid-template-columns:repeat(auto-fill,minmax(200px,1fr));gap:0.5rem;align-items:center;}
+.form-grid label{display:flex;flex-direction:column;font-size:0.9rem;}
+.form-grid input,.form-grid select,.form-grid textarea{width:100%;font-size:1rem;padding:0.4rem;}
+.hidden{display:none !important;}
+.task-row{display:grid;grid-template-columns:2fr 1fr 1fr 1fr 0.5fr;gap:0.25rem;align-items:center;border:1px solid #ccc;padding:0.25rem;margin-top:0.25rem;}
+#taskList{max-height:400px;overflow-y:auto;overflow-x:hidden;width:calc(100% - 1rem);padding-right:1rem;}
+.task-row div{word-break:break-word;}
+.controls button{margin-left:0.25rem;font-size:0.7rem;}
+.filter-grid{display:flex;gap:0.5rem;flex-wrap:wrap;margin-bottom:0.5rem;}
+.calendar-container{display:flex;gap:1rem;flex-wrap:wrap;}
+#calendar{flex:1 1 300px;min-width:300px;}
+#calendarTaskList{flex:1 1 200px;min-width:200px;border:1px solid #ccc;padding:0.5rem;max-height:400px;overflow-y:auto;}
+.fc-task{background:#f4f4f4;margin:0.25rem 0;padding:0.25rem;border:1px solid #ccc;cursor:grab;}
+.modal{position:fixed;top:0;left:0;width:100%;height:100%;display:flex;align-items:center;justify-content:center;background:rgba(0,0,0,0.5);}
+.modal-content{background:#fff;padding:1rem;border-radius:4px;max-width:90%;width:320px;}
+.modal-content input,.modal-content textarea,.modal-content select{width:100%;margin-bottom:0.5rem;}
+@media (max-width:600px){html{font-size:14px;}}
+</style>
+</head>
+<body>
+<header>
+  <h1>DIY Tasks</h1>
+  <div id="nav-placeholder"></div>
+</header>
+<script src="nav-loader.js"></script>
+<script src="https://cdn.jsdelivr.net/npm/fullcalendar@5.11.3/main.min.js"></script>
+<script src="https://cdn.jsdelivr.net/npm/@fullcalendar/interaction@5.11.3/main.min.js"></script>
+
+
+<section>
+  <div class="toggle section-header" onclick="toggle('taskSection')">Tasks</div>
+  <div id="taskSection" class="hidden" ondragover="allowDrop(event)" ondrop="dropOnRoot(event)">
+    <div class="filter-grid">
+      <label>Project<select id="filterProject"><option value="all">All</option></select></label>
+      <label>Urgent<select id="filterUrgent"><option value="all">All</option><option value="yes">Yes</option><option value="no">No</option></select></label>
+      <button onclick="renderTasks()">Apply</button>
+    </div>
+    <div id="taskList"></div>
+    <div class="toggle add-toggle" onclick="toggle('addTaskForm')">Add Task</div>
+    <div id="addTaskForm" class="hidden form-grid">
+      <label>Name<input type="text" id="taskName"></label>
+      <label>Project<select id="taskProject"></select></label>
+      <label>Type<select id="taskType"></select></label>
+      <label>Due Date<input type="date" id="taskDue"></label>
+      <label><input type="checkbox" id="taskUrgent"> Urgent</label>
+      <label>Info<textarea id="taskInfo"></textarea></label>
+      <div style="grid-column:1/-1;text-align:center;">
+        <button onclick="addTask()">Submit</button>
+      </div>
+    </div>
+  </div>
+</section>
+
+
+<section>
+  <div class="toggle section-header" onclick="toggle('bigTaskSection')">Big Tasks</div>
+  <div id="bigTaskSection" class="hidden">
+    <div id="bigTaskList"></div>
+    <div class="toggle add-toggle" onclick="toggle('addBigTaskForm')">Add Big Task</div>
+    <div id="addBigTaskForm" class="hidden form-grid">
+      <label>Name<input type="text" id="bigTaskName"></label>
+      <label>Project<select id="bigTaskProject"></select></label>
+      <label>Type<select id="bigTaskType"></select></label>
+      <label>Priority<input type="number" id="bigTaskPriority" min="1"></label>
+      <label>Due Date<input type="date" id="bigTaskDue"></label>
+      <label><input type="checkbox" id="bigTaskUrgent"> Urgent</label>
+      <label>Info<textarea id="bigTaskInfo"></textarea></label>
+      <div style="grid-column:1/-1;text-align:center;">
+        <button onclick="addBigTask()">Submit</button>
+      </div>
+    </div>
+  </div>
+</section>
+
+
+<section>
+  <div class="toggle section-header" onclick="toggle('calendarSection')">Calendar</div>
+  <div id="calendarSection" class="hidden">
+    <div class="calendar-container">
+      <div id="calendar"></div>
+      <div>
+        <h3>Tasks</h3>
+        <div id="calendarTaskList"></div>
+      </div>
+    </div>
+  </div>
+</section>
+
+<section>
+  <div class="toggle section-header" onclick="toggle('projSection')">Projects & Types</div>
+  <div id="projSection" class="hidden">
+    <label>Project Name <input type="text" id="diyProjectName"></label>
+    <label>Color <input type="color" id="diyProjectColor" value="#ff0000"></label>
+    <button onclick="addDiyProject()">Add Project</button>
+    <label>New Type <input type="text" id="newType"></label>
+    <button onclick="addType()">Add Type</button>
+    <ul id="diyProjectList"></ul>
+    <ul id="typeList"></ul>
+  </div>
+</section>
+
+<section>
+  <div class="toggle section-header" onclick="toggle('diyShopSection')">DIY Shopping List</div>
+  <div id="diyShopSection" class="hidden">
+    <div id="diyShoppingList"></div>
+    <div class="toggle add-toggle" onclick="toggle('addDiyShop')">Add Item</div>
+    <div id="addDiyShop" class="hidden form-grid">
+      <label>Name<input type="text" id="diyShopName"></label>
+      <label>Project<select id="diyShopProject"></select></label>
+      <label>Type<select id="diyShopType"></select></label>
+      <label>Cost<input type="number" id="diyShopCost" step="0.01"></label>
+      <label>Target Month<input type="month" id="diyShopMonth"></label>
+      <input type="hidden" id="diyShopTask">
+      <div style="grid-column:1/-1;text-align:center;">
+        <button onclick="addDiyShopItem()">Submit</button>
+      </div>
+    </div>
+  </div>
+</section>
+
+<div id="taskModal" class="modal hidden">
+  <div class="modal-content">
+    <label>Name<input id="taskModalName"></label>
+    <label>Project<select id="taskModalProject"></select></label>
+    <label>Type<select id="taskModalType"></select></label>
+    <label>Due Date<input type="date" id="taskModalDue"></label>
+    <label><input type="checkbox" id="taskModalUrgent"> Urgent</label>
+    <label>Info<textarea id="taskModalInfo"></textarea></label>
+    <div style="text-align:right;margin-top:0.5rem;">
+      <button onclick="saveTaskModal()">Save</button>
+      <button onclick="closeTaskModal()">Cancel</button>
+    </div>
+  </div>
+</div>
+
+<script>
+let store={};
+let diyProjects=[];
+let diyTypes=[];
+let diyTasks=[];
+let diyBigTasks=[];
+let diyShoppingList=[];
+let diyNextId=1;
+let maxSubDepth=7;
+let calendarEvents=[];
+let calendarNextId=1;
+let calendar;
+let calendarDraggable=null;
+let pendingTask=null;
+let editingTask=null;
+let modalParent=null;
+
+function toggle(id){document.getElementById(id).classList.toggle('hidden');}
+
+async function loadData(){
+  try{
+    const res=await fetch('/api/diy-data');
+    if(res.ok){
+      store=await res.json();
+      diyProjects=store.diyProjects||[];
+      diyTypes=store.diyTypes||[];
+      diyTasks=store.diyTasks||[];
+      diyBigTasks=store.diyBigTasks||[];
+      diyShoppingList=store.diyShoppingList||[];
+      diyNextId=store.diyNextId||1;
+      maxSubDepth=store.maxSubDepth||7;
+      calendarEvents=store.calendarEvents||[];
+      calendarNextId=store.calendarNextId||1;
+    }
+    renderProjects();
+    renderTypes();
+    renderTasks();
+    renderBigTasks();
+    renderDiyShopping();
+    renderCalendarTasks();
+    initCalendar();
+  }catch(e){console.error('load fail',e);}
+}
+
+async function saveData(){
+  store.diyProjects=diyProjects;
+  store.diyTypes=diyTypes;
+  store.diyTasks=diyTasks;
+  store.diyBigTasks=diyBigTasks;
+  store.diyShoppingList=diyShoppingList;
+  store.diyNextId=diyNextId;
+  store.maxSubDepth=maxSubDepth;
+  store.calendarEvents=calendarEvents;
+  store.calendarNextId=calendarNextId;
+  try{
+    await fetch('/api/diy-data',{method:'POST',headers:{'Content-Type':'application/json'},body:JSON.stringify(store)});
+  }catch(e){console.error('save fail',e);}
+}
+
+function addDiyProject(){
+  const name=document.getElementById('diyProjectName').value.trim();
+  const color=document.getElementById('diyProjectColor').value;
+  if(!name||diyProjects.find(p=>p.name===name)) return;
+  diyProjects.push({name,color});
+  document.getElementById('diyProjectName').value='';
+  renderProjects();
+  saveData();
+}
+
+function renderProjects(){
+  const ul=document.getElementById('diyProjectList');
+  const sel=document.getElementById('taskProject');
+  const sel2=document.getElementById('taskModalProject');
+  const bigSel=document.getElementById('bigTaskProject');
+  const shopSel=document.getElementById('diyShopProject');
+  const filt=document.getElementById('filterProject');
+  ul.innerHTML=''; sel.innerHTML=''; sel2.innerHTML=''; if(bigSel) bigSel.innerHTML=''; if(shopSel) shopSel.innerHTML=''; filt.innerHTML='<option value="all">All</option>';
+  diyProjects.forEach(p=>{
+    const li=document.createElement('li'); li.style.color=p.color; li.textContent=p.name; ul.appendChild(li);
+    const opt=document.createElement('option'); opt.value=p.name; opt.textContent=p.name; sel.appendChild(opt); sel2.appendChild(opt.cloneNode(true));
+    if(bigSel) bigSel.appendChild(opt.cloneNode(true));
+    if(shopSel) shopSel.appendChild(opt.cloneNode(true));
+    const opt2=opt.cloneNode(true); filt.appendChild(opt2);
+  });
+}
+
+function addType(){
+  const t=document.getElementById('newType').value.trim();
+  if(!t||diyTypes.includes(t)) return;
+  diyTypes.push(t);
+  document.getElementById('newType').value='';
+  renderTypes();
+  saveData();
+}
+
+function renderTypes(){
+  const ul=document.getElementById('typeList');
+  const sel=document.getElementById('taskType');
+  const sel2=document.getElementById('taskModalType');
+  const bigSel=document.getElementById('bigTaskType');
+  const shopSel=document.getElementById('diyShopType');
+  ul.innerHTML=''; sel.innerHTML=''; sel2.innerHTML='';
+  if(bigSel) bigSel.innerHTML='';
+  if(shopSel) shopSel.innerHTML='';
+  diyTypes.forEach(t=>{
+    const li=document.createElement('li'); li.textContent=t; ul.appendChild(li);
+    const opt=document.createElement('option'); opt.value=t; opt.textContent=t; sel.appendChild(opt); sel2.appendChild(opt.cloneNode(true));
+    if(bigSel) bigSel.appendChild(opt.cloneNode(true));
+    if(shopSel) shopSel.appendChild(opt.cloneNode(true));
+  });
+}
+
+function addTask(){
+  const name=document.getElementById('taskName').value.trim();
+  if(!name) return;
+  const task={
+    id:String(diyNextId).padStart(8,'0'),
+    parent:null,
+    name,
+    project:document.getElementById('taskProject').value,
+    type:document.getElementById('taskType').value,
+    dueDate:document.getElementById('taskDue').value,
+    urgent:document.getElementById('taskUrgent').checked,
+    info:document.getElementById('taskInfo').value,
+    status:'open',
+    subtasks:[]
+  };
+  diyNextId++;
+  diyTasks.push(task);
+  document.getElementById('taskName').value='';
+  document.getElementById('taskDue').value='';
+  document.getElementById('taskUrgent').checked=false;
+  document.getElementById('taskInfo').value='';
+  saveData();
+  renderTasks();
+  renderCalendarTasks();
+}
+
+function getTaskInfo(id,list=diyTasks,depth=0,parent=null){
+  for(const t of list){
+    if(t.id===id) return {task:t,parent,depth};
+    if(t.subtasks){const r=getTaskInfo(id,t.subtasks,depth+1,t); if(r) return r;}
+  }
+  return null;
+}
+
+function forEachTask(cb,list=diyTasks,depth=0,parent=null){
+  list.forEach(t=>{cb(t,depth,parent); if(t.subtasks) forEachTask(cb,t.subtasks,depth+1,t);});
+}
+
+function allowDrop(ev){ev.preventDefault();}
+let draggingTaskId=null;
+function startDrag(ev,id){draggingTaskId=id;}
+function dropOnTask(ev,targetId){ev.preventDefault(); if(draggingTaskId&&draggingTaskId!==targetId){changeParent(draggingTaskId,targetId);}}
+function dropOnRoot(ev){ev.preventDefault(); if(draggingTaskId){changeParent(draggingTaskId,null);}}
+
+function changeParent(taskId,newParentId){
+  const info=getTaskInfo(taskId); if(!info) return;
+  const newInfo=newParentId?getTaskInfo(newParentId):null;
+  if(newInfo && isDescendant(taskId,newParentId)){alert('Cannot move into descendant'); return;}
+  const newDepth=newInfo?newInfo.depth+1:0; if(newDepth>=maxSubDepth){alert('Max subtask depth reached'); return;}
+  if(info.parent){info.parent.subtasks=info.parent.subtasks.filter(t=>t!==info.task);} else {diyTasks=diyTasks.filter(t=>t!==info.task);} 
+  info.task.parent=newInfo?newInfo.task.id:null;
+  if(newInfo){newInfo.task.subtasks=newInfo.task.subtasks||[]; newInfo.task.subtasks.push(info.task);} else {diyTasks.push(info.task);} 
+  saveData(); renderTasks(); renderCalendarTasks();
+}
+
+function isDescendant(rootId,targetId){
+  const start=getTaskInfo(rootId); if(!start) return false;
+  const stack=[start.task];
+  while(stack.length){const t=stack.pop(); if(t.id===targetId) return true; if(t.subtasks) t.subtasks.forEach(s=>stack.push(s));}
+  return false;
+}
+
+function completeTask(id){
+  const info=getTaskInfo(id); if(!info) return; info.task.status='closed'; deleteCalendarEvents(id); saveData(); renderTasks(); renderCalendarTasks();
+}
+
+function deleteTask(id){
+  const info=getTaskInfo(id); if(!info) return;
+  if(confirm('Delete task?')){
+    if(info.parent){info.parent.subtasks=info.parent.subtasks.filter(t=>t!==info.task);}else{diyTasks=diyTasks.filter(t=>t!==info.task);} 
+    deleteCalendarEvents(id); saveData(); renderTasks(); renderCalendarTasks();
+  }
+}
+
+function editTask(id){const info=getTaskInfo(id); if(!info) return; openTaskModal(info.task,true);}
+function addSubtask(id){const info=getTaskInfo(id); if(!info) return; if(info.depth+1>=maxSubDepth){alert('Max subtask depth reached');return;} openTaskModal({project:info.task.project,type:info.task.type},false,info.task);}
+
+function openTaskModal(def={},isEdit=false,parent=null){
+  editingTask=isEdit?def:null; modalParent=parent;
+  pendingTask=Object.assign({name:'',project:'',type:'',dueDate:'',urgent:false,info:''},isEdit?def||{}:def||{});
+  const projSel=document.getElementById('taskModalProject'); projSel.innerHTML='';
+  diyProjects.forEach(p=>{const o=document.createElement('option');o.value=p.name;o.textContent=p.name;projSel.appendChild(o);});
+  const typeSel=document.getElementById('taskModalType'); typeSel.innerHTML=''; diyTypes.forEach(t=>{const o=document.createElement('option');o.value=t;o.textContent=t;typeSel.appendChild(o);});
+  document.getElementById('taskModalName').value=pendingTask.name;
+  document.getElementById('taskModalProject').value=pendingTask.project;
+  document.getElementById('taskModalType').value=pendingTask.type;
+  document.getElementById('taskModalDue').value=pendingTask.dueDate;
+  document.getElementById('taskModalUrgent').checked=pendingTask.urgent;
+  document.getElementById('taskModalInfo').value=pendingTask.info||'';
+  document.getElementById('taskModal').classList.remove('hidden');
+}
+
+function closeTaskModal(){document.getElementById('taskModal').classList.add('hidden'); pendingTask=null; editingTask=null; modalParent=null;}
+
+function saveTaskModal(){
+  if(!pendingTask) return;
+  const target=editingTask||pendingTask;
+  target.name=document.getElementById('taskModalName').value.trim();
+  target.project=document.getElementById('taskModalProject').value;
+  target.type=document.getElementById('taskModalType').value;
+  target.dueDate=document.getElementById('taskModalDue').value;
+  target.urgent=document.getElementById('taskModalUrgent').checked;
+  target.info=document.getElementById('taskModalInfo').value;
+  if(!editingTask){
+    const full={id:String(diyNextId).padStart(8,'0'),parent:modalParent?modalParent.id:null,status:'open',subtasks:[],...target};
+    diyNextId++;
+    if(modalParent){modalParent.subtasks=modalParent.subtasks||[];modalParent.subtasks.push(full);}else{diyTasks.push(full);} 
+  }
+  saveData(); renderTasks(); renderCalendarTasks(); closeTaskModal();
+}
+
+function renderTasks(){
+  const list=document.getElementById('taskList'); list.innerHTML='';
+  const fProj=document.getElementById('filterProject').value;
+  const fUrg=document.getElementById('filterUrgent').value;
+  function passes(t){ if(t.status!=='open') return false; if(fProj!=='all'&&t.project!==fProj) return false; if(fUrg==='yes'&&!t.urgent) return false; if(fUrg==='no'&&t.urgent) return false; return true; }
+  forEachTask((t,depth)=>{
+    if(!passes(t)) return;
+    const row=document.createElement('div'); row.className='task-row'; row.style.marginLeft=depth+'rem'; row.draggable=true; row.ondragstart=ev=>startDrag(ev,t.id); row.ondragover=allowDrop; row.ondrop=ev=>dropOnTask(ev,t.id);
+    row.innerHTML=`<div>${t.name}</div><div>${t.project}</div><div>${t.type}</div><div>${t.dueDate||''}</div><div>${t.urgent?'Y':'N'}</div>`;
+    const ctrl=document.createElement('div'); ctrl.className='controls';
+    const infoBtn=document.createElement('button');
+    infoBtn.textContent='Info';
+    infoBtn.onclick=()=>showInfo(t);
+    const comp=document.createElement('button'); comp.textContent='Complete'; comp.onclick=()=>completeTask(t.id);
+    const edit=document.createElement('button'); edit.textContent='Edit'; edit.onclick=()=>editTask(t.id);
+    const sub=document.createElement('button'); sub.textContent='Add Sub'; sub.onclick=()=>addSubtask(t.id);
+    const item=document.createElement('button'); item.textContent='Add Item'; item.onclick=()=>openShoppingForTask(t.id);
+    const del=document.createElement('button'); del.textContent='Delete'; del.onclick=()=>deleteTask(t.id);
+    ctrl.appendChild(infoBtn); ctrl.appendChild(comp); ctrl.appendChild(edit); ctrl.appendChild(sub); ctrl.appendChild(item); ctrl.appendChild(del);
+    row.appendChild(ctrl);
+    list.appendChild(row);
+  });
+  renderCalendarTasks();
+}
+
+function renderCalendarTasks(){
+  const cont=document.getElementById('calendarTaskList');
+  cont.innerHTML='';
+  forEachTask((t,depth)=>{
+    if(t.status!=='open') return;
+    const div=document.createElement('div');
+    div.className='fc-task';
+    div.textContent=t.name;
+    div.dataset.id=t.id;
+    div.dataset.title=t.name;
+    div.style.marginLeft=depth+'rem';
+    cont.appendChild(div);
+  });
+  if(calendarDraggable){
+    calendarDraggable.destroy();
+  }
+  calendarDraggable=new FullCalendar.Draggable(cont,{itemSelector:'.fc-task',eventData:el=>({title:el.dataset.title,taskId:el.dataset.id})});
+}
+
+function initCalendar(){
+  const el=document.getElementById('calendar');
+  calendar=new FullCalendar.Calendar(el,{initialView:'dayGridMonth',height:'auto',editable:true,droppable:true,eventDurationEditable:true,events:calendarEvents,eventReceive:info=>{info.event.setProp('id',String(calendarNextId++)); info.event.setExtendedProp('taskId',info.draggedEl.dataset.id); saveCalendar();},eventDrop:saveCalendar,eventResize:saveCalendar,eventClick:info=>{if(confirm('Remove this scheduled task?')){info.event.remove(); saveCalendar();}}});
+  calendar.render();
+}
+function saveCalendar(){calendarEvents=calendar.getEvents().map(ev=>({id:ev.id,title:ev.title,start:ev.startStr,end:ev.endStr,taskId:ev.extendedProps.taskId||''})); saveData();}
+function deleteCalendarEvents(taskId){if(!calendar) return; calendar.getEvents().forEach(ev=>{if(ev.extendedProps.taskId===taskId) ev.remove();}); saveCalendar();}
+function showInfo(t){
+  alert(`Name: ${t.name}\nProject: ${t.project}\nType: ${t.type}\nDue: ${t.dueDate||''}\nUrgent: ${t.urgent?'Yes':'No'}\nInfo: ${t.info||''}`);
+}
+
+function addBigTask(){
+  const name=document.getElementById('bigTaskName').value.trim();
+  if(!name) return;
+  const task={id:String(diyNextId).padStart(8,'0'),name,project:document.getElementById('bigTaskProject').value,type:document.getElementById('bigTaskType').value,priority:parseInt(document.getElementById('bigTaskPriority').value)||diyBigTasks.length+1,dueDate:document.getElementById('bigTaskDue').value,urgent:document.getElementById('bigTaskUrgent').checked,info:document.getElementById('bigTaskInfo').value,status:'open'};
+  diyNextId++; diyBigTasks.push(task); updateBigPriorities();
+  document.getElementById('bigTaskName').value='';
+  document.getElementById('bigTaskPriority').value='';
+  document.getElementById('bigTaskDue').value='';
+  document.getElementById('bigTaskUrgent').checked=false;
+  document.getElementById('bigTaskInfo').value='';
+  saveData();
+  renderBigTasks();
+}
+
+function renderBigTasks(){
+  const div=document.getElementById('bigTaskList');
+  div.innerHTML='';
+  ensureBigTaskPriorities();
+  const open=diyBigTasks.filter(t=>t.status==='open').sort((a,b)=>a.priority-b.priority);
+  if(open.length===0){div.textContent='No big tasks';return;}
+  open.forEach(t=>{
+    const row=document.createElement('div'); row.className='task-row';
+    row.innerHTML=`<div>${t.name}</div><div>${t.project}</div><div>${t.type}</div><div>${t.dueDate||''}</div><div>${t.urgent?'Y':'N'}</div><div>${t.priority}</div>`;
+    const ctrl=document.createElement('div'); ctrl.className='controls';
+    const info=document.createElement('button'); info.textContent='Info'; info.onclick=()=>showInfo(t);
+    const comp=document.createElement('button'); comp.textContent='Complete'; comp.onclick=()=>completeBigTask(t.id);
+    const add=document.createElement('button'); add.textContent='Add Item'; add.onclick=()=>openShoppingForTask(t.id);
+    const up=document.createElement('button'); up.textContent='Up'; up.onclick=()=>moveBigTaskUp(t.id);
+    const down=document.createElement('button'); down.textContent='Down'; down.onclick=()=>moveBigTaskDown(t.id);
+    const del=document.createElement('button'); del.textContent='Delete'; del.onclick=()=>deleteBigTask(t.id);
+    ctrl.appendChild(info); ctrl.appendChild(add); ctrl.appendChild(comp); ctrl.appendChild(up); ctrl.appendChild(down); ctrl.appendChild(del);
+    row.appendChild(ctrl); div.appendChild(row);
+  });
+}
+
+function completeBigTask(id){
+  const t=diyBigTasks.find(x=>x.id===id); if(!t) return; t.status='closed'; saveData(); renderBigTasks();
+}
+
+function deleteBigTask(id){
+  const idx=diyBigTasks.findIndex(x=>x.id===id); if(idx===-1) return; diyBigTasks.splice(idx,1); saveData(); renderBigTasks();
+}
+
+function ensureBigTaskPriorities(){
+  diyBigTasks.forEach((t,i)=>{ if(!t.priority) t.priority=i+1; });
+}
+
+function updateBigPriorities(){
+  diyBigTasks.forEach((t,i)=>{ t.priority=i+1; });
+}
+
+function moveBigTaskUp(id){
+  const idx=diyBigTasks.findIndex(t=>t.id===id);
+  if(idx>0){
+    [diyBigTasks[idx-1],diyBigTasks[idx]]=[diyBigTasks[idx],diyBigTasks[idx-1]];
+    updateBigPriorities();
+    saveData();
+    renderBigTasks();
+  }
+}
+
+function moveBigTaskDown(id){
+  const idx=diyBigTasks.findIndex(t=>t.id===id);
+  if(idx!==-1 && idx<diyBigTasks.length-1){
+    [diyBigTasks[idx],diyBigTasks[idx+1]]=[diyBigTasks[idx+1],diyBigTasks[idx]];
+    updateBigPriorities();
+    saveData();
+    renderBigTasks();
+  }
+}
+
+function getAnyTask(id){
+  let info=getTaskInfo(id);
+  if(info) return info.task;
+  return diyBigTasks.find(t=>t.id===id) || null;
+}
+
+function openShoppingForTask(id){
+  const task=getAnyTask(id);
+  if(!task) return;
+  document.getElementById('diyShopTask').value=id;
+  document.getElementById('diyShopProject').value=task.project;
+  document.getElementById('diyShopType').value=task.type;
+  document.getElementById('diyShopSection').classList.remove('hidden');
+  document.getElementById('addDiyShop').classList.remove('hidden');
+  document.getElementById('diyShopName').focus();
+}
+
+function addDiyShopItem(){
+  const name=document.getElementById('diyShopName').value.trim();
+  if(!name) return;
+  const item={id:String(diyNextId).padStart(8,'0'),name,project:document.getElementById('diyShopProject').value,type:document.getElementById('diyShopType').value,cost:document.getElementById('diyShopCost').value,month:document.getElementById('diyShopMonth').value,taskId:document.getElementById('diyShopTask').value||null,bought:false};
+  diyNextId++; diyShoppingList.push(item);
+  document.getElementById('diyShopName').value='';
+  document.getElementById('diyShopCost').value='';
+  document.getElementById('diyShopMonth').value='';
+  document.getElementById('diyShopTask').value='';
+  saveData();
+  renderDiyShopping();
+}
+
+function renderDiyShopping(){
+  const div=document.getElementById('diyShoppingList');
+  div.innerHTML='';
+  const open=diyShoppingList.filter(i=>!i.bought);
+  if(open.length===0){div.textContent='No items';return;}
+  const table=document.createElement('table'); table.className='task-table';
+  const head=document.createElement('tr'); head.innerHTML='<th>Item</th><th>Task</th><th>Project</th><th>Type</th><th>Cost</th><th>Month</th><th></th>'; table.appendChild(head);
+  open.forEach(it=>{
+    const tr=document.createElement('tr'); const proj=diyProjects.find(p=>p.name===it.project); const color=proj?proj.color:'#000';
+    const task=getAnyTask(it.taskId)||{};
+    tr.innerHTML=`<td>${it.name}</td><td>${task.name||''}</td><td style="color:${color}">${it.project}</td><td>${it.type}</td><td>${it.cost||''}</td><td>${it.month||''}</td>`;
+    const td=document.createElement('td');
+    const b=document.createElement('button'); b.textContent='Bought'; b.onclick=()=>toggleBoughtDiyShop(it.id);
+    const del=document.createElement('button'); del.textContent='Delete'; del.onclick=()=>deleteDiyShopItem(it.id);
+    td.appendChild(b); td.appendChild(del); tr.appendChild(td); table.appendChild(tr);
+  });
+  div.appendChild(table);
+}
+
+function toggleBoughtDiyShop(id){
+  const it=diyShoppingList.find(i=>i.id===id); if(!it) return; it.bought=true; saveData(); renderDiyShopping();
+}
+
+function deleteDiyShopItem(id){
+  const idx=diyShoppingList.findIndex(i=>i.id===id); if(idx===-1) return; diyShoppingList.splice(idx,1); saveData(); renderDiyShopping();
+}
+
+loadData();
+</script>
+</body>
+</html>

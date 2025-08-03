@@ -1,0 +1,475 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>Shopping</title>
+<style>
+body { font-family: 'Segoe UI', Tahoma, sans-serif; margin: 0; padding: 0; }
+header {
+  background: #fff;
+  color: #ff69b4;
+  padding: 1rem;
+  text-align: center;
+  border-bottom: 1px solid #ddd;
+}
+section {
+  padding: 1rem;
+  border-bottom: 10px solid pink;
+}
+.toggle {
+  cursor: pointer;
+  background: #f4f4f4;
+  padding: 0.5rem;
+  border-radius: 4px;
+  margin: 1rem 0;
+  text-align: center;
+}
+.add-toggle { background: #eee; font-size: 0.8rem; }
+.section-header {
+  font-size: 1.2rem;
+  font-weight: bold;
+  background: #cfe2ff;
+}
+.subtoggle { font-size: 0.9rem; margin-top: 0.5rem; }
+.task-table { width: 100%; border-collapse: collapse; }
+.task-table th, .task-table td { border: 1px solid #ccc; padding: 0.25rem; text-align: left; }
+.form-grid { display: grid; grid-template-columns: repeat(auto-fill, minmax(200px, 1fr)); gap: 0.5rem; align-items: center; }
+.form-grid label { display: flex; flex-direction: column; font-size: 0.9rem; }
+.hidden { display: none !important; }
+.form-grid input, .form-grid select, .form-grid textarea { width: 100%; font-size: 1rem; padding: 0.4rem; }
+#toast { position: fixed; bottom: 1rem; left: 50%; transform: translateX(-50%); background: #333; color: #fff; padding: 0.5rem 1rem; border-radius: 4px; }
+@media (max-width: 600px) {
+  html { font-size: 14px; }
+}
+</style>
+</head>
+<body>
+<header>
+  <h1>Shopping</h1>
+  <div id="nav-placeholder"></div>
+</header>
+<script src="nav-loader.js"></script>
+<div id="toast" class="hidden"></div>
+<section>
+  <div class="toggle section-header" onclick="toggle('shoppingSection')">Thigns to Buy list</div>
+  <div id="shoppingSection" class="hidden">
+    <div id="shoppingList"></div>
+    <div class="toggle add-toggle" onclick="toggle('addShopping')">Add Item</div>
+    <div id="addShopping" class="hidden subtoggle form-grid">
+      <label>Name<input type="text" id="shoppingName"></label>
+      <label>Project<select id="shoppingProject"></select></label>
+      <label>Est. Cost<input type="number" id="shoppingCost" step="0.01"></label>
+      <label>Month<input type="month" id="shoppingMonth"></label>
+      <div style="grid-column:1/-1;text-align:center;">
+        <button onclick="addShoppingItem()">Submit</button>
+      </div>
+    </div>
+  </div><!-- end shoppingSection -->
+</section>
+
+<section>
+  <div class="toggle section-header" onclick="toggle('diyShopSection')">DIY Shopping List</div>
+  <div id="diyShopSection" class="hidden">
+    <div id="diyShopList"></div>
+    <div class="toggle add-toggle" onclick="toggle('addDiyShop')">Add Item</div>
+    <div id="addDiyShop" class="hidden subtoggle form-grid">
+      <label>Name<input type="text" id="diyShopName"></label>
+      <label>Project<select id="diyShopProject"></select></label>
+      <label>Type<select id="diyShopType"></select></label>
+      <label>Cost<input type="number" id="diyShopCost" step="0.01"></label>
+      <label>Month<input type="month" id="diyShopMonth"></label>
+      <input type="hidden" id="diyShopTask">
+      <div style="grid-column:1/-1;text-align:center;">
+        <button onclick="addDiyShopItem()">Submit</button>
+      </div>
+    </div>
+  </div>
+</section>
+
+<section>
+  <div class="toggle section-header" onclick="toggle('longTermSection')">Long Term Buying</div>
+  <div id="longTermSection" class="hidden">
+    <div id="longTermList"></div>
+    <div class="toggle add-toggle" onclick="toggle('addLongTerm')">Add Item</div>
+    <div id="addLongTerm" class="hidden subtoggle form-grid">
+      <label>Name<input type="text" id="longTermName"></label>
+      <label>Project<select id="longTermProject"></select></label>
+      <label>Cost<input type="number" id="longTermCost" step="0.01"></label>
+      <label>Target Month<input type="month" id="longTermMonth"></label>
+      <label style="grid-column:1/-1;">Info<textarea id="longTermInfo"></textarea></label>
+      <div style="grid-column:1/-1;text-align:center;">
+        <button onclick="addLongTermItem()">Submit</button>
+      </div>
+    </div>
+  </div>
+</section>
+
+<section>
+  <div class="toggle section-header" onclick="toggle('generalSection')">General Shopping List</div>
+  <div id="generalSection" class="hidden">
+    <div id="generalList"></div>
+    <div class="toggle add-toggle" onclick="toggle('addGeneral')">Add Item</div>
+    <div id="addGeneral" class="hidden subtoggle form-grid">
+      <label>Name<input type="text" id="generalName"></label>
+      <div style="grid-column:1/-1;text-align:center;">
+        <button onclick="addGeneralItem()">Submit</button>
+      </div>
+    </div>
+  </div>
+</section>
+<script>
+let projects = [];
+let shoppingList = [];
+let longTermList = [];
+let generalList = [];
+let diyShoppingList = [];
+let diyDataStore = {};
+let diyTasks = [];
+let diyBigTasks = [];
+let weeklyTasks = [];
+let oneOffTasks = [];
+let recurringTasks = [];
+let deletedTasks = [];
+let todayList = [];
+let nextId = 1;
+
+async function saveData() {
+  const data = { projects, weeklyTasks, oneOffTasks, recurringTasks, deletedTasks, shoppingList, longTermList, generalList, todayList, nextId };
+  try {
+    await fetch('/api/index-data', {
+      method: 'POST',
+      headers: { 'Content-Type': 'application/json' },
+      body: JSON.stringify(data)
+    });
+  } catch (e) {
+    console.error('Failed to save data', e);
+  }
+}
+
+async function saveDiyData(){
+  diyDataStore.diyShoppingList = diyShoppingList;
+  try{
+    await fetch('/api/diy-data',{method:'POST',headers:{'Content-Type':'application/json'},body:JSON.stringify(diyDataStore)});
+  }catch(e){console.error('Failed to save diy data',e);}
+}
+
+async function loadData() {
+  try {
+    const res = await fetch('/api/index-data');
+    if (!res.ok) return;
+    const obj = await res.json();
+    projects = obj.projects || [];
+    weeklyTasks = obj.weeklyTasks || [];
+    oneOffTasks = obj.oneOffTasks || [];
+    recurringTasks = obj.recurringTasks || [];
+    deletedTasks = obj.deletedTasks || [];
+    shoppingList = obj.shoppingList || [];
+    longTermList = obj.longTermList || [];
+    generalList = obj.generalList || [];
+    todayList = obj.todayList || [];
+    nextId = obj.nextId || 1;
+    const resD = await fetch('/api/diy-data');
+    if(resD.ok){
+      diyDataStore = await resD.json();
+      diyShoppingList = diyDataStore.diyShoppingList || [];
+      diyTasks = diyDataStore.diyTasks || [];
+      diyBigTasks = diyDataStore.diyBigTasks || [];
+    }
+  } catch (e) {
+    console.error('Failed to load data', e);
+  }
+}
+
+function toggle(id) {
+  const el = document.getElementById(id);
+  if (el) el.classList.toggle('hidden');
+}
+
+function showMessage(msg) {
+  const toast = document.getElementById('toast');
+  toast.textContent = msg;
+  toast.classList.remove('hidden');
+  setTimeout(() => toast.classList.add('hidden'), 3000);
+}
+
+function renderProjects() {
+  const selects = [
+    document.getElementById('shoppingProject'),
+    document.getElementById('longTermProject'),
+    document.getElementById('diyShopProject')
+  ];
+  selects.forEach(select => {
+    if (!select) return;
+    select.innerHTML = '';
+    projects.forEach(p => {
+      if (!p.closed) {
+        const opt = document.createElement('option');
+        opt.value = p.name;
+        opt.textContent = p.name;
+        select.appendChild(opt);
+      }
+    });
+  });
+}
+
+function addShoppingItem() {
+  const name = document.getElementById('shoppingName').value;
+  const project = document.getElementById('shoppingProject').value;
+  const cost = document.getElementById('shoppingCost').value;
+  const month = document.getElementById('shoppingMonth').value;
+  if (!name) return;
+  const proj = projects.find(p => p.name === project);
+  if (proj && proj.closed) return;
+  const item = {
+    id: String(nextId).padStart(8, '0'),
+    name, project, cost, month, bought: false
+  };
+  nextId++;
+  shoppingList.push(item);
+  document.getElementById('shoppingName').value = '';
+  document.getElementById('shoppingCost').value = '';
+  document.getElementById('shoppingMonth').value = '';
+  showMessage('Item added');
+  saveData();
+  renderShopping();
+}
+
+function renderShopping() {
+  const div = document.getElementById('shoppingList');
+  div.innerHTML = '';
+  const openItems = shoppingList.filter(it => !it.bought);
+  if (openItems.length === 0) { div.textContent = 'No items'; return; }
+  const table = document.createElement('table');
+  table.className = 'task-table';
+  const head = document.createElement('tr');
+  head.innerHTML = '<th>Item</th><th>Project</th><th>Est. Cost</th><th>Month</th><th></th>';
+  table.appendChild(head);
+  openItems.forEach(it => {
+    const tr = document.createElement('tr');
+    const proj = projects.find(p => p.name === it.project);
+    const color = proj ? proj.color : '#000';
+    tr.innerHTML = `<td>${it.name}</td><td style="color:${color}">${it.project}</td><td>${it.cost||''}</td><td>${it.month||''}</td>`;
+    const td = document.createElement('td');
+    const b = document.createElement('button');
+    b.textContent = 'Bought';
+    b.onclick = () => toggleBoughtShopping(it.id);
+    const del = document.createElement('button');
+    del.textContent = 'Delete';
+    del.onclick = () => deleteShopping(it.id);
+    td.appendChild(b);
+    td.appendChild(del);
+    tr.appendChild(td);
+    table.appendChild(tr);
+  });
+  div.appendChild(table);
+}
+
+function toggleBoughtShopping(id) {
+  const item = shoppingList.find(i => i.id === id);
+  if (!item) return;
+  item.bought = true;
+  saveData();
+  renderShopping();
+}
+
+function deleteShopping(id) {
+  const idx = shoppingList.findIndex(i => i.id === id);
+  if (idx === -1) return;
+  shoppingList.splice(idx, 1);
+  saveData();
+  renderShopping();
+}
+
+function addLongTermItem() {
+  const name = document.getElementById('longTermName').value;
+  const project = document.getElementById('longTermProject').value;
+  const cost = document.getElementById('longTermCost').value;
+  const month = document.getElementById('longTermMonth').value;
+  const info = document.getElementById('longTermInfo').value;
+  if (!name) return;
+  const item = {
+    id: String(nextId).padStart(8, '0'),
+    name, project, cost, month, info, bought: false
+  };
+  nextId++;
+  longTermList.push(item);
+  document.getElementById('longTermName').value = '';
+  document.getElementById('longTermCost').value = '';
+  document.getElementById('longTermMonth').value = '';
+  document.getElementById('longTermInfo').value = '';
+  showMessage('Item added');
+  saveData();
+  renderLongTerm();
+}
+
+function renderLongTerm() {
+  const div = document.getElementById('longTermList');
+  div.innerHTML = '';
+  const openItems = longTermList.filter(it => !it.bought);
+  if (openItems.length === 0) { div.textContent = 'No items'; return; }
+  const table = document.createElement('table');
+  table.className = 'task-table';
+  const head = document.createElement('tr');
+  head.innerHTML = '<th>Item</th><th>Project</th><th>Cost</th><th>Target</th><th></th>';
+  table.appendChild(head);
+  openItems.forEach(it => {
+    const tr = document.createElement('tr');
+    const proj = projects.find(p => p.name === it.project);
+    const color = proj ? proj.color : '#000';
+    tr.innerHTML = `<td>${it.name}</td><td style="color:${color}">${it.project}</td><td>${it.cost||''}</td><td>${it.month||''}</td>`;
+    const td = document.createElement('td');
+    const infoBtn = document.createElement('button');
+    infoBtn.textContent = 'View Info';
+    infoBtn.onclick = () => viewLongTermInfo(it.id);
+    const b = document.createElement('button');
+    b.textContent = 'Bought';
+    b.onclick = () => toggleBoughtLongTerm(it.id);
+    const del = document.createElement('button');
+    del.textContent = 'Delete';
+    del.onclick = () => deleteLongTerm(it.id);
+    td.appendChild(infoBtn);
+    td.appendChild(b);
+    td.appendChild(del);
+    tr.appendChild(td);
+    table.appendChild(tr);
+  });
+  div.appendChild(table);
+}
+
+function viewLongTermInfo(id) {
+  const item = longTermList.find(i => i.id === id);
+  if (!item) return;
+  alert(item.info || '');
+}
+
+function toggleBoughtLongTerm(id) {
+  const item = longTermList.find(i => i.id === id);
+  if (!item) return;
+  item.bought = true;
+  saveData();
+  renderLongTerm();
+}
+
+function deleteLongTerm(id) {
+  const idx = longTermList.findIndex(i => i.id === id);
+  if (idx === -1) return;
+  longTermList.splice(idx, 1);
+  saveData();
+  renderLongTerm();
+}
+
+function addGeneralItem() {
+  const name = document.getElementById('generalName').value;
+  if (!name) return;
+  const item = { id: String(nextId).padStart(8,'0'), name, bought: false };
+  nextId++;
+  generalList.push(item);
+  document.getElementById('generalName').value = '';
+  showMessage('Item added');
+  saveData();
+  renderGeneral();
+}
+
+function renderGeneral() {
+  const div = document.getElementById('generalList');
+  div.innerHTML = '';
+  const openItems = generalList.filter(it => !it.bought);
+  if (openItems.length === 0) { div.textContent = 'No items'; return; }
+  const table = document.createElement('table');
+  table.className = 'task-table';
+  const head = document.createElement('tr');
+  head.innerHTML = '<th>Item</th><th></th>';
+  table.appendChild(head);
+  openItems.forEach(it => {
+    const tr = document.createElement('tr');
+    tr.innerHTML = `<td>${it.name}</td>`;
+    const td = document.createElement('td');
+    const b = document.createElement('button');
+    b.textContent = 'Bought';
+    b.onclick = () => toggleBoughtGeneral(it.id);
+    const del = document.createElement('button');
+    del.textContent = 'Delete';
+    del.onclick = () => deleteGeneral(it.id);
+    td.appendChild(b);
+    td.appendChild(del);
+    tr.appendChild(td);
+    table.appendChild(tr);
+  });
+  div.appendChild(table);
+}
+
+function toggleBoughtGeneral(id) {
+  const item = generalList.find(i => i.id === id);
+  if (!item) return;
+  item.bought = true;
+  saveData();
+  renderGeneral();
+}
+
+function deleteGeneral(id) {
+  const idx = generalList.findIndex(i => i.id === id);
+  if (idx === -1) return;
+  generalList.splice(idx, 1);
+  saveData();
+  renderGeneral();
+}
+
+function getTaskName(id){
+  let t=diyTasks.find(x=>x.id===id);
+  if(!t) t=diyBigTasks.find(x=>x.id===id);
+  return t?t.name:'';
+}
+
+function addDiyShopItem(){
+  const name=document.getElementById('diyShopName').value;
+  if(!name) return;
+  const item={id:String(nextId).padStart(8,'0'),name,project:document.getElementById('diyShopProject').value,type:document.getElementById('diyShopType').value,cost:document.getElementById('diyShopCost').value,month:document.getElementById('diyShopMonth').value,taskId:document.getElementById('diyShopTask').value||null,bought:false};
+  nextId++; diyShoppingList.push(item);
+  document.getElementById('diyShopName').value='';
+  document.getElementById('diyShopCost').value='';
+  document.getElementById('diyShopMonth').value='';
+  document.getElementById('diyShopTask').value='';
+  saveDiyData();
+  renderDiyShop();
+}
+
+function renderDiyShop(){
+  const div=document.getElementById('diyShopList');
+  div.innerHTML='';
+  const open=diyShoppingList.filter(i=>!i.bought);
+  if(open.length===0){div.textContent='No items';return;}
+  const table=document.createElement('table'); table.className='task-table';
+  const head=document.createElement('tr'); head.innerHTML='<th>Item</th><th>Task</th><th>Project</th><th>Type</th><th>Cost</th><th>Month</th><th></th>'; table.appendChild(head);
+  open.forEach(it=>{
+    const tr=document.createElement('tr'); const proj=projects.find(p=>p.name===it.project); const color=proj?proj.color:'#000';
+    const task=(diyShoppingList&&diyDataStore&&diyDataStore.diyTasks)?getTaskName(it.taskId):'';
+    tr.innerHTML=`<td>${it.name}</td><td>${task}</td><td style="color:${color}">${it.project}</td><td>${it.type}</td><td>${it.cost||''}</td><td>${it.month||''}</td>`;
+    const td=document.createElement('td');
+    const b=document.createElement('button'); b.textContent='Bought'; b.onclick=()=>toggleBoughtDiyShop(it.id);
+    const del=document.createElement('button'); del.textContent='Delete'; del.onclick=()=>deleteDiyShopItem(it.id);
+    td.appendChild(b); td.appendChild(del); tr.appendChild(td); table.appendChild(tr);
+  });
+  div.appendChild(table);
+}
+
+function toggleBoughtDiyShop(id){
+  const it=diyShoppingList.find(i=>i.id===id); if(!it) return; it.bought=true; saveDiyData(); renderDiyShop();
+}
+
+function deleteDiyShopItem(id){
+  const idx=diyShoppingList.findIndex(i=>i.id===id); if(idx===-1) return; diyShoppingList.splice(idx,1); saveDiyData(); renderDiyShop();
+}
+
+async function init() {
+  await loadData();
+  renderProjects();
+  renderShopping();
+  renderLongTerm();
+  renderGeneral();
+  renderDiyShop();
+}
+init();
+</script>
+</body>
+</html>

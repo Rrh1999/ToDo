@@ -1,0 +1,1628 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>Finance Manager</title>
+<style>
+body{font-family:'Segoe UI',Tahoma,sans-serif;margin:0;padding:0;}
+header{background:#fff;color:#ff69b4;padding:1rem;text-align:center;border-bottom:1px solid #ddd;}
+.tabs{display:flex;gap:0.5rem;padding:0.5rem;background:#eee;justify-content:center;}
+.tabs button{padding:0.5rem 1rem;border:none;background:#cfe2ff;cursor:pointer;}
+.tab-content{display:none;padding:1rem;}
+.tab-content.active{display:block;}
+table{border-collapse:collapse;width:100%;margin-top:1rem;font-size:0.9rem;}
+th,td{border:1px solid #ccc;padding:0.25rem 0.5rem;}
+</style>
+</head>
+<body>
+<header>
+  <h1>Finance Manager</h1>
+  <div id="nav-placeholder"></div>
+</header>
+<script src="nav-loader.js"></script>
+<div class="tabs">
+  <button id="tab-upload" type="button">Upload</button>
+  <button id="tab-code" type="button">Code</button>
+  <button id="tab-budgets" type="button">Budgets</button>
+</div>
+<div id="upload" class="tab-content active">
+  <h2>Upload Transactions</h2>
+  <form id="upload-form">
+    <label>Account Type
+      <select id="account-type">
+        <option value="TSB">TSB</option>
+        <option value="Monzo">Monzo</option>
+        <option value="Credit Card">Credit Card</option>
+      </select>
+    </label>
+    <label>Account Name
+      <select id="account-name" required></select>
+    </label>
+    <input type="file" id="file-input" accept=".csv,.xls,.xlsx" required>
+    <button type="submit">Upload</button>
+  </form>
+  <div id="upload-msg"></div>
+  <h3>Accounts</h3>
+  <ul id="accounts-display"></ul>
+  <input type="text" id="new-account" placeholder="Add account">
+  <button id="add-account">Add</button>
+  <datalist id="type-list"></datalist>
+</div>
+<div id="code" class="tab-content">
+  <h2>Transactions</h2>
+  <label><input type="checkbox" id="filter-uncoded">Uncoded only</label>
+  <button id="show-duplicates" type="button">Show Duplicates</button>
+  <button id="download-excel" type="button">Download Excel</button>
+  <button id="delete-selected" type="button">Delete Selected</button>
+  <div id="filter-controls" style="margin-top:0.5rem;">
+    <input type="text" id="search-text" placeholder="Search description or file">
+    <select id="filter-account"><option value="">All accounts</option></select>
+    <select id="filter-type"><option value="">All types</option><option value="__blank">Blank</option></select>
+    <select id="filter-subtype"><option value="">All sub types</option><option value="__blank">Blank</option></select>
+    <input type="date" id="filter-date-from">
+    <input type="date" id="filter-date-to">
+    <input type="number" id="filter-amount-min" placeholder="Min">
+    <input type="number" id="filter-amount-max" placeholder="Max">
+    <label><input type="checkbox" id="toggle-file">See File</label>
+    <button id="apply-filters" type="button">Apply</button>
+  </div>
+  <table id="tx-table">
+    <thead>
+      <tr>
+        <th><input type="checkbox" id="select-all"></th>
+        <th>Date</th>
+        <th>Description</th>
+        <th>Amount</th>
+        <th>Account</th>
+        <th class="file-col" style="display:none;">File</th>
+        <th class="file-col" style="display:none;">Uploaded</th>
+        <th>Type</th>
+        <th>Sub Type</th>
+        <th>Confirmed</th>
+        <th>Transfer</th>
+        <th>Notes</th>
+        <th>Month</th>
+      </tr>
+    </thead>
+    <tbody></tbody>
+  </table>
+  <div id="duplicates-modal" style="display:none;position:fixed;top:10%;left:10%;right:10%;background:#fff;border:1px solid #ccc;padding:1rem;max-height:80%;overflow:auto;">
+    <button id="close-duplicates" type="button">Close</button>
+    <table id="duplicates-table">
+      <thead>
+        <tr><th>Date</th><th>Description</th><th>Amount</th><th>Account</th><th>File</th><th>Action</th></tr>
+      </thead>
+      <tbody></tbody>
+    </table>
+  </div>
+  <div id="budget-modal" style="display:none;position:fixed;top:10%;left:10%;right:10%;background:#fff;border:1px solid #ccc;padding:1rem;max-height:80%;overflow:auto;"></div>
+  <h3>Autofill Rules</h3>
+  <form id="rule-form">
+    <input type="text" id="rule-desc" placeholder="Description contains" required>
+    <select id="rule-type"><option value="">Select type</option></select>
+    <input type="text" id="rule-subtype" placeholder="Sub type" list="rule-subtype-list">
+    <button type="submit">Add Rule</button>
+  </form>
+    <table id="rule-table">
+      <thead><tr><th>Match</th><th>Type</th><th>Sub Type</th><th>Action</th></tr></thead>
+      <tbody></tbody>
+    </table>
+    <datalist id="rule-subtype-list"></datalist>
+    <div id="code-settings" class="settings-section"></div>
+  </div>
+  <div id="budgets" class="tab-content">
+  <h2>Budgets</h2>
+  <label>Extra Display
+    <select id="extra-display">
+      <option value="merge">Merge extra</option>
+      <option value="separate">Separate extra</option>
+    </select>
+  </label>
+  <table id="budget-table">
+    <thead>
+      <tr><th>Name</th><th>Amount</th><th>Recurring</th><th>Date</th><th></th><th>Archived</th></tr>
+    </thead>
+    <tbody></tbody>
+  </table>
+  <h3>Budget Periods</h3>
+  <form id="period-form">
+    <input type="date" id="period-start" required>
+    <input type="date" id="period-end" required>
+    <input type="month" id="period-month" required>
+    <button type="submit">Add Period</button>
+  </form>
+  <table id="period-table">
+    <thead><tr><th>Start</th><th>End</th><th>Month</th><th></th></tr></thead>
+    <tbody></tbody>
+  </table>
+
+  <h3>Budget Overview</h3>
+  <label>Months
+    <select id="overview-month" multiple size="4"></select>
+  </label>
+  <label><input type="checkbox" id="show-budgeted" checked>Show Budgeted</label>
+  <label><input type="checkbox" id="show-remaining" checked>Show Remaining</label>
+  <label><input type="checkbox" id="show-income">Show Income</label>
+  <label><input type="checkbox" id="toggle-archived">View Archived Budgets</label>
+  <table id="overview-table">
+    <thead><tr></tr></thead>
+    <tbody></tbody>
+  </table>
+  <h3>Balance Sheet</h3>
+  <form id="start-balance-form">
+    <label>Starting Date <input type="date" id="start-balance-date"></label>
+    <div id="start-balance-accounts"></div>
+    <button type="submit">Save Starting Balances</button>
+  </form>
+  <label>Month
+    <select id="balance-month"></select>
+  </label>
+  <table id="balance-table">
+    <thead></thead>
+    <tbody></tbody>
+  </table>
+  <div id="budget-settings" class="settings-section"></div>
+</div>
+<div id="budget-modal" style="display:none;position:fixed;top:10%;left:10%;right:10%;background:#fff;border:1px solid #ccc;padding:1rem;max-height:80%;overflow:auto;"></div>
+<script src="node_modules/papaparse/papaparse.min.js"></script>
+<script src="node_modules/xlsx/dist/xlsx.full.min.js"></script>
+<script>
+let financeData = { accounts: [], transactions: [], nextTransactionId: 1, budgetCategories: [], budgets: [], nextBudgetId: 1, rules: [], budgetPeriods: [] };
+let lastTxCheckbox = null;
+const isMobile = /Mobi|Android/i.test(navigator.userAgent);
+
+function showTab(id){
+  document.querySelectorAll('.tab-content').forEach(div=>div.classList.remove('active'));
+  const el=document.getElementById(id);
+  if(el) el.classList.add('active');
+}
+
+async function loadFinance(){
+  const res = await fetch('/api/finance-data');
+  financeData = await res.json();
+  financeData.budgetCategories = financeData.budgetCategories || [];
+  if(!financeData.budgetCategories.includes('Other \u2013 Budgeted')){
+    financeData.budgetCategories.push('Other \u2013 Budgeted');
+  }
+  if(!financeData.budgetCategories.includes('Other \u2013 Not Budgeted')){
+    financeData.budgetCategories.push('Other \u2013 Not Budgeted');
+  }
+  financeData.budgets = (financeData.budgets || []).map(b=>{
+    if(!b.versions){
+      const start = b.date || new Date().toISOString().slice(0,10);
+      const end = new Date(new Date(start).setFullYear(new Date(start).getFullYear()+100)).toISOString().slice(0,10);
+      b.versions = [{ amount: b.amount || 0, start, end, interval: b.recurring ? 1 : 0, mode: 'within' }];
+    }
+    b.extras = b.extras || [];
+    normalizeVersions(b);
+    return b;
+  });
+  financeData.budgetPeriods = financeData.budgetPeriods || [];
+  financeData.budgetPeriods.forEach(p=>{
+    if(p.label && !p.month){ p.month = p.label; delete p.label; }
+    if(!p.end) p.end = p.start;
+  });
+  financeData.startBalances = financeData.startBalances || {date:'', accounts:{}};
+  financeData.transactions = (financeData.transactions || []).map(tx=>{
+    const d = parseDate(tx.date);
+    tx.date = Number.isNaN(d.getTime()) ? '' : d.toISOString().slice(0,10);
+    return tx;
+  });
+  applyRulesToAll();
+  assignMonthsAll();
+  await saveFinance();
+  checkDuplicates();
+  updateAccountList();
+  renderTransactions();
+  renderBudgets();
+  renderRules();
+  renderPeriods();
+  renderStartBalances();
+  populateOverviewMonths();
+  populateBalanceMonths();
+  renderOverview();
+  renderBalance();
+  renderSettingsSections();
+}
+
+function updateAccountList(){
+  const sel = document.getElementById('account-name');
+  if(sel){
+    sel.innerHTML = '';
+    financeData.accounts.forEach(a=>{
+      const o=document.createElement('option');
+      o.value=a; o.textContent=a; sel.appendChild(o);
+    });
+  }
+  const ul = document.getElementById('accounts-display');
+  if(ul){
+    ul.innerHTML='';
+    financeData.accounts.forEach(a=>{
+      const li=document.createElement('li');
+      li.textContent=a;
+      const del=document.createElement('button');
+      del.textContent='x';
+      del.style.marginLeft='0.5rem';
+      del.addEventListener('click',()=>{
+        financeData.accounts=financeData.accounts.filter(ac=>ac!==a);
+        updateAccountList();
+        saveFinance();
+      });
+      li.appendChild(del);
+      ul.appendChild(li);
+    });
+  }
+  const filterSel = document.getElementById('filter-account');
+  if(filterSel){
+    filterSel.innerHTML = '<option value="">All accounts</option>';
+    financeData.accounts.forEach(a=>{ const opt=document.createElement('option'); opt.value=a; opt.textContent=a; filterSel.appendChild(opt); });
+  }
+}
+
+function parseDate(val){
+  if(val === undefined || val === null || val === '') return new Date('');
+  if(val instanceof Date) return val;
+  if(typeof val === 'number'){
+    // Excel stores dates as days since 1899-12-30
+    return new Date(Math.round((val - 25569) * 86400 * 1000));
+  }
+  if(typeof val === 'string'){
+    const s = val.trim();
+    const parts = s.split(/[\/\-]/);
+    if(parts.length >= 3 && parts[0].length <= 2 && parts[1].length <= 2){
+      let [d,m,y] = parts;
+      y = y.split(' ')[0];
+      if(y.length === 2) y = '20'+y;
+      return new Date(parseInt(y,10), parseInt(m,10)-1, parseInt(d,10));
+    }
+    const parsed = Date.parse(s);
+    if(!Number.isNaN(parsed)) return new Date(parsed);
+  }
+  return new Date(val);
+}
+
+function getMonth(dateStr){
+  const d = parseDate(dateStr);
+  if(Number.isNaN(d.getTime())) return '';
+  const m = String(d.getMonth()+1).padStart(2,'0');
+  const y = d.getFullYear();
+  return `${m} ${y}`;
+}
+
+function formatMonth(month){
+  if(!month) return '';
+  const [m,y] = month.split(' ');
+  const d = new Date(parseInt(y,10), parseInt(m,10)-1, 1);
+  return d.toLocaleString('default', { month: 'long' }) + ' ' + String(d.getFullYear()).slice(-2);
+}
+
+function assignMonth(tx){
+  if(!tx.date) { tx.month=''; return; }
+  if(financeData.budgetPeriods && financeData.budgetPeriods.length){
+    const d = parseDate(tx.date);
+    const match = financeData.budgetPeriods.find(p=>d >= parseDate(p.start) && d <= parseDate(p.end));
+    tx.month = match ? match.month : '';
+  } else {
+    tx.month = '';
+  }
+}
+
+function assignMonthsAll(){
+  financeData.transactions.forEach(t=>assignMonth(t));
+}
+
+function normalizeVersions(sub){
+  if(!sub.versions) return;
+  sub.versions.sort((a,b)=>parseDate(a.start)-parseDate(b.start));
+  for(let i=1;i<sub.versions.length;i++){
+    const prev=sub.versions[i-1];
+    const curr=sub.versions[i];
+    if(parseDate(curr.start)<=parseDate(prev.end)){
+      prev.end=new Date(parseDate(curr.start).getTime()-86400000).toISOString().slice(0,10);
+    }
+  }
+  sub.versions.forEach((v,i)=>v.version=i+1);
+}
+
+function applyRules(tx){
+  const matches = [];
+  financeData.rules.forEach(r=>{
+    if(tx.description && tx.description.toLowerCase().includes(r.match.toLowerCase())){
+      matches.push(r);
+    }
+  });
+  if(matches.length===1){
+    tx.type = matches[0].type;
+    tx.subType = matches[0].subType || '';
+    tx.autofill = true;
+    tx.confirmed = false;
+  } else if(matches.length>1){
+    tx.multipleRules = matches.map(m=>m.id);
+    tx.autofill = true;
+    tx.confirmed = false;
+  }
+}
+
+function applyRulesToAll(){
+  financeData.transactions.forEach(tx=>{
+    if(!tx.type){
+      applyRules(tx);
+    }
+  });
+}
+
+function checkDuplicates(){
+  const seen = {};
+  financeData.transactions.forEach(tx=>{
+    const key = tx.date+'|'+tx.description+'|'+tx.amount+'|'+tx.accountName;
+    if(seen[key]){
+      tx.duplicate = true;
+      seen[key].duplicate = true;
+    } else {
+      seen[key] = tx;
+      if(!tx.hasOwnProperty('duplicate')) tx.duplicate = false;
+    }
+  });
+}
+
+function applyBulkChange(tx, updater, alwaysRender){
+  const selected = Array.from(document.querySelectorAll('#tx-table tbody .tx-select:checked'));
+  const isSelected = selected.some(cb => parseInt(cb.dataset.id) === tx.id);
+  let multi = false;
+  if(isSelected && selected.length > 1){
+    if(confirm('Apply this change to all selected transactions?')){
+      const ids = selected.map(cb=>parseInt(cb.dataset.id));
+      financeData.transactions.forEach(t=>{
+        if(ids.includes(t.id)) updater(t);
+      });
+      multi = true;
+    } else {
+      updater(tx);
+    }
+  } else {
+    updater(tx);
+  }
+  saveFinance();
+  if(alwaysRender || multi) renderTransactions();
+}
+
+function renderTransactions(){
+  const tbody = document.querySelector("#tx-table tbody");
+  tbody.innerHTML = "";
+  const selAll=document.getElementById('select-all');
+  if(selAll) selAll.checked=false;
+  const uncoded = document.getElementById("filter-uncoded").checked;
+  const search = document.getElementById('search-text').value.toLowerCase();
+  const showFile = document.getElementById('toggle-file').checked;
+  document.querySelectorAll('#tx-table thead .file-col').forEach(th=>th.style.display=showFile?'':'none');
+  const fAcc = document.getElementById('filter-account').value;
+  const fType = document.getElementById('filter-type').value;
+  const fSub = document.getElementById('filter-subtype').value;
+  const fFrom = document.getElementById('filter-date-from').value;
+  const fTo = document.getElementById('filter-date-to').value;
+  const fMin = parseFloat(document.getElementById('filter-amount-min').value);
+  const fMax = parseFloat(document.getElementById('filter-amount-max').value);
+  financeData.transactions.forEach(tx=>{
+    if(uncoded && tx.type) return;
+    if(fAcc && tx.accountName !== fAcc) return;
+    if(fType === '__blank'){ if(tx.type) return; }
+    else if(fType && tx.type !== fType) return;
+    if(fSub === '__blank'){ if(tx.subType) return; }
+    else if(fSub && tx.subType !== fSub) return;
+    if(search){
+      let text = (tx.description||'').toLowerCase();
+      if(showFile){
+        text += ' ' + (tx.sourceFile||'').toLowerCase() + ' ' + (tx.uploadedAt||'').toLowerCase();
+      }
+      if(!text.includes(search)) return;
+    }
+    if(fFrom && parseDate(tx.date) < parseDate(fFrom)) return;
+    if(fTo && parseDate(tx.date) > parseDate(fTo)) return;
+    if(!Number.isNaN(fMin) && parseFloat(tx.amount) < fMin) return;
+    if(!Number.isNaN(fMax) && parseFloat(tx.amount) > fMax) return;
+    const tr = document.createElement("tr");
+    const fileCells = showFile ?
+      `<td class="file-col">${tx.sourceFile||''}</td><td class="file-col">${tx.uploadedAt?tx.uploadedAt.split('T')[0]:''}</td>` :
+      `<td class="file-col" style="display:none;">${tx.sourceFile||''}</td><td class="file-col" style="display:none;">${tx.uploadedAt?tx.uploadedAt.split('T')[0]:''}</td>`;
+    tr.innerHTML = `<td><input type="checkbox" class="tx-select" data-id="${tx.id}"></td>`+
+      `<td>${tx.date}</td><td>${tx.description}</td><td>${tx.amount}</td><td>${tx.accountName}</td>` + fileCells;
+    const cb = tr.querySelector('.tx-select');
+    cb.addEventListener('click', e=>{
+      if(e.shiftKey && lastTxCheckbox){
+        const boxes = Array.from(document.querySelectorAll('#tx-table tbody .tx-select'));
+        const start = boxes.indexOf(lastTxCheckbox);
+        const end = boxes.indexOf(cb);
+        const [min,max] = start < end ? [start,end] : [end,start];
+        const check = cb.checked;
+        for(let i=min;i<=max;i++){ boxes[i].checked = check; }
+      }
+      lastTxCheckbox = cb;
+    });
+    if(tx.duplicate) tr.style.background = "#fdd";
+    if(tx.autofill && !tx.confirmed) tr.style.background = "#ffffcc";
+    if(tx.multipleRules && tx.multipleRules.length>1) tr.style.background = "#fcc";
+    let typeSel;
+    if(isMobile){
+      typeSel = document.createElement('select');
+      const blank = document.createElement('option'); blank.value=''; blank.textContent='';
+      typeSel.appendChild(blank);
+      financeData.budgetCategories.forEach(cat=>{ const o=document.createElement('option'); o.value=cat; o.textContent=cat; typeSel.appendChild(o); });
+    } else {
+      typeSel = document.createElement('input');
+      typeSel.setAttribute('list','type-list');
+    }
+    typeSel.value = tx.type || "";
+    let subTypeInput;
+    let stList;
+    if(isMobile){
+      subTypeInput = document.createElement('select');
+    } else {
+      subTypeInput = document.createElement('input');
+      stList = document.createElement('datalist');
+      const stId = 'st-list-'+tx.id; stList.id = stId; subTypeInput.setAttribute('list', stId);
+    }
+    subTypeInput.value = tx.subType || '';
+    function populateST(){
+      const subs = financeData.budgets.filter(b=>b.type===typeSel.value);
+      if(isMobile){
+        const curr = subTypeInput.value;
+        subTypeInput.innerHTML='';
+        const blank=document.createElement('option'); blank.value=''; blank.textContent='';
+        subTypeInput.appendChild(blank);
+        subs.forEach(s=>{ const o=document.createElement('option'); o.value=s.name; o.textContent=s.name; subTypeInput.appendChild(o); });
+        subTypeInput.value = curr;
+      } else {
+        stList.innerHTML='';
+        subs.forEach(s=>{ const o=document.createElement('option'); o.value=s.name; stList.appendChild(o); });
+      }
+    }
+    populateST();
+    typeSel.addEventListener('change', ()=>{ applyBulkChange(tx, t=>{ t.type = typeSel.value; t.confirmed = true; t.autofill=false; }, true); populateST(); });
+    subTypeInput.addEventListener('change', ()=>{
+      applyBulkChange(tx, t=>{
+        t.subType = subTypeInput.value;
+        t.autofill = false;
+        if(subTypeInput.value){
+          const b = financeData.budgets.find(b=>b.name===subTypeInput.value && budgetAppliesToMonth(b, t.month));
+          if(b){ t.type = b.type; t.confirmed = true; }
+        }
+      }, true);
+    });
+    const saveSubBtn = document.createElement('button');
+    saveSubBtn.textContent = '+';
+    saveSubBtn.type = 'button';
+    saveSubBtn.addEventListener('click', ()=>{
+      const type = typeSel.value;
+      let name = subTypeInput.value;
+      if(isMobile && !name){ name = prompt('New sub type name?') || ''; }
+      if(type && name && !financeData.budgets.some(b=>b.type===type && b.name===name)){
+        const todayStr=new Date().toISOString().slice(0,10);
+        const far=new Date(new Date(todayStr).setFullYear(new Date(todayStr).getFullYear()+100)).toISOString().slice(0,10);
+        financeData.budgets.push({id:financeData.nextBudgetId++, type, name, archived:false, versions:[{amount:0,start:todayStr,end:far,interval:1,mode:'within'}], extras:[]});
+        populateST();
+        saveFinance();
+        renderBudgets();
+        renderOverview();
+        renderSettingsSections();
+      }
+    });
+    const confirmBox = document.createElement("input");
+    confirmBox.type = "checkbox";
+    confirmBox.checked = !!tx.confirmed;
+    confirmBox.addEventListener("change", ()=>{ applyBulkChange(tx, t=>{ t.confirmed = confirmBox.checked; }, false); });
+    const transferBox = document.createElement("input");
+    transferBox.type = "checkbox";
+    transferBox.checked = !!tx.transfer;
+    transferBox.addEventListener("change", ()=>{ applyBulkChange(tx, t=>{ t.transfer = transferBox.checked; }, false); });
+    const notes = document.createElement("input");
+    notes.value = tx.notes || "";
+    notes.addEventListener("change", ()=>{ applyBulkChange(tx, t=>{ t.notes = notes.value; }, false); });
+    const tdType = document.createElement("td"); tdType.appendChild(typeSel);
+    const tdSub = document.createElement('td');
+    tdSub.appendChild(subTypeInput);
+    if(!isMobile) tdSub.appendChild(stList);
+    tdSub.appendChild(saveSubBtn);
+    const tdConf = document.createElement("td"); tdConf.appendChild(confirmBox);
+    const tdTrans = document.createElement("td"); tdTrans.appendChild(transferBox);
+    const tdNotes = document.createElement("td"); tdNotes.appendChild(notes);
+    const tdMonth = document.createElement("td"); tdMonth.textContent = tx.month || '';
+    tr.appendChild(tdType); tr.appendChild(tdSub); tr.appendChild(tdConf); tr.appendChild(tdTrans); tr.appendChild(tdNotes); tr.appendChild(tdMonth);
+    tbody.appendChild(tr);
+  });
+  populateBalanceMonths();
+  renderBalance();
+}
+
+function renderBudgets(){
+  const tbody = document.querySelector('#budget-table tbody');
+  if(!tbody) return;
+  tbody.innerHTML = '';
+  const groups = {};
+  financeData.budgets.forEach(b=>{
+    groups[b.type] = groups[b.type] || { amount:0, items:[] };
+    const v=currentBudgetVersion(b);
+    groups[b.type].amount += v?parseFloat(v.amount||0):0;
+    groups[b.type].items.push(b);
+  });
+  financeData.budgetCategories.forEach(cat=>{
+    const g = groups[cat] || {amount:0, items:[]};
+    const tr = document.createElement('tr');
+    const delCatBtn = document.createElement('button');
+    delCatBtn.textContent = 'Delete';
+    if(!cat.startsWith('Other')){
+      delCatBtn.addEventListener('click', ()=>{
+        if(confirm('Delete category and all its sub budgets? This will remove related types from transactions.')){
+          financeData.budgets = financeData.budgets.filter(b=>b.type!==cat);
+          financeData.transactions.forEach(t=>{ if(t.type===cat){ t.type=''; t.subType=''; } });
+          financeData.rules = financeData.rules.filter(r=>r.type!==cat);
+          financeData.budgetCategories = financeData.budgetCategories.filter(c=>c!==cat);
+          saveFinance();
+          renderBudgets();
+          renderOverview();
+          renderTransactions();
+          renderRules();
+          updateTypeOptions();
+          renderSettingsSections();
+        }
+      });
+    } else {
+      delCatBtn.disabled = true;
+    }
+    tr.appendChild(document.createElement('td')).textContent = cat;
+    tr.appendChild(document.createElement('td')).textContent = g.amount;
+    tr.appendChild(document.createElement('td'));
+    tr.appendChild(document.createElement('td'));
+    const actionTd = document.createElement('td'); actionTd.appendChild(delCatBtn); tr.appendChild(actionTd);
+    tr.appendChild(document.createElement('td'));
+    tbody.appendChild(tr);
+    g.items.forEach(sub=>{
+      const tr2 = document.createElement('tr');
+      const v=currentBudgetVersion(sub) || {amount:'',interval:1,mode:'within',start:'',end:''};
+      tr2.innerHTML = `<td style="padding-left:20px;">${sub.name}</td><td>${v.amount}</td><td>${v.interval>1?`Every ${v.interval} (${v.mode})`:'Monthly'}</td><td>${v.start}</td>`;
+      const editSubBtn=document.createElement('button');
+      editSubBtn.textContent='Edit';
+      editSubBtn.addEventListener('click',()=>openBudgetModal(sub));
+      const delSubBtn = document.createElement('button');
+      delSubBtn.textContent = 'Delete';
+      delSubBtn.addEventListener('click',()=>{
+        if(confirm('Delete this sub budget? This will remove it from any transactions.')){
+          financeData.budgets = financeData.budgets.filter(b=>!(b.type===sub.type && b.name===sub.name));
+          financeData.transactions.forEach(t=>{ if(t.type===sub.type && t.subType===sub.name){ t.type=''; t.subType=''; } });
+          financeData.rules = financeData.rules.filter(r=>!(r.type===sub.type && r.subType===sub.name));
+          saveFinance();
+          renderBudgets();
+          renderOverview();
+          renderTransactions();
+          renderRules();
+          renderSettingsSections();
+        }
+      });
+      const actionTd2 = document.createElement('td'); actionTd2.appendChild(editSubBtn); actionTd2.appendChild(delSubBtn); tr2.appendChild(actionTd2);
+      const arch = document.createElement('input');
+      arch.type = 'checkbox';
+      arch.checked = !!sub.archived;
+      arch.addEventListener('change',()=>{ sub.archived = arch.checked; saveFinance(); renderOverview(); });
+      const tdArch = document.createElement('td'); tdArch.appendChild(arch); tr2.appendChild(tdArch);
+      tbody.appendChild(tr2);
+    });
+  });
+  updateTypeOptions();
+  renderBalance();
+}
+
+function updateTypeOptions(){
+  const list = document.getElementById('type-list');
+  if(list) list.innerHTML = '';
+  const filter = document.getElementById('filter-type');
+  if(filter) filter.innerHTML = '<option value="">All types</option><option value="__blank">Blank</option>';
+  financeData.budgetCategories.forEach(t=>{
+    if(list){ const opt=document.createElement('option'); opt.value=t; list.appendChild(opt); }
+    if(filter){ const opt=document.createElement('option'); opt.value=t; opt.textContent=t; filter.appendChild(opt); }
+  });
+  const ruleType = document.getElementById('rule-type');
+  if(ruleType){
+    ruleType.innerHTML = '<option value="">Select type</option>';
+    financeData.budgetCategories.forEach(t=>{
+      const o=document.createElement('option'); o.value=t; o.textContent=t; ruleType.appendChild(o);
+    });
+  }
+  updateSubtypeFilterOptions();
+}
+
+function updateSubtypeFilterOptions(){
+  const filter = document.getElementById('filter-subtype');
+  if(!filter) return;
+  const curr = filter.value;
+  filter.innerHTML = '<option value="">All sub types</option><option value="__blank">Blank</option>';
+  financeData.budgets.forEach(b=>{
+    const o=document.createElement('option'); o.value=b.name; o.textContent=b.name; filter.appendChild(o);
+  });
+  filter.value = curr;
+}
+
+function currentBudgetVersion(sub){
+  if(!sub.versions || !sub.versions.length) return null;
+  const today=new Date();
+  const sorted=sub.versions.slice().sort((a,b)=>parseDate(a.start)-parseDate(b.start));
+  let curr=sorted.find(v=>today>=parseDate(v.start)&&today<=parseDate(v.end));
+  if(!curr) curr=sorted[sorted.length-1];
+  return curr;
+}
+
+function monthToDate(month){
+  const [m,y]=month.split(' ');
+  return new Date(parseInt(y,10),parseInt(m,10)-1,1);
+}
+
+function monthsBetween(startDate,endDate){
+  const res=[];
+  const d=new Date(startDate);
+  const end=new Date(endDate);
+  while(d<=end){
+    res.push(`${String(d.getMonth()+1).padStart(2,'0')} ${d.getFullYear()}`);
+    d.setMonth(d.getMonth()+1);
+  }
+  return res;
+}
+
+function baseAmountForMonth(sub, month){
+  if(!sub.versions || !sub.versions.length) return 0;
+  const mDate=monthToDate(month);
+  let amt=0;
+  sub.versions.forEach(v=>{
+    const s=parseDate(v.start);
+    const e=parseDate(v.end);
+    if(mDate>=s && mDate<=e){
+      const interval=parseInt(v.interval||1,10);
+      const mode=v.mode||'within';
+      const diffMonths=(mDate.getFullYear()-s.getFullYear())*12 + (mDate.getMonth()-s.getMonth());
+      if(interval<=1){
+        amt+=parseFloat(v.amount||0);
+      } else if(mode==='within'){
+        if(diffMonths%interval===0) amt+=parseFloat(v.amount||0);
+      } else {
+        amt+=parseFloat(v.amount||0)/interval;
+      }
+    }
+  });
+  return amt;
+}
+
+function budgetAppliesToMonth(sub, month){
+  if(!sub.versions || !sub.versions.length) return false;
+  const mDate=monthToDate(month);
+  return sub.versions.some(v=>{
+    const s=parseDate(v.start);
+    const e=parseDate(v.end);
+    if(mDate<s || mDate>e) return false;
+    const interval=parseInt(v.interval||1,10);
+    const diffMonths=(mDate.getFullYear()-s.getFullYear())*12 + (mDate.getMonth()-s.getMonth());
+    if(interval<=1) return true;
+    return (v.mode||'within')==='within' ? diffMonths%interval===0 : true;
+  });
+}
+
+function extraForMonth(sub, month){
+  return (sub.extras||[]).filter(e=>e.month===month).reduce((s,e)=>s+parseFloat(e.amount||0),0);
+}
+
+function amountForMonth(sub, month){
+  return baseAmountForMonth(sub, month) + extraForMonth(sub, month);
+}
+
+function openBudgetModal(sub, editIndex=-1){
+  normalizeVersions(sub);
+  const modal=document.getElementById('budget-modal');
+  if(!modal) return;
+  const todayStr=new Date().toISOString().slice(0,10);
+  const far=new Date(new Date(todayStr).setFullYear(new Date(todayStr).getFullYear()+100)).toISOString().slice(0,10);
+  const curr=currentBudgetVersion(sub);
+  const v=editIndex>=0 ? sub.versions[editIndex] : (curr || {amount:0,start:todayStr,end:far,interval:1,mode:'within'});
+  const allStart=sub.versions.reduce((m,x)=>parseDate(x.start)<m?parseDate(x.start):m,parseDate(sub.versions[0].start));
+  const allEnd=sub.versions.reduce((m,x)=>parseDate(x.end)>m?parseDate(x.end):m,parseDate(sub.versions[0].end));
+  const monthOpts=monthsBetween(allStart,allEnd);
+  modal.innerHTML=`<form id="budget-edit-form">
+    <label>Category <select id="edit-type"></select></label>
+    <label>Name <input type="text" value="${sub.name}" disabled></label>
+    <label>Amount <input type="number" id="edit-amount" value="${v.amount}"></label>
+    <label>Start <input type="date" id="edit-start" value="${v.start}"></label>
+    <label>End <input type="date" id="edit-end" value="${v.end}"></label>
+    <label>Interval (months) <input type="number" id="edit-interval" value="${v.interval||1}"></label>
+    <label>Mode <select id="edit-mode"><option value="within">Within Month</option><option value="throughout">Throughout</option></select></label>
+    <button type="submit">Save</button>
+    <button type="button" id="close-budget-modal">Close</button>
+    ${editIndex>=0 ? '<button type="button" id="cancel-edit">Cancel</button>' : ''}
+  </form>
+  <h4>History</h4>
+  <table><thead><tr><th>Ver</th><th>Start</th><th>End</th><th>Amount</th><th>Interval</th><th>Mode</th><th></th></tr></thead><tbody></tbody></table>
+  <h4>Extras</h4>
+  <form id="extra-form">
+    <input type="number" id="extra-amount" placeholder="Amount">
+    <select id="extra-months" multiple size="5"></select>
+    <button type="submit">Add Extra</button>
+  </form>
+  <table id="extra-table"><thead><tr><th>Month</th><th>Amount</th><th></th></tr></thead><tbody></tbody></table>`;
+  const typeSel=modal.querySelector('#edit-type');
+  financeData.budgetCategories.forEach(cat=>{ const o=document.createElement('option'); o.value=cat; o.textContent=cat; typeSel.appendChild(o); });
+  typeSel.value=sub.type;
+  const modeSel=modal.querySelector('#edit-mode'); modeSel.value=v.mode||'within';
+  if(editIndex===-1){
+    if(v.start===todayStr) modal.querySelector('#edit-start').insertAdjacentHTML('afterend','<small>(default today)</small>');
+    if(v.end===far) modal.querySelector('#edit-end').insertAdjacentHTML('afterend','<small>(default 100y)</small>');
+  }
+  const tbody=modal.querySelector('tbody');
+  sub.versions.slice().sort((a,b)=>parseDate(b.start)-parseDate(a.start)).forEach(ver=>{
+    const idx=sub.versions.indexOf(ver);
+    const tr=document.createElement('tr');
+    tr.innerHTML=`<td>${ver.version||idx+1}</td><td>${ver.start}</td><td>${ver.end}</td><td>${ver.amount}</td><td>${ver.interval||1}</td><td>${ver.mode||'within'}</td><td><button class="edit-ver" data-idx="${idx}">Edit</button><button class="del-ver" data-idx="${idx}">Delete</button></td>`;
+    if(ver===curr) tr.style.background='lightgreen';
+    tbody.appendChild(tr);
+  });
+  tbody.querySelectorAll('.edit-ver').forEach(btn=>{
+    btn.addEventListener('click',()=>{
+      const idx=parseInt(btn.dataset.idx);
+      openBudgetModal(sub, idx);
+    });
+  });
+  tbody.querySelectorAll('.del-ver').forEach(btn=>{
+    btn.addEventListener('click',()=>{
+      const idx=parseInt(btn.dataset.idx);
+      if(confirm('Delete this version?')){
+        sub.versions.splice(idx,1);
+        normalizeVersions(sub);
+        saveFinance();
+        renderBudgets();
+        renderOverview();
+        openBudgetModal(sub);
+      }
+    });
+  });
+  const extraSel=modal.querySelector('#extra-months');
+  monthOpts.forEach(m=>{ const o=document.createElement('option'); o.value=m; o.textContent=m; extraSel.appendChild(o); });
+  const extraTbody=modal.querySelector('#extra-table tbody');
+  (sub.extras||[]).forEach((ex,i)=>{
+    const tr=document.createElement('tr');
+    tr.innerHTML=`<td>${ex.month}</td><td>${ex.amount}</td><td><button class="edit-extra" data-idx="${i}">Edit</button><button class="del-extra" data-idx="${i}">Delete</button></td>`;
+    extraTbody.appendChild(tr);
+  });
+  extraTbody.querySelectorAll('.del-extra').forEach(btn=>{
+    btn.addEventListener('click',()=>{
+      const idx=parseInt(btn.dataset.idx);
+      sub.extras.splice(idx,1);
+      saveFinance();
+      renderOverview();
+      openBudgetModal(sub);
+    });
+  });
+  extraTbody.querySelectorAll('.edit-extra').forEach(btn=>{
+    btn.addEventListener('click',()=>{
+      const idx=parseInt(btn.dataset.idx);
+      const ex=sub.extras[idx];
+      const amt=parseFloat(prompt('Amount', ex.amount));
+      if(isNaN(amt)) return;
+      const month=prompt('Month (MM YYYY)', ex.month);
+      if(!monthOpts.includes(month)) { alert('Invalid month'); return; }
+      ex.amount=amt; ex.month=month;
+      saveFinance();
+      renderOverview();
+      openBudgetModal(sub);
+    });
+  });
+  modal.querySelector('#extra-form').addEventListener('submit',e=>{
+    e.preventDefault();
+    const amt=parseFloat(modal.querySelector('#extra-amount').value);
+    const months=Array.from(extraSel.selectedOptions).map(o=>o.value);
+    if(isNaN(amt) || !months.length) return;
+    months.forEach(m=>sub.extras.push({month:m,amount:amt}));
+    modal.querySelector('#extra-amount').value='';
+    extraSel.selectedIndex=-1;
+    saveFinance();
+    renderOverview();
+    openBudgetModal(sub);
+  });
+  modal.style.display='block';
+  modal.querySelector('#close-budget-modal').addEventListener('click',()=>{ modal.style.display='none'; });
+  if(editIndex>=0){
+    modal.querySelector('#cancel-edit').addEventListener('click',()=>openBudgetModal(sub));
+  }
+  modal.querySelector('#budget-edit-form').addEventListener('submit',e=>{
+    e.preventDefault();
+    const newType=typeSel.value;
+    const amount=parseFloat(modal.querySelector('#edit-amount').value);
+    const start=modal.querySelector('#edit-start').value||todayStr;
+    const end=modal.querySelector('#edit-end').value||far;
+    if(parseDate(end)<parseDate(start)){
+      alert('End date must be after start date');
+      return;
+    }
+    const interval=parseInt(modal.querySelector('#edit-interval').value)||1;
+    const mode=modal.querySelector('#edit-mode').value;
+    if(editIndex>=0){
+      sub.versions[editIndex]={amount,start,end,interval,mode};
+    } else {
+      sub.versions.push({amount,start,end,interval,mode});
+    }
+    normalizeVersions(sub);
+    const currV=currentBudgetVersion(sub);
+    if(currV){
+      sub.amount=currV.amount;
+      sub.date=currV.start;
+    }
+    if(newType!==sub.type){
+      financeData.transactions.forEach(t=>{ if(t.type===sub.type && t.subType===sub.name){ t.type=newType; } });
+      financeData.rules.forEach(r=>{ if(r.type===sub.type && r.subType===sub.name){ r.type=newType; } });
+      sub.type=newType;
+    }
+    modal.style.display='none';
+    saveFinance();
+    renderBudgets();
+    renderOverview();
+    renderTransactions();
+    renderRules();
+    renderSettingsSections();
+  });
+}
+
+function renderSettingsSections(){
+  document.querySelectorAll('.settings-section').forEach(container=>{
+    container.innerHTML = `
+      <h3>Budget Settings</h3>
+      <form class="type-form">
+        <input type="text" class="new-type-name" placeholder="New Category">
+        <button type="submit">Add Category</button>
+      </form>
+      <ul class="type-list"></ul>
+      <form class="subtype-form">
+        <select class="subtype-type"></select>
+        <input type="text" class="subtype-name" placeholder="Sub Type Name">
+        <input type="number" class="subtype-amount" placeholder="Amount">
+        <input type="date" class="subtype-start"><small class="start-note"></small>
+        <input type="date" class="subtype-end"><small class="end-note"></small>
+        <input type="number" class="subtype-interval" value="1" placeholder="Every N months">
+        <select class="subtype-mode"><option value="within">Within Month</option><option value="throughout">Throughout</option></select>
+        <button type="submit">Add Sub Type</button>
+      </form>
+      <div class="subtype-lists"></div>`;
+    const typeForm = container.querySelector('.type-form');
+    typeForm.addEventListener('submit', e=>{
+      e.preventDefault();
+      const name = container.querySelector('.new-type-name').value.trim();
+      if(!name || financeData.budgetCategories.includes(name)) return;
+      financeData.budgetCategories.push(name);
+      container.querySelector('.new-type-name').value='';
+      saveFinance();
+      updateTypeOptions();
+      renderBudgets();
+      renderOverview();
+      renderSettingsSections();
+    });
+    const subtypeForm = container.querySelector('.subtype-form');
+    const typeSelect = container.querySelector('.subtype-type');
+    const startInput = container.querySelector('.subtype-start');
+    const endInput = container.querySelector('.subtype-end');
+    const startNote = container.querySelector('.start-note');
+    const endNote = container.querySelector('.end-note');
+    const todayStr = new Date().toISOString().slice(0,10);
+    startInput.value = todayStr;
+    startNote.textContent = '(default today)';
+    const defEnd = new Date(new Date(todayStr).setFullYear(new Date(todayStr).getFullYear()+100)).toISOString().slice(0,10);
+    endInput.value = defEnd;
+    endNote.textContent = '(default 100y)';
+    function fillTypes(){
+      typeSelect.innerHTML = '<option value="">Select type</option>';
+      financeData.budgetCategories.forEach(t=>{ const o=document.createElement('option'); o.value=t; o.textContent=t; typeSelect.appendChild(o); });
+    }
+    fillTypes();
+    subtypeForm.addEventListener('submit', e=>{
+      e.preventDefault();
+      const type = typeSelect.value;
+      const name = container.querySelector('.subtype-name').value.trim();
+      const amt = parseFloat(container.querySelector('.subtype-amount').value);
+      const start = startInput.value || todayStr;
+      const end = endInput.value || defEnd;
+      const interval = parseInt(container.querySelector('.subtype-interval').value)||1;
+      const mode = container.querySelector('.subtype-mode').value;
+      if(!type || !name) return;
+      const nb={id:financeData.nextBudgetId++, type, name, archived:false, versions:[{amount:amt,start,end,interval,mode}], extras:[]};
+      financeData.budgets.push(nb);
+      normalizeVersions(nb);
+      container.querySelector('.subtype-name').value='';
+      container.querySelector('.subtype-amount').value='';
+      container.querySelector('.subtype-interval').value='1';
+      container.querySelector('.subtype-mode').value='within';
+      startInput.value=todayStr;
+      endInput.value=defEnd;
+      saveFinance();
+      renderBudgets();
+      renderOverview();
+      renderSettingsSections();
+    });
+
+    const typeList = container.querySelector('.type-list');
+    financeData.budgetCategories.forEach(cat=>{
+      const li=document.createElement('li');
+      li.textContent=cat;
+      if(!cat.startsWith('Other')){
+        const del=document.createElement('button');
+        del.textContent='Delete';
+        del.addEventListener('click',()=>{
+          if(confirm('Delete category and all its sub budgets? This will remove related types from transactions.')){
+            financeData.budgets = financeData.budgets.filter(b=>b.type!==cat);
+            financeData.transactions.forEach(t=>{ if(t.type===cat){ t.type=''; t.subType=''; } });
+            financeData.rules = financeData.rules.filter(r=>r.type!==cat);
+            financeData.budgetCategories = financeData.budgetCategories.filter(c=>c!==cat);
+            saveFinance();
+            renderBudgets();
+            renderOverview();
+            renderTransactions();
+            renderRules();
+            updateTypeOptions();
+            renderSettingsSections();
+          }
+        });
+        li.appendChild(del);
+      }
+      typeList.appendChild(li);
+    });
+
+    const subLists = container.querySelector('.subtype-lists');
+    financeData.budgetCategories.forEach(cat=>{
+      const subs = financeData.budgets.filter(b=>b.type===cat);
+      if(!subs.length) return;
+      const div=document.createElement('div');
+      const title=document.createElement('strong'); title.textContent=cat; div.appendChild(title);
+      const ul=document.createElement('ul');
+      subs.forEach(sub=>{
+        const li=document.createElement('li');
+        li.textContent=sub.name;
+        const edit=document.createElement('button'); edit.textContent='Edit';
+        edit.addEventListener('click',()=>openBudgetModal(sub));
+        const del=document.createElement('button'); del.textContent='Delete';
+        del.addEventListener('click',()=>{
+          if(confirm('Delete this sub budget? This will remove it from any transactions.')){
+            financeData.budgets = financeData.budgets.filter(b=>!(b.type===sub.type && b.name===sub.name));
+            financeData.transactions.forEach(t=>{ if(t.type===sub.type && t.subType===sub.name){ t.type=''; t.subType=''; } });
+            financeData.rules = financeData.rules.filter(r=>!(r.type===sub.type && r.subType===sub.name));
+            saveFinance();
+            renderBudgets();
+            renderOverview();
+            renderTransactions();
+            renderRules();
+            renderSettingsSections();
+          }
+        });
+        li.appendChild(edit);
+        li.appendChild(del);
+        ul.appendChild(li);
+      });
+      div.appendChild(ul);
+      subLists.appendChild(div);
+    });
+  });
+}
+
+function renderRules(){
+  const tbody = document.querySelector('#rule-table tbody');
+  if(!tbody) return;
+  tbody.innerHTML='';
+  financeData.rules.forEach(r=>{
+    const tr=document.createElement('tr');
+    const delBtn=document.createElement('button');
+    delBtn.textContent='Delete';
+    delBtn.addEventListener('click',()=>{
+      financeData.rules=financeData.rules.filter(x=>x.id!==r.id);
+      saveFinance();
+      renderRules();
+    });
+    tr.innerHTML=`<td>${r.match}</td><td>${r.type}</td><td>${r.subType||''}</td>`;
+    const td=document.createElement('td'); td.appendChild(delBtn); tr.appendChild(td);
+    tbody.appendChild(tr);
+  });
+  document.getElementById('rule-desc').value='';
+  document.getElementById('rule-subtype').value='';
+}
+
+async function saveFinance(){
+  checkDuplicates();
+  await fetch('/api/finance-data', { method:'POST', headers:{'Content-Type':'application/json'}, body: JSON.stringify(financeData) });
+}
+
+document.getElementById('upload-form').addEventListener('submit', async e=>{
+  e.preventDefault();
+  const file = document.getElementById('file-input').files[0];
+  if(!file) return;
+  const accountType = document.getElementById('account-type').value;
+  const accountName = document.getElementById('account-name').value.trim();
+  if(accountName && !financeData.accounts.includes(accountName)){
+    financeData.accounts.push(accountName);
+  }
+  parseFile(file, accountType, accountName);
+});
+
+function parseFile(file, accountType, accountName){
+  const reader = new FileReader();
+  const ext = file.name.split('.').pop().toLowerCase();
+  reader.onload = async () => {
+    let rows = [];
+    if(ext === 'csv'){
+      rows = Papa.parse(reader.result, { header:true }).data;
+    } else {
+      const wb = XLSX.read(reader.result, { type:'binary' });
+      const sheet = wb.Sheets[wb.SheetNames[0]];
+      rows = XLSX.utils.sheet_to_json(sheet);
+    }
+    rows.forEach(r=>{
+      let dateRaw='';
+      let description='';
+      let amount='';
+      if(accountType === 'Monzo'){
+        dateRaw = r.Date || r.date;
+        description = r.Description || r.Name || r.name || '';
+        if(r['Money Out']) amount = -parseFloat(r['Money Out']);
+        if(r['Money In']) amount = parseFloat(r['Money In']);
+        if(r.Amount) amount = parseFloat(r.Amount);
+      } else if(accountType === 'TSB') {
+        dateRaw = r['Transaction date'] || r['Transaction Date'] || r.Date || r.date || '';
+        description = r['Transaction description'] || r.Description || '';
+        const debit = parseFloat(r['Debit Amount'] || r['Debit amount'] || r.Debit || r['Debit'] || '');
+        const credit = parseFloat(r['Credit amount'] || r['Credit Amount'] || r.Credit || r['Credit'] || '');
+        if(!Number.isNaN(debit) && debit) amount = -Math.abs(debit);
+        else if(!Number.isNaN(credit) && credit) amount = Math.abs(credit);
+      } else {
+        const keys = Object.keys(r).slice(0,8);
+        keys.forEach(k=>{
+          const lower=k.toLowerCase();
+          if(lower.includes('description')) description = r[k];
+          if(lower === 'date' || lower.startsWith('date ')) dateRaw = r[k];
+          if(lower.includes('amount')) amount = r[k];
+        });
+      }
+      const parsedDate = parseDate(dateRaw);
+      const date = Number.isNaN(parsedDate.getTime()) ? '' : parsedDate.toISOString().slice(0,10);
+      const tx = {
+        id: financeData.nextTransactionId++,
+        date,
+        description,
+        amount: parseFloat(amount || 0),
+        accountType,
+        accountName,
+        month: '',
+        sourceFile: file.name,
+        uploadedAt: new Date().toISOString(),
+        notes: '',
+        transfer: false
+      };
+      assignMonth(tx);
+      applyRules(tx);
+      financeData.transactions.push(tx);
+    });
+    checkDuplicates();
+    await saveFinance();
+    updateAccountList();
+    renderStartBalances();
+    renderTransactions();
+    populateOverviewMonths();
+    populateBalanceMonths();
+    renderOverview();
+    renderBalance();
+    showTab('code');
+    document.getElementById('upload-msg').textContent = 'Uploaded '+rows.length+' rows.';
+  };
+  if(ext === 'csv') reader.readAsText(file); else reader.readAsBinaryString(file);
+}
+
+loadFinance();
+document.getElementById('tab-upload').addEventListener('click', () => showTab('upload'));
+document.getElementById('tab-code').addEventListener('click', () => showTab('code'));
+document.getElementById('tab-budgets').addEventListener('click', () => showTab('budgets'));
+document.getElementById('add-account').addEventListener('click', () => {
+  const name = document.getElementById('new-account').value.trim();
+  if(!name || financeData.accounts.includes(name)) return;
+  financeData.accounts.push(name);
+  document.getElementById('new-account').value='';
+  updateAccountList();
+  renderStartBalances();
+  saveFinance();
+});
+
+document.getElementById('filter-uncoded').addEventListener('change', renderTransactions);
+document.getElementById('toggle-file').addEventListener('change', renderTransactions);
+
+document.getElementById('apply-filters').addEventListener('click', () => {
+  renderTransactions();
+});
+
+document.getElementById('show-duplicates').addEventListener('click', () => {
+  renderDuplicates();
+  document.getElementById('duplicates-modal').style.display = 'block';
+});
+
+document.getElementById('download-excel').addEventListener('click', async () => {
+  const res = await fetch('/api/finance-export');
+  const blob = await res.blob();
+  const url = URL.createObjectURL(blob);
+  const a = document.createElement('a');
+  a.href = url;
+  a.download = 'finance-master.xlsx';
+  a.click();
+  URL.revokeObjectURL(url);
+});
+document.getElementById('select-all').addEventListener('change', e=>{
+  document.querySelectorAll('#tx-table tbody .tx-select').forEach(cb=>cb.checked=e.target.checked);
+});
+document.getElementById('delete-selected').addEventListener('click', ()=>{
+  const ids=Array.from(document.querySelectorAll('#tx-table tbody .tx-select:checked')).map(cb=>parseInt(cb.dataset.id));
+  if(!ids.length) return;
+  financeData.transactions=financeData.transactions.filter(tx=>!ids.includes(tx.id));
+  saveFinance();
+  renderTransactions();
+});
+document.getElementById('close-duplicates').addEventListener('click', () => {
+  document.getElementById('duplicates-modal').style.display = 'none';
+});
+
+document.getElementById('rule-form').addEventListener('submit', e=>{
+  e.preventDefault();
+  const match = document.getElementById('rule-desc').value.trim();
+  const type = document.getElementById('rule-type').value;
+  const sub = document.getElementById('rule-subtype').value.trim();
+  if(!match || !type) return;
+  financeData.rules.push({ id: Date.now(), match, type, subType: sub });
+  document.getElementById('rule-desc').value='';
+  document.getElementById('rule-subtype').value='';
+  saveFinance();
+  renderRules();
+  applyRulesToAll();
+  renderTransactions();
+});
+
+document.getElementById('rule-type').addEventListener('change', () => {
+  const type = document.getElementById('rule-type').value;
+  const list = document.getElementById('rule-subtype-list');
+  list.innerHTML='';
+  financeData.budgets.filter(b=>b.type===type).forEach(b=>{
+    const o=document.createElement('option');o.value=b.name;list.appendChild(o);
+  });
+});
+
+function renderDuplicates(){
+  const tbody = document.querySelector('#duplicates-table tbody');
+  tbody.innerHTML = '';
+  financeData.transactions.filter(t=>t.duplicate).forEach(tx=>{
+    const tr = document.createElement('tr');
+    const keepBtn = document.createElement('button');
+    keepBtn.textContent = 'Keep';
+    keepBtn.addEventListener('click', ()=>{ tx.duplicate=false; saveFinance(); renderTransactions(); renderDuplicates(); });
+    const removeBtn = document.createElement('button');
+    removeBtn.textContent = 'Remove';
+    removeBtn.addEventListener('click', ()=>{ financeData.transactions = financeData.transactions.filter(t=>t.id!==tx.id); saveFinance(); renderTransactions(); renderDuplicates(); });
+    const tdAction = document.createElement('td');
+    tdAction.appendChild(keepBtn); tdAction.appendChild(removeBtn);
+    tr.innerHTML = `<td>${tx.date}</td><td>${tx.description}</td><td>${tx.amount}</td><td>${tx.accountName}</td><td>${tx.sourceFile}</td>`;
+    tr.appendChild(tdAction);
+    tbody.appendChild(tr);
+  });
+}
+
+function validatePeriod(start,end,ignoreIdx=-1){
+  const s=parseDate(start); const e=parseDate(end);
+  if(Number.isNaN(s.getTime()) || Number.isNaN(e.getTime()) || s>e) return false;
+  for(let i=0;i<financeData.budgetPeriods.length;i++){
+    if(i===ignoreIdx) continue;
+    const p=financeData.budgetPeriods[i];
+    const ps=parseDate(p.start); const pe=parseDate(p.end);
+    if(!(e<ps || s>pe)) return false;
+  }
+  return true;
+}
+
+function setNextPeriodStart(){
+  const input=document.getElementById('period-start');
+  if(!input) return;
+  if(financeData.budgetPeriods.length){
+    const last=financeData.budgetPeriods.slice().sort((a,b)=>parseDate(a.start)-parseDate(b.start)).pop();
+    const next=new Date(parseDate(last.end).getTime()+86400000); // next day
+    input.value=next.toISOString().slice(0,10);
+  } else {
+    input.value='';
+  }
+  const end=document.getElementById('period-end'); if(end) end.value='';
+  const month=document.getElementById('period-month'); if(month) month.value='';
+}
+
+function renderPeriods(){
+  const tbody=document.querySelector('#period-table tbody');
+  if(!tbody) return;
+  tbody.innerHTML='';
+  financeData.budgetPeriods.sort((a,b)=>parseDate(a.start)-parseDate(b.start)).forEach((p,i)=>{
+    const tr=document.createElement('tr');
+    const actions=document.createElement('td');
+    const edit=document.createElement('button'); edit.textContent='Edit';
+    edit.addEventListener('click',()=>{
+      const start=prompt('Start date (YYYY-MM-DD)',p.start);
+      const end=prompt('End date (YYYY-MM-DD)',p.end);
+      const month=prompt('Month (MM YYYY)',p.month);
+      if(!start||!end||!month) return;
+      if(!validatePeriod(start,end,i)){ alert('Invalid or overlapping period'); return; }
+      p.start=start; p.end=end; p.month=month;
+      financeData.budgetPeriods.sort((a,b)=>parseDate(a.start)-parseDate(b.start));
+      assignMonthsAll();
+      saveFinance();
+      renderPeriods();
+      populateOverviewMonths();
+      populateBalanceMonths();
+      renderOverview();
+      renderBalance();
+      renderTransactions();
+    });
+    const del=document.createElement('button'); del.textContent='Delete';
+    del.addEventListener('click',()=>{
+      financeData.budgetPeriods.splice(i,1);
+      assignMonthsAll();
+      saveFinance();
+      renderPeriods();
+      populateOverviewMonths();
+      populateBalanceMonths();
+      renderOverview();
+      renderBalance();
+      renderTransactions();
+    });
+    actions.appendChild(edit); actions.appendChild(del);
+    tr.innerHTML=`<td>${p.start}</td><td>${p.end}</td><td>${p.month}</td>`;
+    tr.appendChild(actions);
+    tbody.appendChild(tr);
+  });
+  setNextPeriodStart();
+}
+
+function populateOverviewMonths(){
+  const sel=document.getElementById('overview-month');
+  if(!sel) return;
+  const prev = Array.from(sel.selectedOptions).map(o=>o.value);
+  const months=new Set(financeData.transactions.map(t=>t.month).filter(m=>m));
+  sel.innerHTML='';
+  const map={};
+  financeData.budgetPeriods.forEach(p=>{map[p.month]=parseDate(p.start).getTime();});
+  Array.from(months).sort((a,b)=>{
+    return (map[a]||0)-(map[b]||0);
+  }).forEach(m=>{
+    const o=document.createElement('option');
+    o.value=m;
+    o.textContent=m;
+    if(prev.includes(m)) o.selected=true;
+    sel.appendChild(o);
+  });
+  if(!sel.selectedOptions.length && sel.options.length){
+    sel.options[sel.options.length-1].selected=true;
+  }
+}
+
+function populateBalanceMonths(){
+  const sel=document.getElementById('balance-month');
+  if(!sel) return;
+  const prev=sel.value;
+  const months=new Set(financeData.transactions.map(t=>t.month).filter(m=>m));
+  financeData.budgetPeriods.forEach(p=>{ if(p.month) months.add(p.month); });
+  const map={}; financeData.budgetPeriods.forEach(p=>{ map[p.month]=parseDate(p.start).getTime(); });
+  sel.innerHTML='';
+  Array.from(months).sort((a,b)=>{ return (map[a]||0)-(map[b]||0); }).forEach(m=>{
+    const o=document.createElement('option'); o.value=m; o.textContent=m; sel.appendChild(o);
+  });
+  if(prev && months.has(prev)) sel.value=prev; else if(sel.options.length) sel.value=sel.options[sel.options.length-1].value;
+}
+
+function shiftMonth(month, offset){
+  if(!month) return '';
+  const [m,y]=month.split(' ').map(Number);
+  const d=new Date(y,m-1,1);
+  d.setMonth(d.getMonth()+offset);
+  return `${String(d.getMonth()+1).padStart(2,'0')} ${d.getFullYear()}`;
+}
+
+function isIncomeCategory(cat){
+  return /income/i.test(cat);
+}
+
+function renderStartBalances(){
+  const form=document.getElementById('start-balance-form');
+  if(!form) return;
+  const sb=financeData.startBalances||{date:'',accounts:{}};
+  document.getElementById('start-balance-date').value=sb.date||'';
+  const container=document.getElementById('start-balance-accounts');
+  container.innerHTML='';
+  financeData.accounts.forEach(acc=>{
+    const val=sb.accounts&&sb.accounts[acc]?sb.accounts[acc]:0;
+    const label=document.createElement('label');
+    label.textContent=acc;
+    const inp=document.createElement('input'); inp.type='number'; inp.step='0.01'; inp.dataset.acc=acc; inp.value=val;
+    label.appendChild(inp);
+    container.appendChild(label);
+  });
+}
+
+function renderBalance(){
+  const sel=document.getElementById('balance-month');
+  if(!sel||!sel.value) return;
+  const months=[];
+  for(let i=3;i>0;i--) months.push(shiftMonth(sel.value,-i));
+  months.push(sel.value);
+  for(let i=1;i<=3;i++) months.push(shiftMonth(sel.value,i));
+  const sb=financeData.startBalances||{date:'',accounts:{}};
+  const startTotal=Object.values(sb.accounts||{}).reduce((s,v)=>s+parseFloat(v||0),0);
+  const data={income:{},expense:{}};
+  const totals={income:{actual:Array(7).fill(0),budget:Array(7).fill(0)},expense:{actual:Array(7).fill(0),budget:Array(7).fill(0)}};
+  // ensure categories exist
+  financeData.budgetCategories.forEach(cat=>{
+    const sec=isIncomeCategory(cat)?'income':'expense';
+    if(!data[sec][cat]) data[sec][cat]={subs:{},actual:Array(7).fill(0),budget:Array(7).fill(0)};
+  });
+  financeData.budgets.forEach(b=>{
+    const sec=isIncomeCategory(b.type)?'income':'expense';
+    if(!data[sec][b.type]) data[sec][b.type]={subs:{},actual:Array(7).fill(0),budget:Array(7).fill(0)};
+    if(!data[sec][b.type].subs[b.name]) data[sec][b.type].subs[b.name]={actual:Array(7).fill(0),budget:Array(7).fill(0)};
+  });
+  financeData.transactions.forEach(tx=>{
+    const cat=tx.type||'';
+    const sub=tx.subType||'';
+    const sec=parseFloat(tx.amount||0)>0?'income':'expense';
+    if(!data[sec][cat]) data[sec][cat]={subs:{},actual:Array(7).fill(0),budget:Array(7).fill(0)};
+    if(sub && !data[sec][cat].subs[sub]) data[sec][cat].subs[sub]={actual:Array(7).fill(0),budget:Array(7).fill(0)};
+  });
+  months.forEach((m,idx)=>{
+    financeData.transactions.filter(t=>t.month===m && !t.transfer).forEach(t=>{
+      const amt=parseFloat(t.amount||0);
+      const sec=amt>0?'income':'expense';
+      const val=Math.abs(amt);
+      totals[sec].actual[idx]+=val;
+      const cat=t.type||'';
+      const sub=t.subType||'';
+      if(data[sec][cat]){
+        data[sec][cat].actual[idx]+=val;
+        if(sub && data[sec][cat].subs[sub]) data[sec][cat].subs[sub].actual[idx]+=val;
+      }
+    });
+    financeData.budgets.forEach(b=>{
+      const amount=baseAmountForMonth(b,m)+extraForMonth(b,m);
+      if(amount>0){
+        const sec=isIncomeCategory(b.type)?'income':'expense';
+        totals[sec].budget[idx]+=amount;
+        if(data[sec][b.type]){
+          data[sec][b.type].budget[idx]+=amount;
+          if(data[sec][b.type].subs[b.name]) data[sec][b.type].subs[b.name].budget[idx]+=amount;
+        }
+      }
+    });
+  });
+  const thead=document.querySelector('#balance-table thead');
+  let head='<tr><th>Item</th>';
+  months.forEach(m=>{ head+=`<th>${formatMonth(m)}</th>`; });
+  head+='</tr>';
+  thead.innerHTML=head;
+  const tbody=document.querySelector('#balance-table tbody');
+  tbody.innerHTML='';
+  const opening=[]; const closing=[];
+  opening[0]=startTotal;
+  for(let i=0;i<7;i++){
+    const net=(i<4?totals.income.actual[i]-totals.expense.actual[i]:totals.income.budget[i]-totals.expense.budget[i]);
+    closing[i]=(opening[i]||0)+net;
+    if(i<6) opening[i+1]=closing[i];
+  }
+  const openRow=document.createElement('tr');
+  openRow.innerHTML='<td>Opening Balance</td>'+opening.map(o=>`<td>${o.toFixed(2)}</td>`).join('');
+  tbody.appendChild(openRow);
+
+  function renderSection(sec){
+    const secRow=document.createElement('tr');
+    const totalsArr=totals[sec];
+    secRow.innerHTML=`<td><button class="toggle" data-section="${sec}">+</button>${sec==='income'?'Total Income':'Total Expenditure'}</td>`+
+      months.map((m,idx)=>{
+        if(idx===3){ return `<td>${totalsArr.actual[idx].toFixed(2)} / ${totalsArr.budget[idx].toFixed(2)}</td>`; }
+        if(idx<3){ return `<td>${totalsArr.actual[idx].toFixed(2)}</td>`; }
+        return `<td>${totalsArr.budget[idx].toFixed(2)}</td>`;
+      }).join('');
+    tbody.appendChild(secRow);
+    Object.keys(data[sec]).forEach(cat=>{
+      const catRow=document.createElement('tr');
+      catRow.classList.add(sec+'-cat');
+      catRow.style.display='none';
+      const cdata=data[sec][cat];
+      catRow.innerHTML=`<td style="padding-left:20px;"><button class="toggle" data-cat="${cat.replace(/\s+/g,'-')}">+</button>${cat}</td>`+
+        months.map((m,idx)=>{
+          if(idx===3){ return `<td>${cdata.actual[idx].toFixed(2)} / ${cdata.budget[idx].toFixed(2)}</td>`; }
+          if(idx<3){ return `<td>${cdata.actual[idx].toFixed(2)}</td>`; }
+          return `<td>${cdata.budget[idx].toFixed(2)}</td>`;
+        }).join('');
+      tbody.appendChild(catRow);
+      Object.keys(cdata.subs).forEach(sub=>{
+        const srow=document.createElement('tr');
+        srow.classList.add('cat-'+cat.replace(/\s+/g,'-'));
+        srow.style.display='none';
+        const sdata=cdata.subs[sub];
+        srow.innerHTML=`<td style="padding-left:40px;">${sub}</td>`+
+          months.map((m,idx)=>{
+            if(idx===3){ return `<td>${sdata.actual[idx].toFixed(2)} / ${sdata.budget[idx].toFixed(2)}</td>`; }
+            if(idx<3){ return `<td>${sdata.actual[idx].toFixed(2)}</td>`; }
+            return `<td>${sdata.budget[idx].toFixed(2)}</td>`;
+          }).join('');
+        tbody.appendChild(srow);
+      });
+    });
+  }
+
+  renderSection('income');
+  renderSection('expense');
+
+  const closeRow=document.createElement('tr');
+  closeRow.innerHTML='<td>Closing Balance</td>'+closing.map(c=>`<td>${c.toFixed(2)}</td>`).join('');
+  tbody.appendChild(closeRow);
+}
+
+function renderOverview(){
+  const monthSel=document.getElementById('overview-month');
+  if(!monthSel) return;
+  const months=Array.from(monthSel.selectedOptions).map(o=>o.value);
+  if(!months.length) return;
+  const showBud=document.getElementById('show-budgeted').checked;
+  const showRem=document.getElementById('show-remaining').checked;
+  const showIncome=document.getElementById('show-income').checked;
+  const showArch=document.getElementById('toggle-archived').checked;
+  const extraDisplay=document.getElementById('extra-display')?document.getElementById('extra-display').value:'merge';
+  const thead=document.querySelector('#overview-table thead tr');
+  let headHtml='<th>Budget Item</th>';
+  months.forEach(m=>{
+    const label=formatMonth(m);
+    if(showBud) headHtml+=`<th>Budgeted (${label})</th>`;
+    headHtml+=`<th>Spent (${label})</th>`;
+    if(showIncome) headHtml+=`<th>Income (${label})</th>`;
+    headHtml+=`<th>Used (${label})</th>`;
+    if(showRem) headHtml+=`<th>Remaining (${label})</th>`;
+  });
+  headHtml+='<th>Status</th>';
+  thead.innerHTML=headHtml;
+  const tbody=document.querySelector('#overview-table tbody');
+  tbody.innerHTML='';
+  financeData.budgetCategories.forEach(cat=>{
+    const subs=financeData.budgets.filter(b=>b.type===cat && (showArch||!b.archived));
+    const catData=months.map(m=>{
+      let base=0, extra=0;
+      subs.forEach(sub=>{ base+=baseAmountForMonth(sub,m); extra+=extraForMonth(sub,m); });
+      const budget=base+extra;
+      const txs=financeData.transactions.filter(t=>t.type===cat && t.month===m && !t.transfer);
+      const spent=txs.filter(t=>parseFloat(t.amount||0)<0).reduce((s,t)=>s+parseFloat(t.amount||0),0);
+      const income=txs.filter(t=>parseFloat(t.amount||0)>0).reduce((s,t)=>s+parseFloat(t.amount||0),0);
+      const used=spent+income;
+      const rem=budget+used;
+      return {base,extra,budget,spent,income,used,rem};
+    });
+    let html=`<td>${cat}</td>`;
+    let totalBudget=0, totalUsed=0;
+    catData.forEach(d=>{
+      if(showBud){
+        if(extraDisplay==='separate' && d.extra>0){
+          html+=`<td>${d.base.toFixed(2)}<div style="color:pink;font-weight:bold;font-size:0.8rem;">+${d.extra.toFixed(2)}</div></td>`;
+        } else {
+          html+=`<td>${d.budget.toFixed(2)}</td>`;
+        }
+      }
+      html+=`<td>${d.spent.toFixed(2)}</td>`;
+      if(showIncome) html+=`<td>${d.income.toFixed(2)}</td>`;
+      html+=`<td>${d.used.toFixed(2)}</td>`;
+      if(showRem) html+=`<td style="color:${d.rem<0?'red':'green'}">${d.rem.toFixed(2)}</td>`;
+      totalBudget+=d.budget;
+      totalUsed+=d.used;
+    });
+    const overallRem=totalBudget+totalUsed;
+    html+=`<td>${overallRem>=0?'\u2705':'\u274c'}</td>`;
+    const tr=document.createElement('tr');
+    tr.innerHTML=html;
+    tbody.appendChild(tr);
+    subs.forEach(sub=>{
+      const subData=months.map(m=>{
+        const base=baseAmountForMonth(sub,m);
+        const extra=extraForMonth(sub,m);
+        const budget=base+extra;
+        const txs=financeData.transactions.filter(t=>t.type===cat && t.subType===sub.name && t.month===m && !t.transfer);
+        const spent=txs.filter(t=>parseFloat(t.amount||0)<0).reduce((s,t)=>s+parseFloat(t.amount||0),0);
+        const income=txs.filter(t=>parseFloat(t.amount||0)>0).reduce((s,t)=>s+parseFloat(t.amount||0),0);
+        const used=spent+income;
+        const rem=budget+used;
+        return {base,extra,budget,spent,income,used,rem};
+      });
+      const tr2=document.createElement('tr');
+      let h=`<td style="padding-left:20px;">${sub.name}</td>`;
+      subData.forEach(d=>{
+        if(showBud){
+          if(extraDisplay==='separate' && d.extra>0){
+            h+=`<td>${d.base.toFixed(2)}<div style="color:pink;font-weight:bold;font-size:0.8rem;">+${d.extra.toFixed(2)}</div></td>`;
+          } else {
+            h+=`<td>${d.budget.toFixed(2)}</td>`;
+          }
+        }
+        h+=`<td>${d.spent.toFixed(2)}</td>`;
+        if(showIncome) h+=`<td>${d.income.toFixed(2)}</td>`;
+        h+=`<td>${d.used.toFixed(2)}</td>`;
+        if(showRem) h+=`<td style="color:${d.rem<0?'red':'green'}">${d.rem.toFixed(2)}</td>`;
+      });
+      h+='<td></td>';
+      tr2.innerHTML=h;
+      catRows.push(tr2);
+    });
+    const spentCat=financeData.transactions
+      .filter(t=>t.type===cat && monthSet.has(t.month) && !t.transfer)
+      .reduce((s,t)=>s+parseFloat(t.amount||0),0);
+    const remCat=catBudget-spentCat;
+    const tr=document.createElement('tr');
+    let html=`<td>${cat}</td>`;
+    if(showBud){
+      if(extraDisplay==='separate' && catExtra>0){
+        html+=`<td>${catBase.toFixed(2)}<div style="color:pink;font-weight:bold;font-size:0.8rem;">+${catExtra.toFixed(2)}</div></td>`;
+      } else {
+        html+=`<td>${catBudget.toFixed(2)}</td>`;
+      }
+    }
+    html+=`<td>${spentCat.toFixed(2)}</td>`;
+    if(showRem) html+=`<td style="color:${remCat<0?'red':'green'}">${remCat.toFixed(2)}</td>`;
+    html+=`<td>${remCat>=0?'\u2705':'\u274c'}</td>`;
+    tr.innerHTML=html;
+    tbody.appendChild(tr);
+    catRows.forEach(r=>tbody.appendChild(r));
+  });
+}
+
+document.getElementById('period-form').addEventListener('submit',e=>{
+  e.preventDefault();
+  const start=document.getElementById('period-start').value;
+  const end=document.getElementById('period-end').value;
+  const monthVal=document.getElementById('period-month').value;
+  const month=monthVal?`${monthVal.split('-')[1]} ${monthVal.split('-')[0]}`:'';
+  if(!start||!end||!month) return;
+  if(!validatePeriod(start,end)){ alert('Invalid or overlapping period'); return; }
+  financeData.budgetPeriods.push({start,end,month});
+  financeData.budgetPeriods.sort((a,b)=>parseDate(a.start)-parseDate(b.start));
+  assignMonthsAll();
+  saveFinance();
+  renderPeriods();
+  populateOverviewMonths();
+  populateBalanceMonths();
+  renderOverview();
+  renderBalance();
+  renderTransactions();
+});
+
+document.getElementById('overview-month').addEventListener('change',renderOverview);
+document.getElementById('show-budgeted').addEventListener('change',renderOverview);
+document.getElementById('show-remaining').addEventListener('change',renderOverview);
+document.getElementById('show-income').addEventListener('change',renderOverview);
+document.getElementById('toggle-archived').addEventListener('change',renderOverview);
+document.getElementById('extra-display').addEventListener('change',renderOverview);
+document.getElementById('balance-month').addEventListener('change',renderBalance);
+document.getElementById('start-balance-form').addEventListener('submit',e=>{
+  e.preventDefault();
+  const date=document.getElementById('start-balance-date').value;
+  const accounts={};
+  document.querySelectorAll('#start-balance-accounts input').forEach(inp=>{
+    accounts[inp.dataset.acc]=parseFloat(inp.value||0);
+  });
+  financeData.startBalances={date,accounts};
+  saveFinance();
+  renderBalance();
+});
+document.addEventListener('click',e=>{
+  if(e.target.classList.contains('toggle')){
+    if(e.target.dataset.section){
+      const rows=document.querySelectorAll('.'+e.target.dataset.section+'-cat');
+      const show=e.target.textContent==='+';
+      rows.forEach(r=>{r.style.display=show?'':'none';});
+      e.target.textContent=show?'-':'+';
+    } else if(e.target.dataset.cat){
+      const rows=document.querySelectorAll('.cat-'+e.target.dataset.cat);
+      const show=e.target.textContent==='+';
+      rows.forEach(r=>{r.style.display=show?'':'none';});
+      e.target.textContent=show?'-':'+';
+    }
+  }
+});
+</script>
+</body>
+</html>

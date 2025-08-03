@@ -1,0 +1,1133 @@
+{
+  "projects": [
+    {
+      "name": "Self Care",
+      "color": "#264653",
+      "closed": false
+    },
+    {
+      "name": "Family",
+      "color": "#2a9d8f",
+      "closed": false
+    },
+    {
+      "name": "Social",
+      "color": "#e9c46a",
+      "closed": false
+    },
+    {
+      "name": "Chores",
+      "color": "#f4a261",
+      "closed": false
+    },
+    {
+      "name": "Finance",
+      "color": "#e76f51",
+      "closed": false
+    },
+    {
+      "name": "Soul",
+      "color": "#70d6f0",
+      "closed": false
+    }
+  ],
+  "weeklyTasks": [
+    {
+      "id": "00000001",
+      "name": "Gym",
+      "project": "Self Care",
+      "importance": "Medium",
+      "urgency": "Medium",
+      "days": [
+        "Mon",
+        "Wed",
+        "Fri"
+      ],
+      "completedDates": [],
+      "missedDates": [
+        "2025-07-30",
+        "2025-08-01"
+      ],
+      "status": "open",
+      "startDate": "2025-07-28",
+      "closedDate": "",
+      "dateLastChecked": "2025-08-03"
+    },
+    {
+      "id": "00000002",
+      "name": "Cut Nails",
+      "project": "Self Care",
+      "importance": "Medium",
+      "urgency": "Medium/Low",
+      "days": [
+        "Sun"
+      ],
+      "completedDates": [],
+      "missedDates": [
+        "2025-08-03"
+      ],
+      "status": "open",
+      "startDate": "2025-07-28",
+      "closedDate": "",
+      "dateLastChecked": "2025-08-03"
+    },
+    {
+      "id": "00000003",
+      "name": "Tweeze",
+      "project": "Self Care",
+      "importance": "High/Medium",
+      "urgency": "Medium",
+      "days": [
+        "Mon"
+      ],
+      "completedDates": [],
+      "missedDates": [],
+      "status": "open",
+      "startDate": "2025-07-28",
+      "closedDate": "",
+      "dateLastChecked": "2025-08-03"
+    },
+    {
+      "id": "00000004",
+      "name": "Order Food",
+      "project": "Self Care",
+      "importance": "Medium",
+      "urgency": "Medium/Low",
+      "days": [
+        "Tue"
+      ],
+      "completedDates": [
+        "2025-07-30"
+      ],
+      "missedDates": [
+        "2025-07-29"
+      ],
+      "status": "open",
+      "startDate": "2025-07-28",
+      "closedDate": "",
+      "dateLastChecked": "2025-08-03"
+    },
+    {
+      "id": "00000005",
+      "name": "Laundry",
+      "project": "Chores",
+      "importance": "Medium",
+      "urgency": "Medium",
+      "days": [
+        "Mon"
+      ],
+      "completedDates": [
+        "2025-07-28"
+      ],
+      "missedDates": [],
+      "status": "open",
+      "startDate": "2025-07-28",
+      "closedDate": "",
+      "dateLastChecked": "2025-08-03"
+    },
+    {
+      "id": "00000006",
+      "name": "Chane Bedding",
+      "project": "Chores",
+      "importance": "Medium/Low",
+      "urgency": "Medium/Low",
+      "days": [
+        "Sun"
+      ],
+      "completedDates": [
+        "2025-07-28",
+        "2025-08-03"
+      ],
+      "missedDates": [],
+      "status": "open",
+      "startDate": "2025-07-28",
+      "closedDate": "",
+      "dateLastChecked": "2025-08-03"
+    },
+    {
+      "id": "00000007",
+      "name": "Change Towels",
+      "project": "Chores",
+      "importance": "Medium",
+      "urgency": "Medium/Low",
+      "days": [
+        "Sun"
+      ],
+      "completedDates": [
+        "2025-07-28"
+      ],
+      "missedDates": [
+        "2025-08-03"
+      ],
+      "status": "open",
+      "startDate": "2025-07-28",
+      "closedDate": "",
+      "dateLastChecked": "2025-08-03"
+    },
+    {
+      "id": "00000008",
+      "name": "Put Laundry Away",
+      "project": "Chores",
+      "importance": "Medium/Low",
+      "urgency": "Medium/Low",
+      "days": [
+        "Sat"
+      ],
+      "completedDates": [
+        "2025-08-02"
+      ],
+      "missedDates": [],
+      "status": "open",
+      "startDate": "2025-07-28",
+      "closedDate": "",
+      "dateLastChecked": "2025-08-03"
+    },
+    {
+      "id": "00000009",
+      "name": "Prep Kari's Bag",
+      "project": "Family",
+      "importance": "High/Medium",
+      "urgency": "High/Medium",
+      "days": [
+        "Sun"
+      ],
+      "completedDates": [
+        "2025-07-31",
+        "2025-08-03"
+      ],
+      "missedDates": [],
+      "status": "open",
+      "startDate": "2025-07-28",
+      "closedDate": "",
+      "dateLastChecked": "2025-08-03"
+    },
+    {
+      "id": "00000012",
+      "name": "Reply to Friends",
+      "project": "Social",
+      "importance": "High/Medium",
+      "urgency": "Medium",
+      "days": [
+        "Mon",
+        "Wed",
+        "Fri"
+      ],
+      "completedDates": [
+        "2025-07-30",
+        "2025-08-03"
+      ],
+      "missedDates": [
+        "2025-08-01"
+      ],
+      "status": "open",
+      "startDate": "2025-07-28",
+      "closedDate": "",
+      "dateLastChecked": "2025-08-03"
+    },
+    {
+      "id": "00000013",
+      "name": "Parenting App",
+      "project": "Family",
+      "importance": "High/Medium",
+      "urgency": "Medium",
+      "days": [
+        "Sun"
+      ],
+      "completedDates": [],
+      "missedDates": [
+        "2025-08-03"
+      ],
+      "status": "open",
+      "startDate": "2025-07-28",
+      "closedDate": "",
+      "dateLastChecked": "2025-08-03"
+    },
+    {
+      "id": "00000035",
+      "name": "Positivity Journal",
+      "project": "Soul",
+      "importance": "High/Medium",
+      "urgency": "Medium/Low",
+      "days": [
+        "Mon"
+      ],
+      "completedDates": [
+        "2025-07-30"
+      ],
+      "missedDates": [],
+      "status": "open",
+      "startDate": "2025-07-28",
+      "closedDate": "",
+      "dateLastChecked": "2025-08-03"
+    },
+    {
+      "id": "00000036",
+      "name": "Meditation",
+      "project": "Soul",
+      "importance": "High",
+      "urgency": "Medium",
+      "days": [
+        "Mon",
+        "Tue",
+        "Wed",
+        "Thu",
+        "Fri",
+        "Sun"
+      ],
+      "completedDates": [
+        "2025-07-28",
+        "2025-07-30",
+        "2025-08-02"
+      ],
+      "missedDates": [
+        "2025-07-29",
+        "2025-07-31",
+        "2025-08-01",
+        "2025-08-03"
+      ],
+      "status": "open",
+      "startDate": "2025-07-28",
+      "closedDate": "",
+      "dateLastChecked": "2025-08-03"
+    },
+    {
+      "id": "00000037",
+      "name": "Quabble Wellbeing",
+      "project": "Soul",
+      "importance": "High",
+      "urgency": "Medium",
+      "days": [
+        "Mon",
+        "Wed",
+        "Fri",
+        "Sat"
+      ],
+      "completedDates": [
+        "2025-07-28",
+        "2025-07-30",
+        "2025-08-02"
+      ],
+      "missedDates": [
+        "2025-08-01"
+      ],
+      "status": "open",
+      "startDate": "2025-07-28",
+      "closedDate": "",
+      "dateLastChecked": "2025-08-03"
+    },
+    {
+      "id": "00000060",
+      "name": "Check physiatry UK emails",
+      "project": "Self Care",
+      "importance": "Medium",
+      "urgency": "Medium",
+      "days": [
+        "Mon"
+      ],
+      "completedDates": [],
+      "missedDates": [],
+      "status": "open",
+      "startDate": "2025-08-02",
+      "closedDate": "",
+      "dateLastChecked": "2025-08-03"
+    },
+    {
+      "id": "00000069",
+      "name": "Review spending",
+      "project": "Finance",
+      "importance": "Medium",
+      "urgency": "Medium",
+      "days": [
+        "Sun"
+      ],
+      "completedDates": [],
+      "missedDates": [],
+      "status": "open",
+      "startDate": "2025-08-03",
+      "closedDate": "",
+      "dateLastChecked": "2025-08-03"
+    }
+  ],
+  "oneOffTasks": [
+    {
+      "id": "00000010",
+      "name": "Order Pictures for Kari's Book",
+      "project": "Family",
+      "importance": "Medium",
+      "urgency": "High/Medium",
+      "dueDate": "",
+      "startDate": "2025-07-28",
+      "status": "closed",
+      "closedDate": "2025-08-02",
+      "taskType": "One-off",
+      "completedDates": [
+        "2025-08-02"
+      ],
+      "missedDates": []
+    },
+    {
+      "id": "00000014",
+      "name": "Organise to See Pani for Bday",
+      "project": "Social",
+      "importance": "High",
+      "urgency": "High",
+      "dueDate": "2025-07-28",
+      "startDate": "2025-07-28",
+      "status": "open",
+      "closedDate": "",
+      "taskType": "One-off",
+      "completedDates": [],
+      "missedDates": []
+    },
+    {
+      "id": "00000015",
+      "name": "Sort Sarees Out in the attic",
+      "project": "Chores",
+      "importance": "High/Medium",
+      "urgency": "High/Medium",
+      "dueDate": "",
+      "startDate": "2025-07-28",
+      "status": "open",
+      "closedDate": "",
+      "taskType": "One-off",
+      "completedDates": [],
+      "missedDates": []
+    },
+    {
+      "id": "00000016",
+      "name": "Put Jewellery in the attic",
+      "project": "Chores",
+      "importance": "High/Medium",
+      "urgency": "High/Medium",
+      "dueDate": "",
+      "startDate": "2025-07-28",
+      "status": "open",
+      "closedDate": "",
+      "taskType": "One-off",
+      "completedDates": [],
+      "missedDates": []
+    },
+    {
+      "id": "00000017",
+      "name": "Rebook the podiatrist",
+      "project": "Self Care",
+      "importance": "High",
+      "urgency": "High",
+      "dueDate": "2025-07-28",
+      "startDate": "2025-07-28",
+      "status": "closed",
+      "closedDate": "2025-07-28",
+      "taskType": "One-off",
+      "completedDates": [
+        "2025-07-28"
+      ],
+      "missedDates": []
+    },
+    {
+      "id": "00000018",
+      "name": "Chase admiral",
+      "project": "Finance",
+      "importance": "High",
+      "urgency": "High",
+      "dueDate": "2025-08-02",
+      "startDate": "2025-07-28",
+      "status": "open",
+      "closedDate": "",
+      "taskType": "One-off",
+      "completedDates": [],
+      "missedDates": []
+    },
+    {
+      "id": "00000019",
+      "name": "Rebook Dentist",
+      "project": "Self Care",
+      "importance": "High",
+      "urgency": "High",
+      "dueDate": "2025-08-03",
+      "startDate": "2025-07-28",
+      "status": "closed",
+      "closedDate": "2025-07-29",
+      "taskType": "One-off",
+      "completedDates": [
+        "2025-07-29"
+      ],
+      "missedDates": []
+    },
+    {
+      "id": "00000020",
+      "name": "Change Kari's vaccinations",
+      "project": "Family",
+      "importance": "High",
+      "urgency": "High",
+      "dueDate": "2025-07-28",
+      "startDate": "2025-07-28",
+      "status": "closed",
+      "closedDate": "2025-07-29",
+      "taskType": "One-off",
+      "completedDates": [
+        "2025-07-29"
+      ],
+      "missedDates": []
+    },
+    {
+      "id": "00000021",
+      "name": "Figure out dish washer",
+      "project": "Chores",
+      "importance": "Medium",
+      "urgency": "Medium",
+      "dueDate": "",
+      "startDate": "2025-07-28",
+      "status": "closed",
+      "closedDate": "2025-08-03",
+      "taskType": "One-off",
+      "completedDates": [
+        "2025-08-03"
+      ],
+      "missedDates": []
+    },
+    {
+      "id": "00000022",
+      "name": "Check deposit for car rental",
+      "project": "Finance",
+      "importance": "Medium",
+      "urgency": "Medium",
+      "dueDate": "",
+      "startDate": "2025-07-28",
+      "status": "open",
+      "closedDate": "",
+      "taskType": "One-off",
+      "completedDates": [],
+      "missedDates": []
+    },
+    {
+      "id": "00000023",
+      "name": "Check Deposit for Hotel",
+      "project": "Finance",
+      "importance": "Medium",
+      "urgency": "Medium",
+      "dueDate": "",
+      "startDate": "2025-07-28",
+      "status": "open",
+      "closedDate": "",
+      "taskType": "One-off",
+      "completedDates": [],
+      "missedDates": []
+    },
+    {
+      "id": "00000024",
+      "name": "Send the extra days to nursery",
+      "project": "Family",
+      "importance": "High",
+      "urgency": "High",
+      "dueDate": "2025-07-30",
+      "startDate": "2025-07-28",
+      "status": "closed",
+      "closedDate": "2025-07-30",
+      "taskType": "One-off",
+      "completedDates": [
+        "2025-07-30"
+      ],
+      "missedDates": []
+    },
+    {
+      "id": "00000032",
+      "name": "Figure out monas bday, her replacement bday event and mum gift",
+      "project": "Social",
+      "importance": "High",
+      "urgency": "High",
+      "dueDate": "",
+      "startDate": "2025-07-28",
+      "status": "open",
+      "closedDate": "",
+      "taskType": "One-off",
+      "completedDates": [],
+      "missedDates": []
+    },
+    {
+      "id": "00000038",
+      "name": "Make a note off Kari's appointment and mine",
+      "project": "Family",
+      "importance": "High/Medium",
+      "urgency": "Medium/Low",
+      "dueDate": "",
+      "startDate": "2025-07-28",
+      "status": "open",
+      "closedDate": "",
+      "taskType": "One-off",
+      "completedDates": [],
+      "missedDates": []
+    },
+    {
+      "id": "00000039",
+      "name": "Find out why Netflix is charging phone bill",
+      "project": "Finance",
+      "importance": "Medium/Low",
+      "urgency": "Medium/Low",
+      "dueDate": "",
+      "startDate": "2025-07-29",
+      "status": "open",
+      "closedDate": "",
+      "taskType": "One-off",
+      "completedDates": [],
+      "missedDates": []
+    },
+    {
+      "id": "00000040",
+      "name": "Apply for Childcare",
+      "project": "Finance",
+      "importance": "High",
+      "urgency": "High",
+      "dueDate": "2025-08-01",
+      "startDate": "2025-07-29",
+      "status": "open",
+      "closedDate": "",
+      "taskType": "One-off",
+      "completedDates": [],
+      "missedDates": []
+    },
+    {
+      "id": "00000041",
+      "name": "Put fridge cards up",
+      "project": "Chores",
+      "importance": "Medium",
+      "urgency": "Medium",
+      "dueDate": "",
+      "startDate": "2025-07-29",
+      "status": "closed",
+      "closedDate": "2025-07-30",
+      "taskType": "One-off",
+      "completedDates": [
+        "2025-07-30"
+      ],
+      "missedDates": []
+    },
+    {
+      "id": "00000047",
+      "name": "Stairgate",
+      "project": "Family",
+      "importance": "Medium",
+      "urgency": "Medium",
+      "dueDate": "",
+      "startDate": "2025-07-30",
+      "status": "open",
+      "closedDate": "",
+      "taskType": "One-off",
+      "completedDates": [],
+      "missedDates": []
+    },
+    {
+      "id": "00000048",
+      "name": "Find out how to clean inside of squidged",
+      "project": "Chores",
+      "importance": "Medium",
+      "urgency": "Medium",
+      "dueDate": "",
+      "startDate": "2025-07-30",
+      "status": "open",
+      "closedDate": "",
+      "taskType": "One-off",
+      "completedDates": [],
+      "missedDates": []
+    },
+    {
+      "id": "00000049",
+      "name": "Do kari's scheduled days",
+      "project": "Family",
+      "importance": "High",
+      "urgency": "High",
+      "dueDate": "2025-07-30",
+      "startDate": "2025-07-30",
+      "status": "closed",
+      "closedDate": "2025-07-30",
+      "taskType": "One-off",
+      "completedDates": [
+        "2025-07-30"
+      ],
+      "missedDates": []
+    },
+    {
+      "id": "00000050",
+      "name": "Kari's Picture Book",
+      "project": "Family",
+      "importance": "Medium",
+      "urgency": "Medium",
+      "dueDate": "",
+      "startDate": "2025-07-30",
+      "status": "closed",
+      "closedDate": "2025-08-02",
+      "taskType": "One-off",
+      "completedDates": [
+        "2025-08-02"
+      ],
+      "missedDates": []
+    },
+    {
+      "id": "00000053",
+      "name": "Get everyones bday as a list",
+      "project": "Family",
+      "importance": "Medium",
+      "urgency": "Medium",
+      "dueDate": "",
+      "startDate": "2025-07-30",
+      "status": "open",
+      "closedDate": "",
+      "taskType": "One-off",
+      "completedDates": [],
+      "missedDates": []
+    },
+    {
+      "id": "00000054",
+      "name": "follow up with nursery about the change in hours and scheduled extra session",
+      "project": "Family",
+      "importance": "High/Medium",
+      "urgency": "High/Medium",
+      "dueDate": "2025-08-01",
+      "startDate": "2025-07-30",
+      "status": "open",
+      "closedDate": "",
+      "taskType": "One-off",
+      "completedDates": [],
+      "missedDates": []
+    },
+    {
+      "id": "00000056",
+      "name": "Check lump on karis head",
+      "project": "Family",
+      "importance": "High",
+      "urgency": "High",
+      "dueDate": "",
+      "startDate": "2025-07-30",
+      "status": "open",
+      "closedDate": "",
+      "taskType": "One-off",
+      "completedDates": [],
+      "missedDates": []
+    },
+    {
+      "id": "00000063",
+      "name": "Download calm",
+      "project": "Soul",
+      "importance": "Medium/Low",
+      "urgency": "Medium/Low",
+      "dueDate": "",
+      "startDate": "2025-08-02",
+      "status": "open",
+      "closedDate": "",
+      "taskType": "One-off",
+      "completedDates": [],
+      "missedDates": []
+    },
+    {
+      "id": "00000067",
+      "name": "Organise Rakhi ",
+      "project": "Family",
+      "importance": "High",
+      "urgency": "High",
+      "dueDate": "2025-08-05",
+      "startDate": "2025-08-03",
+      "status": "open",
+      "closedDate": "",
+      "taskType": "One-off",
+      "completedDates": [],
+      "missedDates": []
+    },
+    {
+      "id": "00000070",
+      "name": "Buy stuff I need for diy",
+      "project": "Chores",
+      "importance": "High",
+      "urgency": "High",
+      "dueDate": "",
+      "startDate": "2025-08-03",
+      "status": "open",
+      "closedDate": "",
+      "taskType": "One-off",
+      "completedDates": [],
+      "missedDates": []
+    },
+    {
+      "id": "00000071",
+      "name": "Get a sander",
+      "project": "Chores",
+      "importance": "High",
+      "urgency": "High",
+      "dueDate": "",
+      "startDate": "2025-08-03",
+      "status": "open",
+      "closedDate": "",
+      "taskType": "One-off",
+      "completedDates": [],
+      "missedDates": []
+    },
+    {
+      "id": "00000072",
+      "name": "Make plan for DIY this week",
+      "project": "Chores",
+      "importance": "High",
+      "urgency": "High",
+      "dueDate": "",
+      "startDate": "2025-08-03",
+      "status": "open",
+      "closedDate": "",
+      "taskType": "One-off",
+      "completedDates": [],
+      "missedDates": []
+    },
+    {
+      "id": "00000073",
+      "name": "Chase for refund for Kari thing",
+      "project": "Finance",
+      "importance": "High",
+      "urgency": "High",
+      "dueDate": "",
+      "startDate": "2025-08-03",
+      "status": "open",
+      "closedDate": "",
+      "taskType": "One-off",
+      "completedDates": [],
+      "missedDates": []
+    },
+    {
+      "id": "00000074",
+      "name": "Check Monzo gave 50 refund",
+      "project": "Finance",
+      "importance": "High",
+      "urgency": "High",
+      "dueDate": "",
+      "startDate": "2025-08-03",
+      "status": "open",
+      "closedDate": "",
+      "taskType": "One-off",
+      "completedDates": [],
+      "missedDates": []
+    },
+    {
+      "id": "00000075",
+      "name": "cancel extra storage in google plus pl",
+      "project": "Finance",
+      "importance": "High",
+      "urgency": "High",
+      "dueDate": "",
+      "startDate": "2025-08-03",
+      "status": "open",
+      "closedDate": "",
+      "taskType": "One-off",
+      "completedDates": [],
+      "missedDates": []
+    },
+    {
+      "id": "00000076",
+      "name": "cancel proton",
+      "project": "Finance",
+      "importance": "High",
+      "urgency": "High",
+      "dueDate": "",
+      "startDate": "2025-08-03",
+      "status": "open",
+      "closedDate": "",
+      "taskType": "One-off",
+      "completedDates": [],
+      "missedDates": []
+    },
+    {
+      "id": "00000077",
+      "name": "cancel meta subscription - in fact go through all subscriptions",
+      "project": "Finance",
+      "importance": "High",
+      "urgency": "High",
+      "dueDate": "",
+      "startDate": "2025-08-03",
+      "status": "open",
+      "closedDate": "",
+      "taskType": "One-off",
+      "completedDates": [],
+      "missedDates": []
+    }
+  ],
+  "recurringTasks": [
+    {
+      "id": "00000025",
+      "name": "Prep Food",
+      "project": "Self Care",
+      "importance": "High/Medium",
+      "urgency": "High/Medium",
+      "dueDate": "2025-08-06",
+      "frequency": "daily",
+      "interval": 4,
+      "from": "today",
+      "startDate": "2025-07-29",
+      "status": "open",
+      "closedDate": "",
+      "taskType": "Recurring",
+      "completedDates": [
+        "2025-07-29"
+      ],
+      "missedDates": [],
+      "lastCompleted": "2025-08-02",
+      "lastDiff": 4
+    },
+    {
+      "id": "00000026",
+      "name": "Deep Clean a room",
+      "project": "Chores",
+      "importance": "Medium/Low",
+      "urgency": "Medium/Low",
+      "dueDate": "2025-08-09",
+      "frequency": "weekly",
+      "interval": 1,
+      "from": "intended",
+      "startDate": "2025-08-02",
+      "status": "open",
+      "closedDate": "",
+      "taskType": "Recurring",
+      "completedDates": [
+        "2025-08-02"
+      ],
+      "missedDates": [],
+      "lastCompleted": "2025-08-02",
+      "lastDiff": 0
+    },
+    {
+      "id": "00000027",
+      "name": "Change everyones tooth brush",
+      "project": "Self Care",
+      "importance": "Medium/Low",
+      "urgency": "Medium/Low",
+      "dueDate": "2025-07-31",
+      "frequency": "monthly",
+      "interval": 3,
+      "from": "today",
+      "startDate": "2025-07-31",
+      "status": "open",
+      "closedDate": "",
+      "taskType": "Recurring",
+      "completedDates": [],
+      "missedDates": [],
+      "lastCompleted": "",
+      "lastDiff": 0
+    },
+    {
+      "id": "00000033",
+      "name": "put everything in the attic",
+      "project": "Chores",
+      "importance": "Medium/Low",
+      "urgency": "Medium/Low",
+      "dueDate": "2025-08-03",
+      "frequency": "monthly",
+      "interval": 1,
+      "from": "intended",
+      "startDate": "2025-08-03",
+      "status": "open",
+      "closedDate": "",
+      "taskType": "Recurring",
+      "completedDates": [],
+      "missedDates": [],
+      "lastCompleted": "",
+      "lastDiff": 0
+    },
+    {
+      "id": "00000034",
+      "name": "Back up Photos",
+      "project": "Family",
+      "importance": "Medium",
+      "urgency": "Medium",
+      "dueDate": "2025-08-10",
+      "frequency": "monthly",
+      "interval": 2,
+      "from": "intended",
+      "startDate": "2025-08-10",
+      "status": "open",
+      "closedDate": "",
+      "taskType": "Recurring",
+      "completedDates": [],
+      "missedDates": [],
+      "lastCompleted": "",
+      "lastDiff": 0
+    },
+    {
+      "id": "00000058",
+      "name": "Clear Emails",
+      "project": "Chores",
+      "importance": "Medium",
+      "urgency": "Medium",
+      "dueDate": "2025-08-10",
+      "frequency": "monthly",
+      "interval": 2,
+      "from": "today",
+      "startDate": "2025-08-10",
+      "status": "open",
+      "closedDate": "",
+      "taskType": "Recurring",
+      "completedDates": [],
+      "missedDates": [],
+      "lastCompleted": "",
+      "lastDiff": 0
+    }
+  ],
+  "stretchTasks": [],
+  "bigTasks": [
+    {
+      "id": "00000068",
+      "name": "think about sheela masis bday",
+      "project": "Self Care",
+      "importance": "High",
+      "urgency": "High",
+      "dueDate": "",
+      "startDate": "2025-08-03",
+      "status": "open",
+      "closedDate": "",
+      "taskType": "Big",
+      "completedDates": [],
+      "missedDates": []
+    }
+  ],
+  "deletedTasks": [],
+  "shoppingList": [
+    {
+      "id": "00000011",
+      "name": "Face Clothes for Kari and Me",
+      "project": "Self Care",
+      "cost": "20",
+      "month": "2025-09",
+      "bought": false
+    },
+    {
+      "id": "00000046",
+      "name": "Hair colour thing",
+      "project": "Self Care",
+      "cost": "5",
+      "month": "",
+      "bought": true
+    },
+    {
+      "id": "00000051",
+      "name": "Scrap for Kari 1 year",
+      "project": "Family",
+      "cost": "",
+      "month": "",
+      "bought": true
+    },
+    {
+      "id": "00000052",
+      "name": "Amy bday gift",
+      "project": "Family",
+      "cost": "",
+      "month": "",
+      "bought": false
+    },
+    {
+      "id": "00000055",
+      "name": "Car mirror for kari",
+      "project": "Family",
+      "cost": "30",
+      "month": "",
+      "bought": true
+    },
+    {
+      "id": "00000057",
+      "name": "Pens for fridge",
+      "project": "Chores",
+      "cost": "",
+      "month": "",
+      "bought": true
+    },
+    {
+      "id": "00000059",
+      "name": "Ear phones with no wires (that I can track too)",
+      "project": "Self Care",
+      "cost": "35",
+      "month": "",
+      "bought": true
+    }
+  ],
+  "longTermList": [
+    {
+      "id": "00000030",
+      "name": "Shower Pressure",
+      "project": "Self Care",
+      "cost": "200",
+      "month": "",
+      "info": "",
+      "bought": false
+    },
+    {
+      "id": "00000031",
+      "name": "Car Charger",
+      "project": "Chores",
+      "cost": "1000",
+      "month": "",
+      "info": "",
+      "bought": false
+    }
+  ],
+  "generalList": [
+    {
+      "id": "00000028",
+      "name": "Corn on the cob",
+      "bought": true
+    },
+    {
+      "id": "00000029",
+      "name": "Neurofen and calpol",
+      "bought": true
+    },
+    {
+      "id": "00000065",
+      "name": "Nappy rash for yeast",
+      "bought": false
+    },
+    {
+      "id": "00000066",
+      "name": "Baby tooth brush",
+      "bought": false
+    }
+  ],
+  "todayList": [
+    {
+      "type": "recurring",
+      "id": "00000027"
+    },
+    {
+      "type": "weekly",
+      "id": "00000002"
+    },
+    {
+      "type": "weekly",
+      "id": "00000007"
+    },
+    {
+      "type": "oneoff",
+      "id": "00000040"
+    },
+    {
+      "type": "recurring",
+      "id": "00000033"
+    },
+    {
+      "type": "oneoff",
+      "id": "00000038"
+    },
+    {
+      "type": "oneoff",
+      "id": "00000070"
+    },
+    {
+      "type": "oneoff",
+      "id": "00000072"
+    },
+    {
+      "type": "oneoff",
+      "id": "00000071"
+    },
+    {
+      "type": "weekly",
+      "id": "00000069"
+    },
+    {
+      "type": "weekly",
+      "id": "00000013"
+    }
+  ],
+  "nextId": 78,
+  "todayQuickHistory": []
+}
