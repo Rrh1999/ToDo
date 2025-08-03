@@ -1496,7 +1496,7 @@ function renderOverview(){
       const rem=budget+used;
       return {base,extra,budget,spent,income,used,rem};
     });
-    let html=`<td>${cat}</td>`;
+    html=`<td>${cat}</td>`;
     let totalBudget=0, totalUsed=0;
     catData.forEach(d=>{
       if(showBud){
@@ -1515,7 +1515,7 @@ function renderOverview(){
     });
     const overallRem=totalBudget+totalUsed;
     html+=`<td>${overallRem>=0?'\u2705':'\u274c'}</td>`;
-    const tr=document.createElement('tr');
+     tr=document.createElement('tr');
     tr.innerHTML=html;
     tbody.appendChild(tr);
     subs.forEach(sub=>{
