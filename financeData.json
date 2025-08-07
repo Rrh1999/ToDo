@@ -5690,5 +5690,6 @@
     "Dont Know",
     "Clothes"
   ],
-  "startBalances": { "date": "", "accounts": {} }
+  "startBalances": { "date": "", "accounts": {} },
+  "pots": []
 }
