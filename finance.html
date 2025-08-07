@@ -195,7 +195,7 @@ th,td{border:1px solid #ccc;padding:0.25rem 0.5rem;}
 <script src="node_modules/papaparse/papaparse.min.js"></script>
 <script src="node_modules/xlsx/dist/xlsx.full.min.js"></script>
 <script>
-let financeData = { accounts: [], transactions: [], nextTransactionId: 1, budgetCategories: [], budgets: [], nextBudgetId: 1, rules: [], budgetPeriods: [], categoryStarts: {}, pots: [] };
+let financeData = { accounts: [], transactions: [], nextTransactionId: 1, budgetCategories: [], budgets: [], nextBudgetId: 1, rules: [], budgetPeriods: [], categoryStarts: {} };
 let lastTxCheckbox = null;
 const isMobile = /Mobi|Android/i.test(navigator.userAgent);
 
