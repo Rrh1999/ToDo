@@ -77,7 +77,8 @@ let financeData = {
   nextBudgetId: 1,
   rules: [],
   budgetPeriods: [],
-  startBalances: { date:'', accounts:{} }
+  startBalances: { date:'', accounts:{} },
+  pots: []
 };
 
 const INDEX_FILE = path.join(__dirname, 'indexData.json');
@@ -105,6 +106,7 @@ function initDb() {
   spendingData = loadJson(SPENDING_FILE, spendingData);
   diyData = loadJson(DIY_FILE, diyData);
   financeData = loadJson(FINANCE_FILE, financeData);
+  financeData.pots = financeData.pots || [];
 }
 
 app.get('/api/index-data', (req, res) => {

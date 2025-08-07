@@ -13,6 +13,14 @@ header{background:#fff;color:#ff69b4;padding:1rem;text-align:center;border-botto
 .tab-content.active{display:block;}
 table{border-collapse:collapse;width:100%;margin-top:1rem;font-size:0.9rem;}
 th,td{border:1px solid #ccc;padding:0.25rem 0.5rem;}
+#pots-display{display:flex;justify-content:space-between;margin:1rem;}
+.pot-column{flex:1;display:flex;flex-wrap:wrap;gap:0.5rem;}
+#saving-pots{justify-content:flex-end;}
+.pot{border:1px solid #ccc;padding:0.5rem;width:120px;text-align:center;position:relative;}
+.pot.saving{background:#d4edda;}
+.pot.debt{background:#f8d7da;}
+.pot .actions{position:absolute;top:2px;right:2px;}
+.pot .actions button{margin-left:2px;}
 </style>
 </head>
 <body>
@@ -25,7 +33,9 @@ th,td{border:1px solid #ccc;padding:0.25rem 0.5rem;}
   <button id="tab-upload" type="button">Upload</button>
   <button id="tab-code" type="button">Code</button>
   <button id="tab-budgets" type="button">Budgets</button>
+  <button id="tab-pots" type="button">Pots</button>
 </div>
+<div id="pots-display"><div id="debt-pots" class="pot-column"></div><div id="saving-pots" class="pot-column"></div></div>
 <div id="upload" class="tab-content active">
   <h2>Upload Transactions</h2>
   <form id="upload-form">
@@ -163,6 +173,24 @@ th,td{border:1px solid #ccc;padding:0.25rem 0.5rem;}
   </table>
   <div id="budget-settings" class="settings-section"></div>
 </div>
+<div id="pots" class="tab-content">
+  <h2>Pots</h2>
+  <form id="pot-form">
+    <select id="pot-kind">
+      <option value="saving">Saving</option>
+      <option value="debt">Debt</option>
+    </select>
+    <input type="text" id="pot-name" placeholder="Name" required>
+    <select id="pot-account"><option value="">No account</option></select>
+    <input type="text" id="pot-desc" placeholder="Description">
+    <input type="date" id="pot-start" required>
+    <input type="date" id="pot-end">
+    <input type="number" id="pot-goal" placeholder="Goal Amount">
+    <input type="number" id="pot-target" placeholder="Monthly Target">
+    <input type="number" id="pot-current" placeholder="Current Amount" required>
+    <button type="submit" id="pot-submit">Create</button>
+  </form>
+</div>
 <div id="budget-modal" style="display:none;position:fixed;top:10%;left:10%;right:10%;background:#fff;border:1px solid #ccc;padding:1rem;max-height:80%;overflow:auto;"></div>
 <script src="node_modules/papaparse/papaparse.min.js"></script>
 <script src="node_modules/xlsx/dist/xlsx.full.min.js"></script>
@@ -205,6 +233,7 @@ async function loadFinance(){
     if(!p.end) p.end = p.start;
   });
   financeData.startBalances = financeData.startBalances || {date:'', accounts:{}};
+  financeData.pots = financeData.pots || [];
   financeData.transactions = (financeData.transactions || []).map(tx=>{
     const d = parseDate(tx.date);
     tx.date = Number.isNaN(d.getTime()) ? '' : d.toISOString().slice(0,10);
@@ -224,6 +253,7 @@ async function loadFinance(){
   populateBalanceMonths();
   renderOverview();
   renderBalance();
+  renderPots();
   renderSettingsSections();
 }
 
@@ -258,6 +288,11 @@ function updateAccountList(){
   if(filterSel){
     filterSel.innerHTML = '<option value="">All accounts</option>';
     financeData.accounts.forEach(a=>{ const opt=document.createElement('option'); opt.value=a; opt.textContent=a; filterSel.appendChild(opt); });
+  }
+  const potSel = document.getElementById('pot-account');
+  if(potSel){
+    potSel.innerHTML = '<option value="">No account</option>';
+    financeData.accounts.forEach(a=>{ const opt=document.createElement('option'); opt.value=a; opt.textContent=a; potSel.appendChild(opt); });
   }
 }
 
@@ -1110,6 +1145,7 @@ window.addEventListener('DOMContentLoaded', () => {
   document.getElementById('tab-upload').addEventListener('click', () => showTab('upload'));
   document.getElementById('tab-code').addEventListener('click', () => showTab('code'));
   document.getElementById('tab-budgets').addEventListener('click', () => showTab('budgets'));
+  document.getElementById('tab-pots').addEventListener('click', () => { resetPotForm(); showTab('pots'); });
 });
 document.getElementById('add-account').addEventListener('click', () => {
   const name = document.getElementById('new-account').value.trim();
@@ -1126,6 +1162,28 @@ document.getElementById('toggle-file').addEventListener('change', renderTransact
 
 document.getElementById('apply-filters').addEventListener('click', () => {
   renderTransactions();
+});
+
+document.getElementById('pot-form').addEventListener('submit', e=>{
+  e.preventDefault();
+  const kind=document.getElementById('pot-kind').value;
+  const name=document.getElementById('pot-name').value.trim();
+  const account=document.getElementById('pot-account').value;
+  const desc=document.getElementById('pot-desc').value.trim();
+  const start=document.getElementById('pot-start').value;
+  const end=document.getElementById('pot-end').value;
+  const goalVal=parseFloat(document.getElementById('pot-goal').value);
+  const targetVal=parseFloat(document.getElementById('pot-target').value);
+  const current=parseFloat(document.getElementById('pot-current').value)||0;
+  const pot={kind,name,account,desc,start,end,goal:isNaN(goalVal)?null:goalVal,target:isNaN(targetVal)?null:targetVal,current};
+  if(editingPotIndex!==null){
+    financeData.pots[editingPotIndex]=pot;
+  } else {
+    financeData.pots.push(pot);
+  }
+  saveFinance();
+  renderPots();
+  resetPotForm();
 });
 
 document.getElementById('show-duplicates').addEventListener('click', () => {
@@ -1563,6 +1621,49 @@ function renderOverview(){
     tbody.appendChild(tr);
     catRows.forEach(r=>tbody.appendChild(r));
   });
+}
+
+function renderPots(){
+  const debtDiv=document.getElementById('debt-pots');
+  const saveDiv=document.getElementById('saving-pots');
+  if(!debtDiv||!saveDiv) return;
+  debtDiv.innerHTML=''; saveDiv.innerHTML='';
+  financeData.pots.forEach((p,i)=>{
+    const box=document.createElement('div');
+    box.className='pot '+(p.kind==='saving'?'saving':'debt');
+    box.innerHTML=`<strong>${p.name}</strong><div>£${p.current.toFixed(2)}</div>`;
+    const actions=document.createElement('div');
+    actions.className='actions';
+    const edit=document.createElement('button'); edit.textContent='Edit';
+    edit.addEventListener('click',()=>openPotForm(p,i));
+    const del=document.createElement('button'); del.textContent='Del';
+    del.addEventListener('click',()=>{ if(confirm('Delete pot?')){ financeData.pots.splice(i,1); saveFinance(); renderPots(); }});
+    actions.appendChild(edit); actions.appendChild(del);
+    box.appendChild(actions);
+    if(p.kind==='saving') saveDiv.appendChild(box); else debtDiv.appendChild(box);
+  });
+}
+
+let editingPotIndex=null;
+function openPotForm(p,i){
+  showTab('pots');
+  document.getElementById('pot-kind').value=p.kind;
+  document.getElementById('pot-name').value=p.name;
+  document.getElementById('pot-account').value=p.account||'';
+  document.getElementById('pot-desc').value=p.desc||'';
+  document.getElementById('pot-start').value=p.start||'';
+  document.getElementById('pot-end').value=p.end||'';
+  document.getElementById('pot-goal').value=p.goal??'';
+  document.getElementById('pot-target').value=p.target??'';
+  document.getElementById('pot-current').value=p.current??'';
+  editingPotIndex=i;
+  document.getElementById('pot-submit').textContent='Save';
+}
+
+function resetPotForm(){
+  document.getElementById('pot-form').reset();
+  editingPotIndex=null;
+  document.getElementById('pot-submit').textContent='Create';
 }
 
 document.getElementById('period-form').addEventListener('submit',e=>{
