@@ -81,18 +81,19 @@ th,td{border:1px solid #ccc;padding:0.25rem 0.5rem;}
     <thead>
       <tr>
         <th><input type="checkbox" id="select-all"></th>
-        <th>Date</th>
-        <th>Description</th>
-        <th>Amount</th>
-        <th>Account</th>
-        <th class="file-col" style="display:none;">File</th>
-        <th class="file-col" style="display:none;">Uploaded</th>
-        <th>Type</th>
-        <th>Sub Type</th>
-        <th>Confirmed</th>
-        <th>Transfer</th>
-        <th>Notes</th>
-        <th>Month</th>
+        <th>Date <button type="button" class="sort-btn" data-field="date">↕</button></th>
+        <th>Description <button type="button" class="sort-btn" data-field="description">↕</button></th>
+        <th>Amount <button type="button" class="sort-btn" data-field="amount">↕</button></th>
+        <th>Account <button type="button" class="sort-btn" data-field="accountName">↕</button></th>
+        <th class="file-col" style="display:none;">File <button type="button" class="sort-btn" data-field="sourceFile">↕</button></th>
+        <th class="file-col" style="display:none;">Uploaded <button type="button" class="sort-btn" data-field="uploadedAt">↕</button></th>
+        <th>Type <button type="button" class="sort-btn" data-field="type">↕</button></th>
+        <th>Sub Type <button type="button" class="sort-btn" data-field="subType">↕</button></th>
+        <th>Pot <button type="button" class="sort-btn" data-field="pot">↕</button></th>
+        <th>Confirmed <button type="button" class="sort-btn" data-field="confirmed">↕</button></th>
+        <th>Transfer <button type="button" class="sort-btn" data-field="transfer">↕</button></th>
+        <th>Notes <button type="button" class="sort-btn" data-field="notes">↕</button></th>
+        <th>Month <button type="button" class="sort-btn" data-field="month">↕</button></th>
       </tr>
     </thead>
     <tbody></tbody>
@@ -191,12 +192,33 @@ th,td{border:1px solid #ccc;padding:0.25rem 0.5rem;}
     <button type="submit" id="pot-submit">Create</button>
   </form>
 </div>
+<div id="pot-modal" style="display:none;position:fixed;top:10%;left:10%;right:10%;background:#fff;border:1px solid #ccc;padding:1rem;max-height:80%;overflow:auto;">
+  <button type="button" id="close-pot-modal">Close</button>
+  <form id="pot-view-form">
+    <select id="view-pot-kind">
+      <option value="saving">Saving</option>
+      <option value="debt">Debt</option>
+    </select>
+    <input type="text" id="view-pot-name" placeholder="Name" required>
+    <select id="view-pot-account"><option value="">No account</option></select>
+    <input type="text" id="view-pot-desc" placeholder="Description">
+    <input type="date" id="view-pot-start" required>
+    <input type="date" id="view-pot-end">
+    <input type="number" id="view-pot-goal" placeholder="Goal Amount">
+    <input type="number" id="view-pot-target" placeholder="Monthly Target">
+    <input type="number" id="view-pot-current" placeholder="Current Amount" required>
+    <button type="submit">Save</button>
+  </form>
+  <div id="pot-transactions"></div>
+</div>
 <div id="budget-modal" style="display:none;position:fixed;top:10%;left:10%;right:10%;background:#fff;border:1px solid #ccc;padding:1rem;max-height:80%;overflow:auto;"></div>
 <script src="node_modules/papaparse/papaparse.min.js"></script>
 <script src="node_modules/xlsx/dist/xlsx.full.min.js"></script>
 <script>
-let financeData = { accounts: [], transactions: [], nextTransactionId: 1, budgetCategories: [], budgets: [], nextBudgetId: 1, rules: [], budgetPeriods: [], categoryStarts: {} };
+let financeData = { accounts: [], transactions: [], nextTransactionId: 1, budgetCategories: [], budgets: [], nextBudgetId: 1, rules: [], budgetPeriods: [], categoryStarts: {}, pots: [], nextPotId: 1 };
 let lastTxCheckbox = null;
+let txSortField = '';
+let txSortDir = 1;
 const isMobile = /Mobi|Android/i.test(navigator.userAgent);
 
 function showTab(id){
@@ -234,6 +256,7 @@ async function loadFinance(){
   });
   financeData.startBalances = financeData.startBalances || {date:'', accounts:{}};
   financeData.pots = financeData.pots || [];
+  financeData.nextPotId = financeData.nextPotId || 1;
   financeData.transactions = (financeData.transactions || []).map(tx=>{
     const d = parseDate(tx.date);
     tx.date = Number.isNaN(d.getTime()) ? '' : d.toISOString().slice(0,10);
@@ -294,6 +317,11 @@ function updateAccountList(){
     potSel.innerHTML = '<option value="">No account</option>';
     financeData.accounts.forEach(a=>{ const opt=document.createElement('option'); opt.value=a; opt.textContent=a; potSel.appendChild(opt); });
   }
+  const viewPotSel = document.getElementById('view-pot-account');
+  if(viewPotSel){
+    viewPotSel.innerHTML = '<option value="">No account</option>';
+    financeData.accounts.forEach(a=>{ const opt=document.createElement('option'); opt.value=a; opt.textContent=a; viewPotSel.appendChild(opt); });
+  }
 }
 
 function parseDate(val){
@@ -316,6 +344,21 @@ function parseDate(val){
     if(!Number.isNaN(parsed)) return new Date(parsed);
   }
   return new Date(val);
+}
+
+function getPotName(tx){
+  const p = financeData.pots.find(p=>p.id===tx.potId);
+  return (p ? p.name : '').toLowerCase();
+}
+
+function updateSortIndicators(){
+  document.querySelectorAll('#tx-table thead .sort-btn').forEach(b=>{
+    if(b.dataset.field === txSortField){
+      b.textContent = txSortDir === 1 ? '▲' : '▼';
+    } else {
+      b.textContent = '↕';
+    }
+  });
 }
 
 function getMonth(dateStr){
@@ -439,7 +482,32 @@ function renderTransactions(){
   const fTo = document.getElementById('filter-date-to').value;
   const fMin = parseFloat(document.getElementById('filter-amount-min').value);
   const fMax = parseFloat(document.getElementById('filter-amount-max').value);
-  financeData.transactions.forEach(tx=>{
+  const txs = [...financeData.transactions];
+  if(txSortField){
+    txs.sort((a,b)=>{
+      let valA, valB;
+      switch(txSortField){
+        case 'date': valA=parseDate(a.date); valB=parseDate(b.date); break;
+        case 'description': valA=(a.description||'').toLowerCase(); valB=(b.description||'').toLowerCase(); break;
+        case 'amount': valA=parseFloat(a.amount)||0; valB=parseFloat(b.amount)||0; break;
+        case 'accountName': valA=(a.accountName||'').toLowerCase(); valB=(b.accountName||'').toLowerCase(); break;
+        case 'sourceFile': valA=(a.sourceFile||'').toLowerCase(); valB=(b.sourceFile||'').toLowerCase(); break;
+        case 'uploadedAt': valA=parseDate(a.uploadedAt?a.uploadedAt.split('T')[0]:''); valB=parseDate(b.uploadedAt?b.uploadedAt.split('T')[0]:''); break;
+        case 'type': valA=(a.type||'').toLowerCase(); valB=(b.type||'').toLowerCase(); break;
+        case 'subType': valA=(a.subType||'').toLowerCase(); valB=(b.subType||'').toLowerCase(); break;
+        case 'pot': valA=getPotName(a); valB=getPotName(b); break;
+        case 'confirmed': valA=a.confirmed?1:0; valB=b.confirmed?1:0; break;
+        case 'transfer': valA=a.transfer?1:0; valB=b.transfer?1:0; break;
+        case 'notes': valA=(a.notes||'').toLowerCase(); valB=(b.notes||'').toLowerCase(); break;
+        case 'month': valA=(a.month||'').toLowerCase(); valB=(b.month||'').toLowerCase(); break;
+        default: valA=''; valB='';
+      }
+      if(valA < valB) return -1*txSortDir;
+      if(valA > valB) return 1*txSortDir;
+      return 0;
+    });
+  }
+  txs.forEach(tx=>{
     if(uncoded && tx.type) return;
     if(fAcc && tx.accountName !== fAcc) return;
     if(fType === '__blank'){ if(tx.type) return; }
@@ -559,13 +627,30 @@ function renderTransactions(){
     tdSub.appendChild(subTypeInput);
     if(!isMobile) tdSub.appendChild(stList);
     tdSub.appendChild(saveSubBtn);
+    const potSel = document.createElement('select');
+    const blankPot = document.createElement('option'); blankPot.value=''; blankPot.textContent='';
+    potSel.appendChild(blankPot);
+    financeData.pots.forEach(p=>{ const o=document.createElement('option'); o.value=p.id; o.textContent=p.name; potSel.appendChild(o); });
+    potSel.value = tx.potId || '';
+    potSel.addEventListener('change', ()=>{
+      const newId = potSel.value ? parseInt(potSel.value) : null;
+      applyBulkChange(tx, t=>{
+        const amt = parseFloat(t.amount)||0;
+        if(t.potId){ const oldPot = financeData.pots.find(p=>p.id===t.potId); if(oldPot) oldPot.current -= amt; }
+        t.potId = newId;
+        if(t.potId){ const newPot = financeData.pots.find(p=>p.id===t.potId); if(newPot) newPot.current += amt; }
+      }, true);
+      renderPots();
+    });
+    const tdPot = document.createElement('td'); tdPot.appendChild(potSel);
     const tdConf = document.createElement("td"); tdConf.appendChild(confirmBox);
     const tdTrans = document.createElement("td"); tdTrans.appendChild(transferBox);
     const tdNotes = document.createElement("td"); tdNotes.appendChild(notes);
     const tdMonth = document.createElement("td"); tdMonth.textContent = tx.month || '';
-    tr.appendChild(tdType); tr.appendChild(tdSub); tr.appendChild(tdConf); tr.appendChild(tdTrans); tr.appendChild(tdNotes); tr.appendChild(tdMonth);
+    tr.appendChild(tdType); tr.appendChild(tdSub); tr.appendChild(tdPot); tr.appendChild(tdConf); tr.appendChild(tdTrans); tr.appendChild(tdNotes); tr.appendChild(tdMonth);
     tbody.appendChild(tr);
   });
+  updateSortIndicators();
   populateBalanceMonths();
   renderBalance();
 }
@@ -1164,6 +1249,15 @@ document.getElementById('apply-filters').addEventListener('click', () => {
   renderTransactions();
 });
 
+document.querySelectorAll('#tx-table thead .sort-btn').forEach(btn=>{
+  btn.addEventListener('click', ()=>{
+    const field=btn.dataset.field;
+    if(txSortField===field){ txSortDir *= -1; }
+    else { txSortField=field; txSortDir=1; }
+    renderTransactions();
+  });
+});
+
 document.getElementById('pot-form').addEventListener('submit', e=>{
   e.preventDefault();
   const kind=document.getElementById('pot-kind').value;
@@ -1175,7 +1269,7 @@ document.getElementById('pot-form').addEventListener('submit', e=>{
   const goalVal=parseFloat(document.getElementById('pot-goal').value);
   const targetVal=parseFloat(document.getElementById('pot-target').value);
   const current=parseFloat(document.getElementById('pot-current').value)||0;
-  const pot={kind,name,account,desc,start,end,goal:isNaN(goalVal)?null:goalVal,target:isNaN(targetVal)?null:targetVal,current};
+  const pot={id:editingPotIndex!==null?financeData.pots[editingPotIndex].id:financeData.nextPotId++,kind,name,account,desc,start,end,goal:isNaN(goalVal)?null:goalVal,target:isNaN(targetVal)?null:targetVal,current};
   if(editingPotIndex!==null){
     financeData.pots[editingPotIndex]=pot;
   } else {
@@ -1183,7 +1277,34 @@ document.getElementById('pot-form').addEventListener('submit', e=>{
   }
   saveFinance();
   renderPots();
+  renderTransactions();
   resetPotForm();
+});
+
+document.getElementById('pot-view-form').addEventListener('submit', e=>{
+  e.preventDefault();
+  const kind=document.getElementById('view-pot-kind').value;
+  const name=document.getElementById('view-pot-name').value.trim();
+  const account=document.getElementById('view-pot-account').value;
+  const desc=document.getElementById('view-pot-desc').value.trim();
+  const start=document.getElementById('view-pot-start').value;
+  const end=document.getElementById('view-pot-end').value;
+  const goalVal=parseFloat(document.getElementById('view-pot-goal').value);
+  const targetVal=parseFloat(document.getElementById('view-pot-target').value);
+  const current=parseFloat(document.getElementById('view-pot-current').value)||0;
+  const pot={id:financeData.pots[editingPotIndex].id,kind,name,account,desc,start,end,goal:isNaN(goalVal)?null:goalVal,target:isNaN(targetVal)?null:targetVal,current};
+  if(editingPotIndex!==null){
+    financeData.pots[editingPotIndex]=pot;
+  }
+  saveFinance();
+  renderPots();
+  renderTransactions();
+  editingPotIndex=null;
+  document.getElementById('pot-modal').style.display='none';
+});
+document.getElementById('close-pot-modal').addEventListener('click',()=>{
+  editingPotIndex=null;
+  document.getElementById('pot-modal').style.display='none';
 });
 
 document.getElementById('show-duplicates').addEventListener('click', () => {
@@ -1207,9 +1328,11 @@ document.getElementById('select-all').addEventListener('change', e=>{
 document.getElementById('delete-selected').addEventListener('click', ()=>{
   const ids=Array.from(document.querySelectorAll('#tx-table tbody .tx-select:checked')).map(cb=>parseInt(cb.dataset.id));
   if(!ids.length) return;
+  financeData.transactions.forEach(tx=>{ if(ids.includes(tx.id) && tx.potId){ const pot=financeData.pots.find(p=>p.id===tx.potId); if(pot) pot.current-=parseFloat(tx.amount)||0; }});
   financeData.transactions=financeData.transactions.filter(tx=>!ids.includes(tx.id));
   saveFinance();
   renderTransactions();
+  renderPots();
 });
 document.getElementById('close-duplicates').addEventListener('click', () => {
   document.getElementById('duplicates-modal').style.display = 'none';
@@ -1249,7 +1372,7 @@ function renderDuplicates(){
     keepBtn.addEventListener('click', ()=>{ tx.duplicate=false; saveFinance(); renderTransactions(); renderDuplicates(); });
     const removeBtn = document.createElement('button');
     removeBtn.textContent = 'Remove';
-    removeBtn.addEventListener('click', ()=>{ financeData.transactions = financeData.transactions.filter(t=>t.id!==tx.id); saveFinance(); renderTransactions(); renderDuplicates(); });
+    removeBtn.addEventListener('click', ()=>{ financeData.transactions.forEach(t=>{ if(t.id===tx.id && t.potId){ const pot=financeData.pots.find(p=>p.id===t.potId); if(pot) pot.current-=parseFloat(t.amount)||0; }}); financeData.transactions = financeData.transactions.filter(t=>t.id!==tx.id); saveFinance(); renderTransactions(); renderPots(); renderDuplicates(); });
     const tdAction = document.createElement('td');
     tdAction.appendChild(keepBtn); tdAction.appendChild(removeBtn);
     tr.innerHTML = `<td>${tx.date}</td><td>${tx.description}</td><td>${tx.amount}</td><td>${tx.accountName}</td><td>${tx.sourceFile}</td>`;
@@ -1634,30 +1757,42 @@ function renderPots(){
     box.innerHTML=`<strong>${p.name}</strong><div>£${p.current.toFixed(2)}</div>`;
     const actions=document.createElement('div');
     actions.className='actions';
-    const edit=document.createElement('button'); edit.textContent='Edit';
-    edit.addEventListener('click',()=>openPotForm(p,i));
+    const view=document.createElement('button'); view.textContent='View';
+    view.addEventListener('click',()=>openPotModal(p,i));
     const del=document.createElement('button'); del.textContent='Del';
-    del.addEventListener('click',()=>{ if(confirm('Delete pot?')){ financeData.pots.splice(i,1); saveFinance(); renderPots(); }});
-    actions.appendChild(edit); actions.appendChild(del);
+    del.addEventListener('click',()=>{ if(confirm('Delete pot?')){ const removed=financeData.pots.splice(i,1)[0]; financeData.transactions.forEach(t=>{ if(t.potId===removed.id) t.potId=null; }); saveFinance(); renderPots(); renderTransactions(); }});
+    actions.appendChild(view); actions.appendChild(del);
     box.appendChild(actions);
     if(p.kind==='saving') saveDiv.appendChild(box); else debtDiv.appendChild(box);
   });
 }
 
 let editingPotIndex=null;
-function openPotForm(p,i){
-  showTab('pots');
-  document.getElementById('pot-kind').value=p.kind;
-  document.getElementById('pot-name').value=p.name;
-  document.getElementById('pot-account').value=p.account||'';
-  document.getElementById('pot-desc').value=p.desc||'';
-  document.getElementById('pot-start').value=p.start||'';
-  document.getElementById('pot-end').value=p.end||'';
-  document.getElementById('pot-goal').value=p.goal??'';
-  document.getElementById('pot-target').value=p.target??'';
-  document.getElementById('pot-current').value=p.current??'';
+function openPotModal(p,i){
+  document.getElementById('view-pot-kind').value=p.kind;
+  document.getElementById('view-pot-name').value=p.name;
+  document.getElementById('view-pot-account').value=p.account||'';
+  document.getElementById('view-pot-desc').value=p.desc||'';
+  document.getElementById('view-pot-start').value=p.start||'';
+  document.getElementById('view-pot-end').value=p.end||'';
+  document.getElementById('view-pot-goal').value=p.goal??'';
+  document.getElementById('view-pot-target').value=p.target??'';
+  document.getElementById('view-pot-current').value=p.current??'';
+  const txDiv=document.getElementById('pot-transactions');
+  const linked=financeData.transactions.filter(t=>t.potId===p.id);
+  let html='<h3>Transactions</h3>';
+  if(linked.length){
+    html+='<table><thead><tr><th>Date</th><th>Description</th><th>Amount</th></tr></thead><tbody>';
+    let total=0;
+    linked.forEach(t=>{ total+=parseFloat(t.amount)||0; html+=`<tr><td>${t.date}</td><td>${t.description}</td><td>${t.amount}</td></tr>`; });
+    html+='</tbody></table>';
+    html+=`<div><strong>Total from transactions:</strong> £${total.toFixed(2)}</div>`;
+  } else {
+    html+='<p>No transactions linked</p>';
+  }
+  txDiv.innerHTML=html;
   editingPotIndex=i;
-  document.getElementById('pot-submit').textContent='Save';
+  document.getElementById('pot-modal').style.display='block';
 }
 
 function resetPotForm(){

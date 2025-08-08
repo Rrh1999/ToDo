@@ -5691,5 +5691,6 @@
     "Clothes"
   ],
   "startBalances": { "date": "", "accounts": {} },
-  "pots": []
+  "pots": [],
+  "nextPotId": 1
 }
