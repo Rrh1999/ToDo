@@ -16,11 +16,12 @@ th,td{border:1px solid #ccc;padding:0.25rem 0.5rem;}
 #pots-display{display:flex;justify-content:space-between;margin:1rem;}
 .pot-column{flex:1;display:flex;flex-wrap:wrap;gap:0.5rem;}
 #saving-pots{justify-content:flex-end;}
-.pot{border:1px solid #ccc;padding:0.5rem;width:120px;text-align:center;position:relative;}
+.pot{border:1px solid #ccc;padding:0.5rem;width:120px;text-align:center;display:flex;flex-direction:column;align-items:center;gap:0.25rem;}
+.pot-name{font-weight:bold;}
 .pot.saving{background:#d4edda;}
 .pot.debt{background:#f8d7da;}
-.pot .actions{position:absolute;top:2px;right:2px;}
-.pot .actions button{margin-left:2px;}
+.pot .actions{display:flex;gap:0.25rem;}
+.pot .actions button{margin:0 2px;}
 </style>
 </head>
 <body>
@@ -188,12 +189,13 @@ th,td{border:1px solid #ccc;padding:0.25rem 0.5rem;}
     <input type="date" id="pot-end">
     <input type="number" id="pot-goal" placeholder="Goal Amount">
     <input type="number" id="pot-target" placeholder="Monthly Target">
-    <input type="number" id="pot-current" placeholder="Current Amount" required>
+    <input type="number" id="pot-starting" placeholder="Starting Amount" required>
     <button type="submit" id="pot-submit">Create</button>
   </form>
 </div>
 <div id="pot-modal" style="display:none;position:fixed;top:10%;left:10%;right:10%;background:#fff;border:1px solid #ccc;padding:1rem;max-height:80%;overflow:auto;">
   <button type="button" id="close-pot-modal">Close</button>
+  <button type="button" id="delete-pot">Delete</button>
   <form id="pot-view-form">
     <select id="view-pot-kind">
       <option value="saving">Saving</option>
@@ -206,9 +208,10 @@ th,td{border:1px solid #ccc;padding:0.25rem 0.5rem;}
     <input type="date" id="view-pot-end">
     <input type="number" id="view-pot-goal" placeholder="Goal Amount">
     <input type="number" id="view-pot-target" placeholder="Monthly Target">
-    <input type="number" id="view-pot-current" placeholder="Current Amount" required>
+    <input type="number" id="view-pot-starting" placeholder="Starting Amount" required>
     <button type="submit">Save</button>
   </form>
+  <div><strong>Current Amount:</strong> £<span id="view-pot-current"></span></div>
   <div id="pot-transactions"></div>
 </div>
 <div id="budget-modal" style="display:none;position:fixed;top:10%;left:10%;right:10%;background:#fff;border:1px solid #ccc;padding:1rem;max-height:80%;overflow:auto;"></div>
@@ -261,6 +264,13 @@ async function loadFinance(){
     const d = parseDate(tx.date);
     tx.date = Number.isNaN(d.getTime()) ? '' : d.toISOString().slice(0,10);
     return tx;
+  });
+  financeData.pots.forEach(p=>{
+    const total=financeData.transactions.filter(t=>t.potId===p.id)
+      .reduce((s,t)=>s+(parseFloat(t.amount)||0),0);
+    if(p.startAmount===undefined){
+      p.startAmount=(parseFloat(p.current)||0)-total;
+    }
   });
   applyRulesToAll();
   assignMonthsAll();
@@ -634,12 +644,7 @@ function renderTransactions(){
     potSel.value = tx.potId || '';
     potSel.addEventListener('change', ()=>{
       const newId = potSel.value ? parseInt(potSel.value) : null;
-      applyBulkChange(tx, t=>{
-        const amt = parseFloat(t.amount)||0;
-        if(t.potId){ const oldPot = financeData.pots.find(p=>p.id===t.potId); if(oldPot) oldPot.current -= amt; }
-        t.potId = newId;
-        if(t.potId){ const newPot = financeData.pots.find(p=>p.id===t.potId); if(newPot) newPot.current += amt; }
-      }, true);
+      applyBulkChange(tx, t=>{ t.potId = newId; }, true);
       renderPots();
     });
     const tdPot = document.createElement('td'); tdPot.appendChild(potSel);
@@ -1137,6 +1142,7 @@ function renderRules(){
 }
 
 async function saveFinance(){
+  recalcPots();
   checkDuplicates();
   await fetch('/api/finance-data', { method:'POST', headers:{'Content-Type':'application/json'}, body: JSON.stringify(financeData) });
 }
@@ -1268,8 +1274,8 @@ document.getElementById('pot-form').addEventListener('submit', e=>{
   const end=document.getElementById('pot-end').value;
   const goalVal=parseFloat(document.getElementById('pot-goal').value);
   const targetVal=parseFloat(document.getElementById('pot-target').value);
-  const current=parseFloat(document.getElementById('pot-current').value)||0;
-  const pot={id:editingPotIndex!==null?financeData.pots[editingPotIndex].id:financeData.nextPotId++,kind,name,account,desc,start,end,goal:isNaN(goalVal)?null:goalVal,target:isNaN(targetVal)?null:targetVal,current};
+  const starting=parseFloat(document.getElementById('pot-starting').value)||0;
+  const pot={id:editingPotIndex!==null?financeData.pots[editingPotIndex].id:financeData.nextPotId++,kind,name,account,desc,start,end,goal:isNaN(goalVal)?null:goalVal,target:isNaN(targetVal)?null:targetVal,startAmount:starting};
   if(editingPotIndex!==null){
     financeData.pots[editingPotIndex]=pot;
   } else {
@@ -1291,8 +1297,8 @@ document.getElementById('pot-view-form').addEventListener('submit', e=>{
   const end=document.getElementById('view-pot-end').value;
   const goalVal=parseFloat(document.getElementById('view-pot-goal').value);
   const targetVal=parseFloat(document.getElementById('view-pot-target').value);
-  const current=parseFloat(document.getElementById('view-pot-current').value)||0;
-  const pot={id:financeData.pots[editingPotIndex].id,kind,name,account,desc,start,end,goal:isNaN(goalVal)?null:goalVal,target:isNaN(targetVal)?null:targetVal,current};
+  const starting=parseFloat(document.getElementById('view-pot-starting').value)||0;
+  const pot={id:financeData.pots[editingPotIndex].id,kind,name,account,desc,start,end,goal:isNaN(goalVal)?null:goalVal,target:isNaN(targetVal)?null:targetVal,startAmount:starting};
   if(editingPotIndex!==null){
     financeData.pots[editingPotIndex]=pot;
   }
@@ -1305,6 +1311,17 @@ document.getElementById('pot-view-form').addEventListener('submit', e=>{
 document.getElementById('close-pot-modal').addEventListener('click',()=>{
   editingPotIndex=null;
   document.getElementById('pot-modal').style.display='none';
+});
+document.getElementById('delete-pot').addEventListener('click',()=>{
+  if(editingPotIndex!==null && confirm('Delete pot?')){
+    const removed=financeData.pots.splice(editingPotIndex,1)[0];
+    financeData.transactions.forEach(t=>{ if(t.potId===removed.id) t.potId=null; });
+    saveFinance();
+    renderPots();
+    renderTransactions();
+    editingPotIndex=null;
+    document.getElementById('pot-modal').style.display='none';
+  }
 });
 
 document.getElementById('show-duplicates').addEventListener('click', () => {
@@ -1372,7 +1389,7 @@ function renderDuplicates(){
     keepBtn.addEventListener('click', ()=>{ tx.duplicate=false; saveFinance(); renderTransactions(); renderDuplicates(); });
     const removeBtn = document.createElement('button');
     removeBtn.textContent = 'Remove';
-    removeBtn.addEventListener('click', ()=>{ financeData.transactions.forEach(t=>{ if(t.id===tx.id && t.potId){ const pot=financeData.pots.find(p=>p.id===t.potId); if(pot) pot.current-=parseFloat(t.amount)||0; }}); financeData.transactions = financeData.transactions.filter(t=>t.id!==tx.id); saveFinance(); renderTransactions(); renderPots(); renderDuplicates(); });
+    removeBtn.addEventListener('click', ()=>{ financeData.transactions = financeData.transactions.filter(t=>t.id!==tx.id); saveFinance(); renderTransactions(); renderPots(); renderDuplicates(); });
     const tdAction = document.createElement('td');
     tdAction.appendChild(keepBtn); tdAction.appendChild(removeBtn);
     tr.innerHTML = `<td>${tx.date}</td><td>${tx.description}</td><td>${tx.amount}</td><td>${tx.accountName}</td><td>${tx.sourceFile}</td>`;
@@ -1745,23 +1762,32 @@ function renderOverview(){
     catRows.forEach(r=>tbody.appendChild(r));
   });
 }
+  
+function recalcPots(){
+  financeData.pots.forEach(p=>{
+    const start=parseFloat(p.startAmount)||0;
+    const total=financeData.transactions.filter(t=>t.potId===p.id)
+      .reduce((s,t)=>s+(parseFloat(t.amount)||0),0);
+    p.current=start+total;
+  });
+}
 
 function renderPots(){
   const debtDiv=document.getElementById('debt-pots');
   const saveDiv=document.getElementById('saving-pots');
   if(!debtDiv||!saveDiv) return;
   debtDiv.innerHTML=''; saveDiv.innerHTML='';
+  recalcPots();
   financeData.pots.forEach((p,i)=>{
     const box=document.createElement('div');
     box.className='pot '+(p.kind==='saving'?'saving':'debt');
-    box.innerHTML=`<strong>${p.name}</strong><div>£${p.current.toFixed(2)}</div>`;
+    box.innerHTML=`<div class="pot-name">${p.name}</div><div>£${p.current.toFixed(2)}</div>`;
     const actions=document.createElement('div');
     actions.className='actions';
-    const view=document.createElement('button'); view.textContent='View';
+    const view=document.createElement('button');
+    view.textContent='View';
     view.addEventListener('click',()=>openPotModal(p,i));
-    const del=document.createElement('button'); del.textContent='Del';
-    del.addEventListener('click',()=>{ if(confirm('Delete pot?')){ const removed=financeData.pots.splice(i,1)[0]; financeData.transactions.forEach(t=>{ if(t.potId===removed.id) t.potId=null; }); saveFinance(); renderPots(); renderTransactions(); }});
-    actions.appendChild(view); actions.appendChild(del);
+    actions.appendChild(view);
     box.appendChild(actions);
     if(p.kind==='saving') saveDiv.appendChild(box); else debtDiv.appendChild(box);
   });
@@ -1777,7 +1803,8 @@ function openPotModal(p,i){
   document.getElementById('view-pot-end').value=p.end||'';
   document.getElementById('view-pot-goal').value=p.goal??'';
   document.getElementById('view-pot-target').value=p.target??'';
-  document.getElementById('view-pot-current').value=p.current??'';
+  document.getElementById('view-pot-starting').value=p.startAmount??'';
+  document.getElementById('view-pot-current').textContent=p.current.toFixed(2);
   const txDiv=document.getElementById('pot-transactions');
   const linked=financeData.transactions.filter(t=>t.potId===p.id);
   let html='<h3>Transactions</h3>';
