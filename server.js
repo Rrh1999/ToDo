@@ -5,7 +5,8 @@ const path = require('path');
 const XLSX = require('xlsx');
 const app = express();
 const PORT = process.env.PORT || 3000;
-app.use(express.json());
+// Allow larger JSON payloads so big finance datasets (including pots) persist
+app.use(express.json({ limit: '5mb' }));
 app.use(express.static(__dirname));
 app.get('/shopping', (req, res) => res.sendFile(path.join(__dirname, 'shopping.html')));
 app.get('/today', (req, res) => res.sendFile(path.join(__dirname, 'today.html')));
@@ -77,7 +78,9 @@ let financeData = {
   nextBudgetId: 1,
   rules: [],
   budgetPeriods: [],
-  startBalances: { date:'', accounts:{} }
+  startBalances: { date:'', accounts:{} },
+  pots: [],
+  nextPotId: 1
 };
 
 const INDEX_FILE = path.join(__dirname, 'indexData.json');
@@ -105,6 +108,8 @@ function initDb() {
   spendingData = loadJson(SPENDING_FILE, spendingData);
   diyData = loadJson(DIY_FILE, diyData);
   financeData = loadJson(FINANCE_FILE, financeData);
+  financeData.pots = financeData.pots || [];
+  financeData.nextPotId = financeData.nextPotId || 1;
 }
 
 app.get('/api/index-data', (req, res) => {
