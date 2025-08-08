@@ -5,7 +5,8 @@ const path = require('path');
 const XLSX = require('xlsx');
 const app = express();
 const PORT = process.env.PORT || 3000;
-app.use(express.json());
+// Allow larger JSON payloads so big finance datasets (including pots) persist
+app.use(express.json({ limit: '5mb' }));
 app.use(express.static(__dirname));
 app.get('/shopping', (req, res) => res.sendFile(path.join(__dirname, 'shopping.html')));
 app.get('/today', (req, res) => res.sendFile(path.join(__dirname, 'today.html')));

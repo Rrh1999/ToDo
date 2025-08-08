@@ -124,6 +124,7 @@ th,td{border:1px solid #ccc;padding:0.25rem 0.5rem;}
   </div>
   <div id="budgets" class="tab-content">
   <h2>Budgets</h2>
+  <div id="budget-settings" class="settings-section"></div>
   <label>Extra Display
     <select id="extra-display">
       <option value="merge">Merge extra</option>
@@ -173,7 +174,45 @@ th,td{border:1px solid #ccc;padding:0.25rem 0.5rem;}
     <thead></thead>
     <tbody></tbody>
   </table>
-  <div id="budget-settings" class="settings-section"></div>
+</div>
+<div id="pots" class="tab-content">
+  <h2>Pots</h2>
+  <form id="pot-form">
+    <select id="pot-kind">
+      <option value="saving">Saving</option>
+      <option value="debt">Debt</option>
+    </select>
+    <input type="text" id="pot-name" placeholder="Name" required>
+    <select id="pot-account"><option value="">No account</option></select>
+    <input type="text" id="pot-desc" placeholder="Description">
+    <input type="date" id="pot-start" required>
+    <input type="date" id="pot-end">
+    <input type="number" id="pot-goal" placeholder="Goal Amount">
+    <input type="number" id="pot-target" placeholder="Monthly Target">
+    <input type="number" id="pot-starting" placeholder="Starting Amount" required>
+    <button type="submit" id="pot-submit">Create</button>
+  </form>
+</div>
+<div id="pot-modal" style="display:none;position:fixed;top:10%;left:10%;right:10%;background:#fff;border:1px solid #ccc;padding:1rem;max-height:80%;overflow:auto;">
+  <button type="button" id="close-pot-modal">Close</button>
+  <button type="button" id="delete-pot">Delete</button>
+  <form id="pot-view-form">
+    <select id="view-pot-kind">
+      <option value="saving">Saving</option>
+      <option value="debt">Debt</option>
+    </select>
+    <input type="text" id="view-pot-name" placeholder="Name" required>
+    <select id="view-pot-account"><option value="">No account</option></select>
+    <input type="text" id="view-pot-desc" placeholder="Description">
+    <input type="date" id="view-pot-start" required>
+    <input type="date" id="view-pot-end">
+    <input type="number" id="view-pot-goal" placeholder="Goal Amount">
+    <input type="number" id="view-pot-target" placeholder="Monthly Target">
+    <input type="number" id="view-pot-starting" placeholder="Starting Amount" required>
+    <button type="submit">Save</button>
+  </form>
+  <div><strong>Current Amount:</strong> £<span id="view-pot-current"></span></div>
+  <div id="pot-transactions"></div>
 </div>
 <div id="pots" class="tab-content">
   <h2>Pots</h2>
@@ -1763,6 +1802,71 @@ function renderOverview(){
   });
 }
   
+function recalcPots(){
+  financeData.pots.forEach(p=>{
+    const start=parseFloat(p.startAmount)||0;
+    const total=financeData.transactions.filter(t=>t.potId===p.id)
+      .reduce((s,t)=>s+(parseFloat(t.amount)||0),0);
+    p.current=start+total;
+  });
+}
+
+function renderPots(){
+  const debtDiv=document.getElementById('debt-pots');
+  const saveDiv=document.getElementById('saving-pots');
+  if(!debtDiv||!saveDiv) return;
+  debtDiv.innerHTML=''; saveDiv.innerHTML='';
+  recalcPots();
+  financeData.pots.forEach((p,i)=>{
+    const box=document.createElement('div');
+    box.className='pot '+(p.kind==='saving'?'saving':'debt');
+    box.innerHTML=`<div class="pot-name">${p.name}</div><div>£${p.current.toFixed(2)}</div>`;
+    const actions=document.createElement('div');
+    actions.className='actions';
+    const view=document.createElement('button');
+    view.textContent='View';
+    view.addEventListener('click',()=>openPotModal(p,i));
+    actions.appendChild(view);
+    box.appendChild(actions);
+    if(p.kind==='saving') saveDiv.appendChild(box); else debtDiv.appendChild(box);
+  });
+}
+
+let editingPotIndex=null;
+function openPotModal(p,i){
+  document.getElementById('view-pot-kind').value=p.kind;
+  document.getElementById('view-pot-name').value=p.name;
+  document.getElementById('view-pot-account').value=p.account||'';
+  document.getElementById('view-pot-desc').value=p.desc||'';
+  document.getElementById('view-pot-start').value=p.start||'';
+  document.getElementById('view-pot-end').value=p.end||'';
+  document.getElementById('view-pot-goal').value=p.goal??'';
+  document.getElementById('view-pot-target').value=p.target??'';
+  document.getElementById('view-pot-starting').value=p.startAmount??'';
+  document.getElementById('view-pot-current').textContent=p.current.toFixed(2);
+  const txDiv=document.getElementById('pot-transactions');
+  const linked=financeData.transactions.filter(t=>t.potId===p.id);
+  let html='<h3>Transactions</h3>';
+  if(linked.length){
+    html+='<table><thead><tr><th>Date</th><th>Description</th><th>Amount</th></tr></thead><tbody>';
+    let total=0;
+    linked.forEach(t=>{ total+=parseFloat(t.amount)||0; html+=`<tr><td>${t.date}</td><td>${t.description}</td><td>${t.amount}</td></tr>`; });
+    html+='</tbody></table>';
+    html+=`<div><strong>Total from transactions:</strong> £${total.toFixed(2)}</div>`;
+  } else {
+    html+='<p>No transactions linked</p>';
+  }
+  txDiv.innerHTML=html;
+  editingPotIndex=i;
+  document.getElementById('pot-modal').style.display='block';
+}
+
+function resetPotForm(){
+  document.getElementById('pot-form').reset();
+  editingPotIndex=null;
+  document.getElementById('pot-submit').textContent='Create';
+}
+
 function recalcPots(){
   financeData.pots.forEach(p=>{
     const start=parseFloat(p.startAmount)||0;
