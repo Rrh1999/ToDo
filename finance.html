@@ -13,6 +13,15 @@ header{background:#fff;color:#ff69b4;padding:1rem;text-align:center;border-botto
 .tab-content.active{display:block;}
 table{border-collapse:collapse;width:100%;margin-top:1rem;font-size:0.9rem;}
 th,td{border:1px solid #ccc;padding:0.25rem 0.5rem;}
+#pots-display{display:flex;justify-content:space-between;margin:1rem;}
+.pot-column{flex:1;display:flex;flex-wrap:wrap;gap:0.5rem;}
+#saving-pots{justify-content:flex-end;}
+.pot{border:1px solid #ccc;padding:0.5rem;width:120px;text-align:center;display:flex;flex-direction:column;align-items:center;gap:0.25rem;}
+.pot-name{font-weight:bold;}
+.pot.saving{background:#d4edda;}
+.pot.debt{background:#f8d7da;}
+.pot .actions{display:flex;gap:0.25rem;}
+.pot .actions button{margin:0 2px;}
 </style>
 </head>
 <body>
@@ -25,7 +34,9 @@ th,td{border:1px solid #ccc;padding:0.25rem 0.5rem;}
   <button id="tab-upload" type="button">Upload</button>
   <button id="tab-code" type="button">Code</button>
   <button id="tab-budgets" type="button">Budgets</button>
+  <button id="tab-pots" type="button">Pots</button>
 </div>
+<div id="pots-display"><div id="debt-pots" class="pot-column"></div><div id="saving-pots" class="pot-column"></div></div>
 <div id="upload" class="tab-content active">
   <h2>Upload Transactions</h2>
   <form id="upload-form">
@@ -71,18 +82,19 @@ th,td{border:1px solid #ccc;padding:0.25rem 0.5rem;}
     <thead>
       <tr>
         <th><input type="checkbox" id="select-all"></th>
-        <th>Date</th>
-        <th>Description</th>
-        <th>Amount</th>
-        <th>Account</th>
-        <th class="file-col" style="display:none;">File</th>
-        <th class="file-col" style="display:none;">Uploaded</th>
-        <th>Type</th>
-        <th>Sub Type</th>
-        <th>Confirmed</th>
-        <th>Transfer</th>
-        <th>Notes</th>
-        <th>Month</th>
+        <th>Date <button type="button" class="sort-btn" data-field="date">↕</button></th>
+        <th>Description <button type="button" class="sort-btn" data-field="description">↕</button></th>
+        <th>Amount <button type="button" class="sort-btn" data-field="amount">↕</button></th>
+        <th>Account <button type="button" class="sort-btn" data-field="accountName">↕</button></th>
+        <th class="file-col" style="display:none;">File <button type="button" class="sort-btn" data-field="sourceFile">↕</button></th>
+        <th class="file-col" style="display:none;">Uploaded <button type="button" class="sort-btn" data-field="uploadedAt">↕</button></th>
+        <th>Type <button type="button" class="sort-btn" data-field="type">↕</button></th>
+        <th>Sub Type <button type="button" class="sort-btn" data-field="subType">↕</button></th>
+        <th>Pot <button type="button" class="sort-btn" data-field="pot">↕</button></th>
+        <th>Confirmed <button type="button" class="sort-btn" data-field="confirmed">↕</button></th>
+        <th>Transfer <button type="button" class="sort-btn" data-field="transfer">↕</button></th>
+        <th>Notes <button type="button" class="sort-btn" data-field="notes">↕</button></th>
+        <th>Month <button type="button" class="sort-btn" data-field="month">↕</button></th>
       </tr>
     </thead>
     <tbody></tbody>
@@ -120,7 +132,7 @@ th,td{border:1px solid #ccc;padding:0.25rem 0.5rem;}
   </label>
   <table id="budget-table">
     <thead>
-      <tr><th>Name</th><th>Amount</th><th>Recurring</th><th>Date</th><th></th><th>Archived</th></tr>
+      <tr><th>Name</th><th>Description</th><th>Amount</th><th>Recurring</th><th>Date</th><th></th><th>Archived</th></tr>
     </thead>
     <tbody></tbody>
   </table>
@@ -163,12 +175,53 @@ th,td{border:1px solid #ccc;padding:0.25rem 0.5rem;}
   </table>
   <div id="budget-settings" class="settings-section"></div>
 </div>
+<div id="pots" class="tab-content">
+  <h2>Pots</h2>
+  <form id="pot-form">
+    <select id="pot-kind">
+      <option value="saving">Saving</option>
+      <option value="debt">Debt</option>
+    </select>
+    <input type="text" id="pot-name" placeholder="Name" required>
+    <select id="pot-account"><option value="">No account</option></select>
+    <input type="text" id="pot-desc" placeholder="Description">
+    <input type="date" id="pot-start" required>
+    <input type="date" id="pot-end">
+    <input type="number" id="pot-goal" placeholder="Goal Amount">
+    <input type="number" id="pot-target" placeholder="Monthly Target">
+    <input type="number" id="pot-starting" placeholder="Starting Amount" required>
+    <button type="submit" id="pot-submit">Create</button>
+  </form>
+</div>
+<div id="pot-modal" style="display:none;position:fixed;top:10%;left:10%;right:10%;background:#fff;border:1px solid #ccc;padding:1rem;max-height:80%;overflow:auto;">
+  <button type="button" id="close-pot-modal">Close</button>
+  <button type="button" id="delete-pot">Delete</button>
+  <form id="pot-view-form">
+    <select id="view-pot-kind">
+      <option value="saving">Saving</option>
+      <option value="debt">Debt</option>
+    </select>
+    <input type="text" id="view-pot-name" placeholder="Name" required>
+    <select id="view-pot-account"><option value="">No account</option></select>
+    <input type="text" id="view-pot-desc" placeholder="Description">
+    <input type="date" id="view-pot-start" required>
+    <input type="date" id="view-pot-end">
+    <input type="number" id="view-pot-goal" placeholder="Goal Amount">
+    <input type="number" id="view-pot-target" placeholder="Monthly Target">
+    <input type="number" id="view-pot-starting" placeholder="Starting Amount" required>
+    <button type="submit">Save</button>
+  </form>
+  <div><strong>Current Amount:</strong> £<span id="view-pot-current"></span></div>
+  <div id="pot-transactions"></div>
+</div>
 <div id="budget-modal" style="display:none;position:fixed;top:10%;left:10%;right:10%;background:#fff;border:1px solid #ccc;padding:1rem;max-height:80%;overflow:auto;"></div>
 <script src="node_modules/papaparse/papaparse.min.js"></script>
 <script src="node_modules/xlsx/dist/xlsx.full.min.js"></script>
 <script>
-let financeData = { accounts: [], transactions: [], nextTransactionId: 1, budgetCategories: [], budgets: [], nextBudgetId: 1, rules: [], budgetPeriods: [] };
+let financeData = { accounts: [], transactions: [], nextTransactionId: 1, budgetCategories: [], budgets: [], nextBudgetId: 1, rules: [], budgetPeriods: [], categoryStarts: {}, pots: [], nextPotId: 1 };
 let lastTxCheckbox = null;
+let txSortField = '';
+let txSortDir = 1;
 const isMobile = /Mobi|Android/i.test(navigator.userAgent);
 
 function showTab(id){
@@ -187,6 +240,7 @@ async function loadFinance(){
   if(!financeData.budgetCategories.includes('Other \u2013 Not Budgeted')){
     financeData.budgetCategories.push('Other \u2013 Not Budgeted');
   }
+  financeData.categoryStarts = financeData.categoryStarts || {};
   financeData.budgets = (financeData.budgets || []).map(b=>{
     if(!b.versions){
       const start = b.date || new Date().toISOString().slice(0,10);
@@ -194,6 +248,7 @@ async function loadFinance(){
       b.versions = [{ amount: b.amount || 0, start, end, interval: b.recurring ? 1 : 0, mode: 'within' }];
     }
     b.extras = b.extras || [];
+    b.desc = b.desc || '';
     normalizeVersions(b);
     return b;
   });
@@ -203,10 +258,19 @@ async function loadFinance(){
     if(!p.end) p.end = p.start;
   });
   financeData.startBalances = financeData.startBalances || {date:'', accounts:{}};
+  financeData.pots = financeData.pots || [];
+  financeData.nextPotId = financeData.nextPotId || 1;
   financeData.transactions = (financeData.transactions || []).map(tx=>{
     const d = parseDate(tx.date);
     tx.date = Number.isNaN(d.getTime()) ? '' : d.toISOString().slice(0,10);
     return tx;
+  });
+  financeData.pots.forEach(p=>{
+    const total=financeData.transactions.filter(t=>t.potId===p.id)
+      .reduce((s,t)=>s+(parseFloat(t.amount)||0),0);
+    if(p.startAmount===undefined){
+      p.startAmount=(parseFloat(p.current)||0)-total;
+    }
   });
   applyRulesToAll();
   assignMonthsAll();
@@ -222,6 +286,7 @@ async function loadFinance(){
   populateBalanceMonths();
   renderOverview();
   renderBalance();
+  renderPots();
   renderSettingsSections();
 }
 
@@ -257,6 +322,16 @@ function updateAccountList(){
     filterSel.innerHTML = '<option value="">All accounts</option>';
     financeData.accounts.forEach(a=>{ const opt=document.createElement('option'); opt.value=a; opt.textContent=a; filterSel.appendChild(opt); });
   }
+  const potSel = document.getElementById('pot-account');
+  if(potSel){
+    potSel.innerHTML = '<option value="">No account</option>';
+    financeData.accounts.forEach(a=>{ const opt=document.createElement('option'); opt.value=a; opt.textContent=a; potSel.appendChild(opt); });
+  }
+  const viewPotSel = document.getElementById('view-pot-account');
+  if(viewPotSel){
+    viewPotSel.innerHTML = '<option value="">No account</option>';
+    financeData.accounts.forEach(a=>{ const opt=document.createElement('option'); opt.value=a; opt.textContent=a; viewPotSel.appendChild(opt); });
+  }
 }
 
 function parseDate(val){
@@ -279,6 +354,21 @@ function parseDate(val){
     if(!Number.isNaN(parsed)) return new Date(parsed);
   }
   return new Date(val);
+}
+
+function getPotName(tx){
+  const p = financeData.pots.find(p=>p.id===tx.potId);
+  return (p ? p.name : '').toLowerCase();
+}
+
+function updateSortIndicators(){
+  document.querySelectorAll('#tx-table thead .sort-btn').forEach(b=>{
+    if(b.dataset.field === txSortField){
+      b.textContent = txSortDir === 1 ? '▲' : '▼';
+    } else {
+      b.textContent = '↕';
+    }
+  });
 }
 
 function getMonth(dateStr){
@@ -402,7 +492,32 @@ function renderTransactions(){
   const fTo = document.getElementById('filter-date-to').value;
   const fMin = parseFloat(document.getElementById('filter-amount-min').value);
   const fMax = parseFloat(document.getElementById('filter-amount-max').value);
-  financeData.transactions.forEach(tx=>{
+  const txs = [...financeData.transactions];
+  if(txSortField){
+    txs.sort((a,b)=>{
+      let valA, valB;
+      switch(txSortField){
+        case 'date': valA=parseDate(a.date); valB=parseDate(b.date); break;
+        case 'description': valA=(a.description||'').toLowerCase(); valB=(b.description||'').toLowerCase(); break;
+        case 'amount': valA=parseFloat(a.amount)||0; valB=parseFloat(b.amount)||0; break;
+        case 'accountName': valA=(a.accountName||'').toLowerCase(); valB=(b.accountName||'').toLowerCase(); break;
+        case 'sourceFile': valA=(a.sourceFile||'').toLowerCase(); valB=(b.sourceFile||'').toLowerCase(); break;
+        case 'uploadedAt': valA=parseDate(a.uploadedAt?a.uploadedAt.split('T')[0]:''); valB=parseDate(b.uploadedAt?b.uploadedAt.split('T')[0]:''); break;
+        case 'type': valA=(a.type||'').toLowerCase(); valB=(b.type||'').toLowerCase(); break;
+        case 'subType': valA=(a.subType||'').toLowerCase(); valB=(b.subType||'').toLowerCase(); break;
+        case 'pot': valA=getPotName(a); valB=getPotName(b); break;
+        case 'confirmed': valA=a.confirmed?1:0; valB=b.confirmed?1:0; break;
+        case 'transfer': valA=a.transfer?1:0; valB=b.transfer?1:0; break;
+        case 'notes': valA=(a.notes||'').toLowerCase(); valB=(b.notes||'').toLowerCase(); break;
+        case 'month': valA=(a.month||'').toLowerCase(); valB=(b.month||'').toLowerCase(); break;
+        default: valA=''; valB='';
+      }
+      if(valA < valB) return -1*txSortDir;
+      if(valA > valB) return 1*txSortDir;
+      return 0;
+    });
+  }
+  txs.forEach(tx=>{
     if(uncoded && tx.type) return;
     if(fAcc && tx.accountName !== fAcc) return;
     if(fType === '__blank'){ if(tx.type) return; }
@@ -498,7 +613,7 @@ function renderTransactions(){
       if(type && name && !financeData.budgets.some(b=>b.type===type && b.name===name)){
         const todayStr=new Date().toISOString().slice(0,10);
         const far=new Date(new Date(todayStr).setFullYear(new Date(todayStr).getFullYear()+100)).toISOString().slice(0,10);
-        financeData.budgets.push({id:financeData.nextBudgetId++, type, name, archived:false, versions:[{amount:0,start:todayStr,end:far,interval:1,mode:'within'}], extras:[]});
+        financeData.budgets.push({id:financeData.nextBudgetId++, type, name, archived:false, versions:[{amount:0,start:todayStr,end:far,interval:1,mode:'within'}], extras:[], desc:''});
         populateST();
         saveFinance();
         renderBudgets();
@@ -522,13 +637,25 @@ function renderTransactions(){
     tdSub.appendChild(subTypeInput);
     if(!isMobile) tdSub.appendChild(stList);
     tdSub.appendChild(saveSubBtn);
+    const potSel = document.createElement('select');
+    const blankPot = document.createElement('option'); blankPot.value=''; blankPot.textContent='';
+    potSel.appendChild(blankPot);
+    financeData.pots.forEach(p=>{ const o=document.createElement('option'); o.value=p.id; o.textContent=p.name; potSel.appendChild(o); });
+    potSel.value = tx.potId || '';
+    potSel.addEventListener('change', ()=>{
+      const newId = potSel.value ? parseInt(potSel.value) : null;
+      applyBulkChange(tx, t=>{ t.potId = newId; }, true);
+      renderPots();
+    });
+    const tdPot = document.createElement('td'); tdPot.appendChild(potSel);
     const tdConf = document.createElement("td"); tdConf.appendChild(confirmBox);
     const tdTrans = document.createElement("td"); tdTrans.appendChild(transferBox);
     const tdNotes = document.createElement("td"); tdNotes.appendChild(notes);
     const tdMonth = document.createElement("td"); tdMonth.textContent = tx.month || '';
-    tr.appendChild(tdType); tr.appendChild(tdSub); tr.appendChild(tdConf); tr.appendChild(tdTrans); tr.appendChild(tdNotes); tr.appendChild(tdMonth);
+    tr.appendChild(tdType); tr.appendChild(tdSub); tr.appendChild(tdPot); tr.appendChild(tdConf); tr.appendChild(tdTrans); tr.appendChild(tdNotes); tr.appendChild(tdMonth);
     tbody.appendChild(tr);
   });
+  updateSortIndicators();
   populateBalanceMonths();
   renderBalance();
 }
@@ -569,6 +696,7 @@ function renderBudgets(){
       delCatBtn.disabled = true;
     }
     tr.appendChild(document.createElement('td')).textContent = cat;
+    tr.appendChild(document.createElement('td')).textContent = '';
     tr.appendChild(document.createElement('td')).textContent = g.amount;
     tr.appendChild(document.createElement('td'));
     tr.appendChild(document.createElement('td'));
@@ -578,7 +706,7 @@ function renderBudgets(){
     g.items.forEach(sub=>{
       const tr2 = document.createElement('tr');
       const v=currentBudgetVersion(sub) || {amount:'',interval:1,mode:'within',start:'',end:''};
-      tr2.innerHTML = `<td style="padding-left:20px;">${sub.name}</td><td>${v.amount}</td><td>${v.interval>1?`Every ${v.interval} (${v.mode})`:'Monthly'}</td><td>${v.start}</td>`;
+      tr2.innerHTML = `<td style="padding-left:20px;">${sub.name}</td><td>${sub.desc||''}</td><td>${v.amount}</td><td>${v.interval>1?`Every ${v.interval} (${v.mode})`:'Monthly'}</td><td>${v.start}</td>`;
       const editSubBtn=document.createElement('button');
       editSubBtn.textContent='Edit';
       editSubBtn.addEventListener('click',()=>openBudgetModal(sub));
@@ -710,20 +838,23 @@ function amountForMonth(sub, month){
   return baseAmountForMonth(sub, month) + extraForMonth(sub, month);
 }
 
-function openBudgetModal(sub, editIndex=-1){
+function openBudgetModal(sub, editIndex=-1, isNew=false){
+  sub.versions = sub.versions || [];
   normalizeVersions(sub);
   const modal=document.getElementById('budget-modal');
   if(!modal) return;
   const todayStr=new Date().toISOString().slice(0,10);
   const far=new Date(new Date(todayStr).setFullYear(new Date(todayStr).getFullYear()+100)).toISOString().slice(0,10);
-  const curr=currentBudgetVersion(sub);
-  const v=editIndex>=0 ? sub.versions[editIndex] : (curr || {amount:0,start:todayStr,end:far,interval:1,mode:'within'});
-  const allStart=sub.versions.reduce((m,x)=>parseDate(x.start)<m?parseDate(x.start):m,parseDate(sub.versions[0].start));
-  const allEnd=sub.versions.reduce((m,x)=>parseDate(x.end)>m?parseDate(x.end):m,parseDate(sub.versions[0].end));
+  const curr=sub.versions.length?currentBudgetVersion(sub):null;
+  const defaultVer={amount:0,start:todayStr,end:far,interval:1,mode:'within'};
+  const v=editIndex>=0 && sub.versions[editIndex]? sub.versions[editIndex] : (curr || defaultVer);
+  const allStart=sub.versions.length? sub.versions.reduce((m,x)=>parseDate(x.start)<m?parseDate(x.start):m,parseDate(sub.versions[0].start)) : parseDate(v.start);
+  const allEnd=sub.versions.length? sub.versions.reduce((m,x)=>parseDate(x.end)>m?parseDate(x.end):m,parseDate(sub.versions[0].end)) : parseDate(v.end);
   const monthOpts=monthsBetween(allStart,allEnd);
   modal.innerHTML=`<form id="budget-edit-form">
     <label>Category <select id="edit-type"></select></label>
-    <label>Name <input type="text" value="${sub.name}" disabled></label>
+    <label>Name <input type="text" id="edit-name" value="${sub.name||''}" ${isNew?'':'disabled'}></label>
+    <label>Description <textarea id="edit-desc">${sub.desc||''}</textarea></label>
     <label>Amount <input type="number" id="edit-amount" value="${v.amount}"></label>
     <label>Start <input type="date" id="edit-start" value="${v.start}"></label>
     <label>End <input type="date" id="edit-end" value="${v.end}"></label>
@@ -731,7 +862,7 @@ function openBudgetModal(sub, editIndex=-1){
     <label>Mode <select id="edit-mode"><option value="within">Within Month</option><option value="throughout">Throughout</option></select></label>
     <button type="submit">Save</button>
     <button type="button" id="close-budget-modal">Close</button>
-    ${editIndex>=0 ? '<button type="button" id="cancel-edit">Cancel</button>' : ''}
+    ${(editIndex>=0 && !isNew) ? '<button type="button" id="cancel-edit">Cancel</button>' : ''}
   </form>
   <h4>History</h4>
   <table><thead><tr><th>Ver</th><th>Start</th><th>End</th><th>Amount</th><th>Interval</th><th>Mode</th><th></th></tr></thead><tbody></tbody></table>
@@ -744,27 +875,27 @@ function openBudgetModal(sub, editIndex=-1){
   <table id="extra-table"><thead><tr><th>Month</th><th>Amount</th><th></th></tr></thead><tbody></tbody></table>`;
   const typeSel=modal.querySelector('#edit-type');
   financeData.budgetCategories.forEach(cat=>{ const o=document.createElement('option'); o.value=cat; o.textContent=cat; typeSel.appendChild(o); });
-  typeSel.value=sub.type;
+  typeSel.value=sub.type||'';
   const modeSel=modal.querySelector('#edit-mode'); modeSel.value=v.mode||'within';
   if(editIndex===-1){
     if(v.start===todayStr) modal.querySelector('#edit-start').insertAdjacentHTML('afterend','<small>(default today)</small>');
     if(v.end===far) modal.querySelector('#edit-end').insertAdjacentHTML('afterend','<small>(default 100y)</small>');
   }
-  const tbody=modal.querySelector('tbody');
-  sub.versions.slice().sort((a,b)=>parseDate(b.start)-parseDate(a.start)).forEach(ver=>{
+  const histTbody=modal.querySelector('table tbody');
+  (sub.versions||[]).slice().sort((a,b)=>parseDate(b.start)-parseDate(a.start)).forEach(ver=>{
     const idx=sub.versions.indexOf(ver);
     const tr=document.createElement('tr');
     tr.innerHTML=`<td>${ver.version||idx+1}</td><td>${ver.start}</td><td>${ver.end}</td><td>${ver.amount}</td><td>${ver.interval||1}</td><td>${ver.mode||'within'}</td><td><button class="edit-ver" data-idx="${idx}">Edit</button><button class="del-ver" data-idx="${idx}">Delete</button></td>`;
     if(ver===curr) tr.style.background='lightgreen';
-    tbody.appendChild(tr);
+    histTbody.appendChild(tr);
   });
-  tbody.querySelectorAll('.edit-ver').forEach(btn=>{
+  histTbody.querySelectorAll('.edit-ver').forEach(btn=>{
     btn.addEventListener('click',()=>{
       const idx=parseInt(btn.dataset.idx);
       openBudgetModal(sub, idx);
     });
   });
-  tbody.querySelectorAll('.del-ver').forEach(btn=>{
+  histTbody.querySelectorAll('.del-ver').forEach(btn=>{
     btn.addEventListener('click',()=>{
       const idx=parseInt(btn.dataset.idx);
       if(confirm('Delete this version?')){
@@ -822,12 +953,14 @@ function openBudgetModal(sub, editIndex=-1){
   });
   modal.style.display='block';
   modal.querySelector('#close-budget-modal').addEventListener('click',()=>{ modal.style.display='none'; });
-  if(editIndex>=0){
+  if(editIndex>=0 && !isNew){
     modal.querySelector('#cancel-edit').addEventListener('click',()=>openBudgetModal(sub));
   }
   modal.querySelector('#budget-edit-form').addEventListener('submit',e=>{
     e.preventDefault();
     const newType=typeSel.value;
+    const name=modal.querySelector('#edit-name').value.trim();
+    const desc=modal.querySelector('#edit-desc').value.trim();
     const amount=parseFloat(modal.querySelector('#edit-amount').value);
     const start=modal.querySelector('#edit-start').value||todayStr;
     const end=modal.querySelector('#edit-end').value||far;
@@ -837,21 +970,35 @@ function openBudgetModal(sub, editIndex=-1){
     }
     const interval=parseInt(modal.querySelector('#edit-interval').value)||1;
     const mode=modal.querySelector('#edit-mode').value;
-    if(editIndex>=0){
-      sub.versions[editIndex]={amount,start,end,interval,mode};
+    if(isNew){
+      if(!newType || !name) return;
+      sub.type=newType;
+      sub.name=name;
+      sub.desc=desc;
+      sub.archived=false;
+      sub.versions=[{amount,start,end,interval,mode}];
+      sub.extras=[];
+      financeData.budgets.push(sub);
+      financeData.nextBudgetId++;
     } else {
-      sub.versions.push({amount,start,end,interval,mode});
+      const same=v.amount==amount && v.start==start && v.end==end && v.interval==interval && v.mode==mode;
+      if(editIndex>=0){
+        sub.versions[editIndex]={amount,start,end,interval,mode};
+      } else if(!same){
+        sub.versions.push({amount,start,end,interval,mode});
+      }
+      sub.desc=desc;
+      if(newType!==sub.type){
+        financeData.transactions.forEach(t=>{ if(t.type===sub.type && t.subType===sub.name){ t.type=newType; } });
+        financeData.rules.forEach(r=>{ if(r.type===sub.type && r.subType===sub.name){ r.type=newType; } });
+        sub.type=newType;
+      }
     }
     normalizeVersions(sub);
     const currV=currentBudgetVersion(sub);
     if(currV){
       sub.amount=currV.amount;
       sub.date=currV.start;
-    }
-    if(newType!==sub.type){
-      financeData.transactions.forEach(t=>{ if(t.type===sub.type && t.subType===sub.name){ t.type=newType; } });
-      financeData.rules.forEach(r=>{ if(r.type===sub.type && r.subType===sub.name){ r.type=newType; } });
-      sub.type=newType;
     }
     modal.style.display='none';
     saveFinance();
@@ -869,27 +1016,25 @@ function renderSettingsSections(){
       <h3>Budget Settings</h3>
       <form class="type-form">
         <input type="text" class="new-type-name" placeholder="New Category">
+        <input type="date" class="new-type-start">
         <button type="submit">Add Category</button>
       </form>
       <ul class="type-list"></ul>
       <form class="subtype-form">
         <select class="subtype-type"></select>
-        <input type="text" class="subtype-name" placeholder="Sub Type Name">
-        <input type="number" class="subtype-amount" placeholder="Amount">
-        <input type="date" class="subtype-start"><small class="start-note"></small>
-        <input type="date" class="subtype-end"><small class="end-note"></small>
-        <input type="number" class="subtype-interval" value="1" placeholder="Every N months">
-        <select class="subtype-mode"><option value="within">Within Month</option><option value="throughout">Throughout</option></select>
-        <button type="submit">Add Sub Type</button>
+        <button type="button" class="add-subtype-btn">Add Sub Type</button>
       </form>
       <div class="subtype-lists"></div>`;
     const typeForm = container.querySelector('.type-form');
     typeForm.addEventListener('submit', e=>{
       e.preventDefault();
       const name = container.querySelector('.new-type-name').value.trim();
+      const start = container.querySelector('.new-type-start').value || new Date().toISOString().slice(0,10);
       if(!name || financeData.budgetCategories.includes(name)) return;
       financeData.budgetCategories.push(name);
+      financeData.categoryStarts[name]=start;
       container.querySelector('.new-type-name').value='';
+      container.querySelector('.new-type-start').value='';
       saveFinance();
       updateTypeOptions();
       renderBudgets();
@@ -898,50 +1043,23 @@ function renderSettingsSections(){
     });
     const subtypeForm = container.querySelector('.subtype-form');
     const typeSelect = container.querySelector('.subtype-type');
-    const startInput = container.querySelector('.subtype-start');
-    const endInput = container.querySelector('.subtype-end');
-    const startNote = container.querySelector('.start-note');
-    const endNote = container.querySelector('.end-note');
-    const todayStr = new Date().toISOString().slice(0,10);
-    startInput.value = todayStr;
-    startNote.textContent = '(default today)';
-    const defEnd = new Date(new Date(todayStr).setFullYear(new Date(todayStr).getFullYear()+100)).toISOString().slice(0,10);
-    endInput.value = defEnd;
-    endNote.textContent = '(default 100y)';
     function fillTypes(){
       typeSelect.innerHTML = '<option value="">Select type</option>';
       financeData.budgetCategories.forEach(t=>{ const o=document.createElement('option'); o.value=t; o.textContent=t; typeSelect.appendChild(o); });
     }
     fillTypes();
-    subtypeForm.addEventListener('submit', e=>{
-      e.preventDefault();
+    subtypeForm.querySelector('.add-subtype-btn').addEventListener('click',()=>{
       const type = typeSelect.value;
-      const name = container.querySelector('.subtype-name').value.trim();
-      const amt = parseFloat(container.querySelector('.subtype-amount').value);
-      const start = startInput.value || todayStr;
-      const end = endInput.value || defEnd;
-      const interval = parseInt(container.querySelector('.subtype-interval').value)||1;
-      const mode = container.querySelector('.subtype-mode').value;
-      if(!type || !name) return;
-      const nb={id:financeData.nextBudgetId++, type, name, archived:false, versions:[{amount:amt,start,end,interval,mode}], extras:[]};
-      financeData.budgets.push(nb);
-      normalizeVersions(nb);
-      container.querySelector('.subtype-name').value='';
-      container.querySelector('.subtype-amount').value='';
-      container.querySelector('.subtype-interval').value='1';
-      container.querySelector('.subtype-mode').value='within';
-      startInput.value=todayStr;
-      endInput.value=defEnd;
-      saveFinance();
-      renderBudgets();
-      renderOverview();
-      renderSettingsSections();
+      if(!type) return;
+      const nb={id:financeData.nextBudgetId, type, name:'', archived:false, versions:[], extras:[], desc:''};
+      openBudgetModal(nb, -1, true);
     });
 
     const typeList = container.querySelector('.type-list');
     financeData.budgetCategories.forEach(cat=>{
       const li=document.createElement('li');
-      li.textContent=cat;
+      const start=financeData.categoryStarts[cat]||'';
+      li.textContent=start?`${cat} (${start})`:cat;
       if(!cat.startsWith('Other')){
         const del=document.createElement('button');
         del.textContent='Delete';
@@ -951,6 +1069,7 @@ function renderSettingsSections(){
             financeData.transactions.forEach(t=>{ if(t.type===cat){ t.type=''; t.subType=''; } });
             financeData.rules = financeData.rules.filter(r=>r.type!==cat);
             financeData.budgetCategories = financeData.budgetCategories.filter(c=>c!==cat);
+            delete financeData.categoryStarts[cat];
             saveFinance();
             renderBudgets();
             renderOverview();
@@ -974,7 +1093,7 @@ function renderSettingsSections(){
       const ul=document.createElement('ul');
       subs.forEach(sub=>{
         const li=document.createElement('li');
-        li.textContent=sub.name;
+        li.textContent=sub.desc?`${sub.name} - ${sub.desc}`:sub.name;
         const edit=document.createElement('button'); edit.textContent='Edit';
         edit.addEventListener('click',()=>openBudgetModal(sub));
         const del=document.createElement('button'); del.textContent='Delete';
@@ -1023,6 +1142,7 @@ function renderRules(){
 }
 
 async function saveFinance(){
+  recalcPots();
   checkDuplicates();
   await fetch('/api/finance-data', { method:'POST', headers:{'Content-Type':'application/json'}, body: JSON.stringify(financeData) });
 }
@@ -1116,6 +1236,7 @@ window.addEventListener('DOMContentLoaded', () => {
   document.getElementById('tab-upload').addEventListener('click', () => showTab('upload'));
   document.getElementById('tab-code').addEventListener('click', () => showTab('code'));
   document.getElementById('tab-budgets').addEventListener('click', () => showTab('budgets'));
+  document.getElementById('tab-pots').addEventListener('click', () => { resetPotForm(); showTab('pots'); });
 });
 document.getElementById('add-account').addEventListener('click', () => {
   const name = document.getElementById('new-account').value.trim();
@@ -1132,6 +1253,76 @@ document.getElementById('toggle-file').addEventListener('change', renderTransact
 
 document.getElementById('apply-filters').addEventListener('click', () => {
   renderTransactions();
+});
+
+document.querySelectorAll('#tx-table thead .sort-btn').forEach(btn=>{
+  btn.addEventListener('click', ()=>{
+    const field=btn.dataset.field;
+    if(txSortField===field){ txSortDir *= -1; }
+    else { txSortField=field; txSortDir=1; }
+    renderTransactions();
+  });
+});
+
+document.getElementById('pot-form').addEventListener('submit', e=>{
+  e.preventDefault();
+  const kind=document.getElementById('pot-kind').value;
+  const name=document.getElementById('pot-name').value.trim();
+  const account=document.getElementById('pot-account').value;
+  const desc=document.getElementById('pot-desc').value.trim();
+  const start=document.getElementById('pot-start').value;
+  const end=document.getElementById('pot-end').value;
+  const goalVal=parseFloat(document.getElementById('pot-goal').value);
+  const targetVal=parseFloat(document.getElementById('pot-target').value);
+  const starting=parseFloat(document.getElementById('pot-starting').value)||0;
+  const pot={id:editingPotIndex!==null?financeData.pots[editingPotIndex].id:financeData.nextPotId++,kind,name,account,desc,start,end,goal:isNaN(goalVal)?null:goalVal,target:isNaN(targetVal)?null:targetVal,startAmount:starting};
+  if(editingPotIndex!==null){
+    financeData.pots[editingPotIndex]=pot;
+  } else {
+    financeData.pots.push(pot);
+  }
+  saveFinance();
+  renderPots();
+  renderTransactions();
+  resetPotForm();
+});
+
+document.getElementById('pot-view-form').addEventListener('submit', e=>{
+  e.preventDefault();
+  const kind=document.getElementById('view-pot-kind').value;
+  const name=document.getElementById('view-pot-name').value.trim();
+  const account=document.getElementById('view-pot-account').value;
+  const desc=document.getElementById('view-pot-desc').value.trim();
+  const start=document.getElementById('view-pot-start').value;
+  const end=document.getElementById('view-pot-end').value;
+  const goalVal=parseFloat(document.getElementById('view-pot-goal').value);
+  const targetVal=parseFloat(document.getElementById('view-pot-target').value);
+  const starting=parseFloat(document.getElementById('view-pot-starting').value)||0;
+  const pot={id:financeData.pots[editingPotIndex].id,kind,name,account,desc,start,end,goal:isNaN(goalVal)?null:goalVal,target:isNaN(targetVal)?null:targetVal,startAmount:starting};
+  if(editingPotIndex!==null){
+    financeData.pots[editingPotIndex]=pot;
+  }
+  saveFinance();
+  renderPots();
+  renderTransactions();
+  editingPotIndex=null;
+  document.getElementById('pot-modal').style.display='none';
+});
+document.getElementById('close-pot-modal').addEventListener('click',()=>{
+  editingPotIndex=null;
+  document.getElementById('pot-modal').style.display='none';
+});
+
+document.getElementById('delete-pot').addEventListener('click',()=>{
+  if(editingPotIndex!==null && confirm('Delete pot?')){
+    const removed=financeData.pots.splice(editingPotIndex,1)[0];
+    financeData.transactions.forEach(t=>{ if(t.potId===removed.id) t.potId=null; });
+    saveFinance();
+    renderPots();
+    renderTransactions();
+    editingPotIndex=null;
+    document.getElementById('pot-modal').style.display='none';
+  }
 });
 
 document.getElementById('show-duplicates').addEventListener('click', () => {
@@ -1158,6 +1349,7 @@ document.getElementById('delete-selected').addEventListener('click', ()=>{
   financeData.transactions=financeData.transactions.filter(tx=>!ids.includes(tx.id));
   saveFinance();
   renderTransactions();
+  renderPots();
 });
 document.getElementById('close-duplicates').addEventListener('click', () => {
   document.getElementById('duplicates-modal').style.display = 'none';
@@ -1197,7 +1389,7 @@ function renderDuplicates(){
     keepBtn.addEventListener('click', ()=>{ tx.duplicate=false; saveFinance(); renderTransactions(); renderDuplicates(); });
     const removeBtn = document.createElement('button');
     removeBtn.textContent = 'Remove';
-    removeBtn.addEventListener('click', ()=>{ financeData.transactions = financeData.transactions.filter(t=>t.id!==tx.id); saveFinance(); renderTransactions(); renderDuplicates(); });
+    removeBtn.addEventListener('click', ()=>{ financeData.transactions = financeData.transactions.filter(t=>t.id!==tx.id); saveFinance(); renderTransactions(); renderPots(); renderDuplicates(); });
     const tdAction = document.createElement('td');
     tdAction.appendChild(keepBtn); tdAction.appendChild(removeBtn);
     tr.innerHTML = `<td>${tx.date}</td><td>${tx.description}</td><td>${tx.amount}</td><td>${tx.accountName}</td><td>${tx.sourceFile}</td>`;
@@ -1569,6 +1761,71 @@ function renderOverview(){
     tbody.appendChild(tr);
     catRows.forEach(r=>tbody.appendChild(r));
   });
+}
+
+function recalcPots(){
+  financeData.pots.forEach(p=>{
+    const start=parseFloat(p.startAmount)||0;
+    const total=financeData.transactions.filter(t=>t.potId===p.id)
+      .reduce((s,t)=>s+(parseFloat(t.amount)||0),0);
+    p.current=start+total;
+  });
+}
+
+function renderPots(){
+  const debtDiv=document.getElementById('debt-pots');
+  const saveDiv=document.getElementById('saving-pots');
+  if(!debtDiv||!saveDiv) return;
+  debtDiv.innerHTML=''; saveDiv.innerHTML='';
+  recalcPots();
+  financeData.pots.forEach((p,i)=>{
+    const box=document.createElement('div');
+    box.className='pot '+(p.kind==='saving'?'saving':'debt');
+    box.innerHTML=`<div class="pot-name">${p.name}</div><div>£${p.current.toFixed(2)}</div>`;
+    const actions=document.createElement('div');
+    actions.className='actions';
+    const view=document.createElement('button');
+    view.textContent='View';
+    view.addEventListener('click',()=>openPotModal(p,i));
+    actions.appendChild(view);
+    box.appendChild(actions);
+    if(p.kind==='saving') saveDiv.appendChild(box); else debtDiv.appendChild(box);
+  });
+}
+
+let editingPotIndex=null;
+function openPotModal(p,i){
+  document.getElementById('view-pot-kind').value=p.kind;
+  document.getElementById('view-pot-name').value=p.name;
+  document.getElementById('view-pot-account').value=p.account||'';
+  document.getElementById('view-pot-desc').value=p.desc||'';
+  document.getElementById('view-pot-start').value=p.start||'';
+  document.getElementById('view-pot-end').value=p.end||'';
+  document.getElementById('view-pot-goal').value=p.goal??'';
+  document.getElementById('view-pot-target').value=p.target??'';
+  document.getElementById('view-pot-starting').value=p.startAmount??'';
+  document.getElementById('view-pot-current').textContent=p.current.toFixed(2);
+  const txDiv=document.getElementById('pot-transactions');
+  const linked=financeData.transactions.filter(t=>t.potId===p.id);
+  let html='<h3>Transactions</h3>';
+  if(linked.length){
+    html+='<table><thead><tr><th>Date</th><th>Description</th><th>Amount</th></tr></thead><tbody>';
+    let total=0;
+    linked.forEach(t=>{ total+=parseFloat(t.amount)||0; html+=`<tr><td>${t.date}</td><td>${t.description}</td><td>${t.amount}</td></tr>`; });
+    html+='</tbody></table>';
+    html+=`<div><strong>Total from transactions:</strong> £${total.toFixed(2)}</div>`;
+  } else {
+    html+='<p>No transactions linked</p>';
+  }
+  txDiv.innerHTML=html;
+  editingPotIndex=i;
+  document.getElementById('pot-modal').style.display='block';
+}
+
+function resetPotForm(){
+  document.getElementById('pot-form').reset();
+  editingPotIndex=null;
+  document.getElementById('pot-submit').textContent='Create';
 }
 
 document.getElementById('period-form').addEventListener('submit',e=>{
