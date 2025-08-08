@@ -1312,7 +1312,6 @@ document.getElementById('close-pot-modal').addEventListener('click',()=>{
   editingPotIndex=null;
   document.getElementById('pot-modal').style.display='none';
 });
-
 document.getElementById('delete-pot').addEventListener('click',()=>{
   if(editingPotIndex!==null && confirm('Delete pot?')){
     const removed=financeData.pots.splice(editingPotIndex,1)[0];
@@ -1346,6 +1345,7 @@ document.getElementById('select-all').addEventListener('change', e=>{
 document.getElementById('delete-selected').addEventListener('click', ()=>{
   const ids=Array.from(document.querySelectorAll('#tx-table tbody .tx-select:checked')).map(cb=>parseInt(cb.dataset.id));
   if(!ids.length) return;
+  financeData.transactions.forEach(tx=>{ if(ids.includes(tx.id) && tx.potId){ const pot=financeData.pots.find(p=>p.id===tx.potId); if(pot) pot.current-=parseFloat(tx.amount)||0; }});
   financeData.transactions=financeData.transactions.filter(tx=>!ids.includes(tx.id));
   saveFinance();
   renderTransactions();
@@ -1762,7 +1762,7 @@ function renderOverview(){
     catRows.forEach(r=>tbody.appendChild(r));
   });
 }
-
+  
 function recalcPots(){
   financeData.pots.forEach(p=>{
     const start=parseFloat(p.startAmount)||0;
