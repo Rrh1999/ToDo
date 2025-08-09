@@ -26,6 +26,9 @@ th,td{border:1px solid #ccc;padding:0.25rem 0.5rem;}
 .section-header{font-size:1.2rem;font-weight:bold;background:#cfe2ff;}
 .hidden{display:none!important;}
 .budget-section{border-bottom:4px solid #bbb;padding-bottom:1rem;margin-bottom:1rem;}
+#budgets table{resize:horizontal;overflow:auto;display:block;}
+#budgets table tbody tr:nth-child(even){background:#f2f2f2;}
+#budgets table tbody tr td:first-child{color:#007bff;}
 </style>
 </head>
 <body>
@@ -761,6 +764,49 @@ function renderBudgets(){
       tbody.appendChild(tr2);
     });
   });
+
+  const uncat = groups[''] || {amount:0, items:[]};
+  if(uncat.items.length){
+    const tr=document.createElement('tr');
+    tr.appendChild(document.createElement('td')).textContent='Uncategorised';
+    tr.appendChild(document.createElement('td')).textContent='';
+    tr.appendChild(document.createElement('td')).textContent=uncat.amount;
+    tr.appendChild(document.createElement('td'));
+    tr.appendChild(document.createElement('td'));
+    tr.appendChild(document.createElement('td'));
+    tr.appendChild(document.createElement('td'));
+    tbody.appendChild(tr);
+    uncat.items.forEach(sub=>{
+      const tr2=document.createElement('tr');
+      const v=currentBudgetVersion(sub)||{amount:'',interval:1,mode:'within',start:'',end:''};
+      tr2.innerHTML = `<td style="padding-left:20px;">${sub.name}</td><td>${sub.desc||''}</td><td>${v.amount}</td><td>${v.interval>1?`Every ${v.interval} (${v.mode})`:'Monthly'}</td><td>${v.start}</td>`;
+      const editSubBtn=document.createElement('button');
+      editSubBtn.textContent='Edit';
+      editSubBtn.addEventListener('click',()=>openBudgetModal(sub));
+      const delSubBtn=document.createElement('button');
+      delSubBtn.textContent='Delete';
+      delSubBtn.addEventListener('click',()=>{
+        if(confirm('Delete this sub budget? This will remove it from any transactions.')){
+          financeData.budgets = financeData.budgets.filter(b=>!(b.type===sub.type && b.name===sub.name));
+          financeData.transactions.forEach(t=>{ if(t.type===sub.type && t.subType===sub.name){ t.type=''; t.subType=''; } });
+          financeData.rules = financeData.rules.filter(r=>!(r.type===sub.type && r.subType===sub.name));
+          saveFinance();
+          renderBudgets();
+          renderOverview();
+          renderTransactions();
+          renderRules();
+          renderSettingsSections();
+        }
+      });
+      const actionTd2=document.createElement('td'); actionTd2.appendChild(editSubBtn); actionTd2.appendChild(delSubBtn); tr2.appendChild(actionTd2);
+      const arch=document.createElement('input');
+      arch.type='checkbox';
+      arch.checked=!!sub.archived;
+      arch.addEventListener('change',()=>{ sub.archived=arch.checked; saveFinance(); renderOverview(); });
+      const tdArch=document.createElement('td'); tdArch.appendChild(arch); tr2.appendChild(tdArch);
+      tbody.appendChild(tr2);
+    });
+  }
   updateTypeOptions();
   renderBalance();
 }
@@ -822,15 +868,16 @@ function monthsBetween(startDate,endDate){
 
 function baseAmountForMonth(sub, month){
   if(!sub.versions || !sub.versions.length) return 0;
-  const mDate=monthToDate(month);
+  const mStart=monthToDate(month);
+  const mEnd=new Date(mStart.getFullYear(), mStart.getMonth()+1, 0);
   let amt=0;
   sub.versions.forEach(v=>{
     const s=parseDate(v.start);
     const e=parseDate(v.end);
-    if(mDate>=s && mDate<=e){
+    if(e>=mStart && s<=mEnd){
       const interval=parseInt(v.interval||1,10);
       const mode=v.mode||'within';
-      const diffMonths=(mDate.getFullYear()-s.getFullYear())*12 + (mDate.getMonth()-s.getMonth());
+      const diffMonths=(mStart.getFullYear()-s.getFullYear())*12 + (mStart.getMonth()-s.getMonth());
       if(interval<=1){
         amt+=parseFloat(v.amount||0);
       } else if(mode==='within'){
@@ -845,13 +892,14 @@ function baseAmountForMonth(sub, month){
 
 function budgetAppliesToMonth(sub, month){
   if(!sub.versions || !sub.versions.length) return false;
-  const mDate=monthToDate(month);
+  const mStart=monthToDate(month);
+  const mEnd=new Date(mStart.getFullYear(), mStart.getMonth()+1, 0);
   return sub.versions.some(v=>{
     const s=parseDate(v.start);
     const e=parseDate(v.end);
-    if(mDate<s || mDate>e) return false;
+    if(e<mStart || s>mEnd) return false;
     const interval=parseInt(v.interval||1,10);
-    const diffMonths=(mDate.getFullYear()-s.getFullYear())*12 + (mDate.getMonth()-s.getMonth());
+    const diffMonths=(mStart.getFullYear()-s.getFullYear())*12 + (mStart.getMonth()-s.getMonth());
     if(interval<=1) return true;
     return (v.mode||'within')==='within' ? diffMonths%interval===0 : true;
   });
@@ -870,8 +918,12 @@ function openBudgetModal(sub, editIndex=-1, isNew=false){
   normalizeVersions(sub);
   const modal=document.getElementById('budget-modal');
   if(!modal) return;
-  const todayStr=new Date().toISOString().slice(0,10);
-  const far=new Date(new Date(todayStr).setFullYear(new Date(todayStr).getFullYear()+100)).toISOString().slice(0,10);
+  const monthStart=new Date();
+  monthStart.setDate(1);
+  const todayStr=monthStart.toISOString().slice(0,10);
+  const farDate=new Date(monthStart);
+  farDate.setFullYear(farDate.getFullYear()+100);
+  const far=farDate.toISOString().slice(0,10);
   const curr=sub.versions.length?currentBudgetVersion(sub):null;
   const defaultVer={amount:0,start:todayStr,end:far,interval:1,mode:'within'};
   const v=editIndex>=0 && sub.versions[editIndex]? sub.versions[editIndex] : (curr || defaultVer);
@@ -1144,6 +1196,37 @@ function renderSettingsSections(){
       div.appendChild(ul);
       subLists.appendChild(div);
     });
+    const uncats = financeData.budgets.filter(b=>!b.type);
+    if(uncats.length){
+      const div=document.createElement('div');
+      const title=document.createElement('strong'); title.textContent='Uncategorised'; div.appendChild(title);
+      const ul=document.createElement('ul');
+      uncats.forEach(sub=>{
+        const li=document.createElement('li');
+        li.textContent=sub.desc?`${sub.name} - ${sub.desc}`:sub.name;
+        const edit=document.createElement('button'); edit.textContent='Edit';
+        edit.addEventListener('click',()=>openBudgetModal(sub));
+        const del=document.createElement('button'); del.textContent='Delete';
+        del.addEventListener('click',()=>{
+          if(confirm('Delete this sub budget? This will remove it from any transactions.')){
+            financeData.budgets = financeData.budgets.filter(b=>!(b.type===sub.type && b.name===sub.name));
+            financeData.transactions.forEach(t=>{ if(t.type===sub.type && t.subType===sub.name){ t.type=''; t.subType=''; } });
+            financeData.rules = financeData.rules.filter(r=>!(r.type===sub.type && r.subType===sub.name));
+            saveFinance();
+            renderBudgets();
+            renderOverview();
+            renderTransactions();
+            renderRules();
+            renderSettingsSections();
+          }
+        });
+        li.appendChild(edit);
+        li.appendChild(del);
+        ul.appendChild(li);
+      });
+      div.appendChild(ul);
+      subLists.appendChild(div);
+    }
   });
 }
 
