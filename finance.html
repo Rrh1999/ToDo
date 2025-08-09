@@ -22,6 +22,10 @@ th,td{border:1px solid #ccc;padding:0.25rem 0.5rem;}
 .pot.debt{background:#f8d7da;}
 .pot .actions{display:flex;gap:0.25rem;}
 .pot .actions button{margin:0 2px;}
+.toggle{cursor:pointer;background:#f4f4f4;padding:0.5rem;border-radius:4px;margin:1rem 0;text-align:center;}
+.section-header{font-size:1.2rem;font-weight:bold;background:#cfe2ff;}
+.hidden{display:none!important;}
+.budget-section{border-bottom:4px solid #bbb;padding-bottom:1rem;margin-bottom:1rem;}
 </style>
 </head>
 <body>
@@ -125,56 +129,72 @@ th,td{border:1px solid #ccc;padding:0.25rem 0.5rem;}
   </div>
   <div id="budgets" class="tab-content">
   <h2>Budgets</h2>
-  <div id="budget-settings" class="settings-section"></div>
-  <label>Extra Display
-    <select id="extra-display">
-      <option value="merge">Merge extra</option>
-      <option value="separate">Separate extra</option>
-    </select>
-  </label>
-  <table id="budget-table">
-    <thead>
-      <tr><th>Name</th><th>Description</th><th>Amount</th><th>Recurring</th><th>Date</th><th></th><th>Archived</th></tr>
-    </thead>
-    <tbody></tbody>
-  </table>
-  <h3>Budget Periods</h3>
-  <form id="period-form">
-    <input type="date" id="period-start" required>
-    <input type="date" id="period-end" required>
-    <input type="month" id="period-month" required>
-    <button type="submit">Add Period</button>
-  </form>
-  <table id="period-table">
-    <thead><tr><th>Start</th><th>End</th><th>Month</th><th></th></tr></thead>
-    <tbody></tbody>
-  </table>
-
-  <h3>Budget Overview</h3>
-  <label>Months
-    <select id="overview-month" multiple size="4"></select>
-  </label>
-  <label><input type="checkbox" id="show-budgeted" checked>Show Budgeted</label>
-  <label><input type="checkbox" id="show-remaining" checked>Show Remaining</label>
-  <label><input type="checkbox" id="show-income">Show Income</label>
-  <label><input type="checkbox" id="toggle-archived">View Archived Budgets</label>
-  <table id="overview-table">
-    <thead><tr></tr></thead>
-    <tbody></tbody>
-  </table>
-  <h3>Balance Sheet</h3>
-  <form id="start-balance-form">
-    <label>Starting Date <input type="date" id="start-balance-date"></label>
-    <div id="start-balance-accounts"></div>
-    <button type="submit">Save Starting Balances</button>
-  </form>
-  <label>Month
-    <select id="balance-month"></select>
-  </label>
-  <table id="balance-table">
-    <thead></thead>
-    <tbody></tbody>
-  </table>
+  <div class="budget-section">
+    <div class="toggle section-header" onclick="toggle('budget-main')">Budgets</div>
+    <div id="budget-main">
+      <div id="budget-settings" class="settings-section"></div>
+      <label>Extra Display
+        <select id="extra-display">
+          <option value="merge">Merge extra</option>
+          <option value="separate">Separate extra</option>
+        </select>
+      </label>
+      <table id="budget-table">
+        <thead>
+          <tr><th>Name</th><th>Description</th><th>Amount</th><th>Recurring</th><th>Date</th><th></th><th>Archived</th></tr>
+        </thead>
+        <tbody></tbody>
+      </table>
+    </div>
+  </div>
+  <div class="budget-section">
+    <div class="toggle section-header" onclick="toggle('period-main')">Budget Periods</div>
+    <div id="period-main">
+      <form id="period-form">
+        <input type="date" id="period-start" required>
+        <input type="date" id="period-end" required>
+        <input type="month" id="period-month" required>
+        <button type="submit">Add Period</button>
+      </form>
+      <table id="period-table">
+        <thead><tr><th>Start</th><th>End</th><th>Month</th><th></th></tr></thead>
+        <tbody></tbody>
+      </table>
+    </div>
+  </div>
+  <div class="budget-section">
+    <div class="toggle section-header" onclick="toggle('overview-main')">Budget Overview</div>
+    <div id="overview-main">
+      <label>Months
+        <select id="overview-month" multiple size="4"></select>
+      </label>
+      <label><input type="checkbox" id="show-budgeted" checked>Show Budgeted</label>
+      <label><input type="checkbox" id="show-remaining" checked>Show Remaining</label>
+      <label><input type="checkbox" id="show-income">Show Income</label>
+      <label><input type="checkbox" id="toggle-archived">View Archived Budgets</label>
+      <table id="overview-table">
+        <thead><tr></tr></thead>
+        <tbody></tbody>
+      </table>
+    </div>
+  </div>
+  <div class="budget-section">
+    <div class="toggle section-header" onclick="toggle('balance-main')">Balance Sheet</div>
+    <div id="balance-main">
+      <form id="start-balance-form">
+        <label>Starting Date <input type="date" id="start-balance-date"></label>
+        <div id="start-balance-accounts"></div>
+        <button type="submit">Save Starting Balances</button>
+      </form>
+      <label>Month
+        <select id="balance-month"></select>
+      </label>
+      <table id="balance-table">
+        <thead></thead>
+        <tbody></tbody>
+      </table>
+    </div>
+  </div>
 </div>
 <div id="pots" class="tab-content">
   <h2>Pots</h2>
@@ -386,6 +406,11 @@ function formatMonth(month){
   const [m,y] = month.split(' ');
   const d = new Date(parseInt(y,10), parseInt(m,10)-1, 1);
   return d.toLocaleString('default', { month: 'long' }) + ' ' + String(d.getFullYear()).slice(-2);
+}
+
+function toggle(id){
+  const el=document.getElementById(id);
+  if(el) el.classList.toggle('hidden');
 }
 
 function assignMonth(tx){
@@ -1671,7 +1696,6 @@ function renderOverview(){
     if(showBud) headHtml+=`<th>Budgeted (${label})</th>`;
     headHtml+=`<th>Spent (${label})</th>`;
     if(showIncome) headHtml+=`<th>Income (${label})</th>`;
-    headHtml+=`<th>Used (${label})</th>`;
     if(showRem) headHtml+=`<th>Remaining (${label})</th>`;
   });
   headHtml+='<th>Status</th>';
@@ -1680,89 +1704,58 @@ function renderOverview(){
   tbody.innerHTML='';
   financeData.budgetCategories.forEach(cat=>{
     const subs=financeData.budgets.filter(b=>b.type===cat && (showArch||!b.archived));
-    const catData=months.map(m=>{
+    const catRow=document.createElement('tr');
+    let catHtml=`<td>${cat}</td>`;
+    let overallRem=0;
+    months.forEach(m=>{
       let base=0, extra=0;
       subs.forEach(sub=>{ base+=baseAmountForMonth(sub,m); extra+=extraForMonth(sub,m); });
       const budget=base+extra;
       const txs=financeData.transactions.filter(t=>t.type===cat && t.month===m && !t.transfer);
       const spent=txs.filter(t=>parseFloat(t.amount||0)<0).reduce((s,t)=>s+parseFloat(t.amount||0),0);
       const income=txs.filter(t=>parseFloat(t.amount||0)>0).reduce((s,t)=>s+parseFloat(t.amount||0),0);
-      const used=spent+income;
-      const rem=budget+used;
-      return {base,extra,budget,spent,income,used,rem};
-    });
-    html=`<td>${cat}</td>`;
-    let totalBudget=0, totalUsed=0;
-    catData.forEach(d=>{
+      const rem=budget + spent + income;
       if(showBud){
-        if(extraDisplay==='separate' && d.extra>0){
-          html+=`<td>${d.base.toFixed(2)}<div style="color:pink;font-weight:bold;font-size:0.8rem;">+${d.extra.toFixed(2)}</div></td>`;
+        if(extraDisplay==='separate' && extra>0){
+          catHtml+=`<td>${base.toFixed(2)}<div style="color:pink;font-weight:bold;font-size:0.8rem;">+${extra.toFixed(2)}</div></td>`;
         } else {
-          html+=`<td>${d.budget.toFixed(2)}</td>`;
+          catHtml+=`<td>${budget.toFixed(2)}</td>`;
         }
       }
-      html+=`<td>${d.spent.toFixed(2)}</td>`;
-      if(showIncome) html+=`<td>${d.income.toFixed(2)}</td>`;
-      html+=`<td>${d.used.toFixed(2)}</td>`;
-      if(showRem) html+=`<td style="color:${d.rem<0?'red':'green'}">${d.rem.toFixed(2)}</td>`;
-      totalBudget+=d.budget;
-      totalUsed+=d.used;
+      catHtml+=`<td>${spent.toFixed(2)}</td>`;
+      if(showIncome) catHtml+=`<td>${income.toFixed(2)}</td>`;
+      if(showRem) catHtml+=`<td style="color:${rem<0?'red':'green'}">${rem.toFixed(2)}</td>`;
+      overallRem+=rem;
     });
-    const overallRem=totalBudget+totalUsed;
-    html+=`<td>${overallRem>=0?'\u2705':'\u274c'}</td>`;
-     tr=document.createElement('tr');
-    tr.innerHTML=html;
-    tbody.appendChild(tr);
+    catHtml+=`<td>${overallRem>=0?'\u2705':'\u274c'}</td>`;
+    catRow.innerHTML=catHtml;
+    tbody.appendChild(catRow);
     subs.forEach(sub=>{
-      const subData=months.map(m=>{
+      const tr=document.createElement('tr');
+      let subHtml=`<td style="padding-left:20px;">${sub.name}</td>`;
+      months.forEach(m=>{
         const base=baseAmountForMonth(sub,m);
         const extra=extraForMonth(sub,m);
         const budget=base+extra;
         const txs=financeData.transactions.filter(t=>t.type===cat && t.subType===sub.name && t.month===m && !t.transfer);
         const spent=txs.filter(t=>parseFloat(t.amount||0)<0).reduce((s,t)=>s+parseFloat(t.amount||0),0);
         const income=txs.filter(t=>parseFloat(t.amount||0)>0).reduce((s,t)=>s+parseFloat(t.amount||0),0);
-        const used=spent+income;
-        const rem=budget+used;
-        return {base,extra,budget,spent,income,used,rem};
-      });
-      const tr2=document.createElement('tr');
-      let h=`<td style="padding-left:20px;">${sub.name}</td>`;
-      subData.forEach(d=>{
+        const rem=budget + spent + income;
         if(showBud){
-          if(extraDisplay==='separate' && d.extra>0){
-            h+=`<td>${d.base.toFixed(2)}<div style="color:pink;font-weight:bold;font-size:0.8rem;">+${d.extra.toFixed(2)}</div></td>`;
+          if(extraDisplay==='separate' && extra>0){
+            subHtml+=`<td>${base.toFixed(2)}<div style="color:pink;font-weight:bold;font-size:0.8rem;">+${extra.toFixed(2)}</div></td>`;
           } else {
-            h+=`<td>${d.budget.toFixed(2)}</td>`;
+            subHtml+=`<td>${budget.toFixed(2)}</td>`;
           }
         }
-        h+=`<td>${d.spent.toFixed(2)}</td>`;
-        if(showIncome) h+=`<td>${d.income.toFixed(2)}</td>`;
-        h+=`<td>${d.used.toFixed(2)}</td>`;
-        if(showRem) h+=`<td style="color:${d.rem<0?'red':'green'}">${d.rem.toFixed(2)}</td>`;
+        subHtml+=`<td>${spent.toFixed(2)}</td>`;
+        if(showIncome) subHtml+=`<td>${income.toFixed(2)}</td>`;
+        if(showRem) subHtml+=`<td style="color:${rem<0?'red':'green'}">${rem.toFixed(2)}</td>`;
       });
-      h+='<td></td>';
-      tr2.innerHTML=h;
-      catRows.push(tr2);
+      subHtml+='<td></td>';
+      tr.innerHTML=subHtml;
+      tbody.appendChild(tr);
     });
-    const spentCat=financeData.transactions
-      .filter(t=>t.type===cat && monthSet.has(t.month) && !t.transfer)
-      .reduce((s,t)=>s+parseFloat(t.amount||0),0);
-    const remCat=catBudget-spentCat;
-    const tr=document.createElement('tr');
-    let html=`<td>${cat}</td>`;
-    if(showBud){
-      if(extraDisplay==='separate' && catExtra>0){
-        html+=`<td>${catBase.toFixed(2)}<div style="color:pink;font-weight:bold;font-size:0.8rem;">+${catExtra.toFixed(2)}</div></td>`;
-      } else {
-        html+=`<td>${catBudget.toFixed(2)}</td>`;
-      }
-    }
-    html+=`<td>${spentCat.toFixed(2)}</td>`;
-    if(showRem) html+=`<td style="color:${remCat<0?'red':'green'}">${remCat.toFixed(2)}</td>`;
-    html+=`<td>${remCat>=0?'\u2705':'\u274c'}</td>`;
-    tr.innerHTML=html;
-    tbody.appendChild(tr);
-    catRows.forEach(r=>tbody.appendChild(r));
   });
 }
   
