@@ -1210,7 +1210,8 @@ function parseFile(file, accountType, accountName){
         sourceFile: file.name,
         uploadedAt: new Date().toISOString(),
         notes: '',
-        transfer: false
+        transfer: false,
+        potId: null
       };
       assignMonth(tx);
       applyRules(tx);
@@ -1346,7 +1347,6 @@ document.getElementById('select-all').addEventListener('change', e=>{
 document.getElementById('delete-selected').addEventListener('click', ()=>{
   const ids=Array.from(document.querySelectorAll('#tx-table tbody .tx-select:checked')).map(cb=>parseInt(cb.dataset.id));
   if(!ids.length) return;
-  financeData.transactions.forEach(tx=>{ if(ids.includes(tx.id) && tx.potId){ const pot=financeData.pots.find(p=>p.id===tx.potId); if(pot) pot.current-=parseFloat(tx.amount)||0; }});
   financeData.transactions=financeData.transactions.filter(tx=>!ids.includes(tx.id));
   saveFinance();
   renderTransactions();
@@ -1766,10 +1766,11 @@ function renderOverview(){
   
 function recalcPots(){
   financeData.pots.forEach(p=>{
-    const start=parseFloat(p.startAmount)||0;
-    const total=financeData.transactions.filter(t=>t.potId===p.id)
-      .reduce((s,t)=>s+(parseFloat(t.amount)||0),0);
-    p.current=start+total;
+    const start = parseFloat(p.startAmount) || 0;
+    const total = financeData.transactions
+      .filter(t => t.potId === p.id)
+      .reduce((sum, t) => sum + (parseFloat(t.amount) || 0), 0);
+    p.current = parseFloat((start + total).toFixed(2));
   });
 }
 
