@@ -26,6 +26,10 @@ th,td{border:1px solid #ccc;padding:0.25rem 0.5rem;}
 .section-header{font-size:1.2rem;font-weight:bold;background:#cfe2ff;}
 .hidden{display:none!important;}
 .budget-section{border-bottom:4px solid #bbb;padding-bottom:1rem;margin-bottom:1rem;}
+.code-section{border-bottom:4px solid #bbb;padding-bottom:1rem;margin-bottom:1rem;}
+#budgets table{resize:horizontal;overflow:auto;display:block;}
+#budgets table tbody tr:nth-child(even){background:#f2f2f2;}
+#budgets table tbody tr td:first-child{color:#007bff;}
 </style>
 </head>
 <body>
@@ -66,66 +70,91 @@ th,td{border:1px solid #ccc;padding:0.25rem 0.5rem;}
   <div id="upload-settings" class="settings-section"></div>
 </div>
 <div id="code" class="tab-content">
-  <h2>Transactions</h2>
-  <label><input type="checkbox" id="filter-uncoded">Uncoded only</label>
-  <button id="show-duplicates" type="button">Show Duplicates</button>
-  <button id="download-excel" type="button">Download Excel</button>
-  <button id="delete-selected" type="button">Delete Selected</button>
-  <div id="filter-controls" style="margin-top:0.5rem;">
-    <input type="text" id="search-text" placeholder="Search description or file">
-    <select id="filter-account"><option value="">All accounts</option></select>
-    <select id="filter-type"><option value="">All types</option><option value="__blank">Blank</option></select>
-    <select id="filter-subtype"><option value="">All sub types</option><option value="__blank">Blank</option></select>
-    <input type="date" id="filter-date-from">
-    <input type="date" id="filter-date-to">
-    <input type="number" id="filter-amount-min" placeholder="Min">
-    <input type="number" id="filter-amount-max" placeholder="Max">
-    <label><input type="checkbox" id="toggle-file">See File</label>
-    <button id="apply-filters" type="button">Apply</button>
+  <h2>Code</h2>
+  <div class="code-section">
+    <div class="toggle section-header" onclick="toggle('tx-main')">Transactions</div>
+    <div id="tx-main">
+      <label><input type="checkbox" id="filter-uncoded">Uncoded only</label>
+      <button id="show-duplicates" type="button">Show Duplicates</button>
+      <button id="download-excel" type="button">Download Excel</button>
+      <button id="delete-selected" type="button">Delete Selected</button>
+      <div id="filter-controls" style="margin-top:0.5rem;">
+        <input type="text" id="search-text" placeholder="Search description or file">
+        <select id="filter-account"><option value="">All accounts</option></select>
+        <select id="filter-type"><option value="">All types</option><option value="__blank">Blank</option></select>
+        <select id="filter-subtype"><option value="">All sub types</option><option value="__blank">Blank</option></select>
+        <input type="date" id="filter-date-from">
+        <input type="date" id="filter-date-to">
+        <input type="number" id="filter-amount-min" placeholder="Min">
+        <input type="number" id="filter-amount-max" placeholder="Max">
+        <label><input type="checkbox" id="toggle-file">See File</label>
+        <button id="apply-filters" type="button">Apply</button>
+      </div>
+      <table id="tx-table">
+        <thead>
+          <tr>
+            <th><input type="checkbox" id="select-all"></th>
+            <th>Date <button type="button" class="sort-btn" data-field="date">↕</button></th>
+            <th>Description <button type="button" class="sort-btn" data-field="description">↕</button></th>
+            <th>Amount <button type="button" class="sort-btn" data-field="amount">↕</button></th>
+            <th>Account <button type="button" class="sort-btn" data-field="accountName">↕</button></th>
+            <th class="file-col" style="display:none;">File <button type="button" class="sort-btn" data-field="sourceFile">↕</button></th>
+            <th class="file-col" style="display:none;">Uploaded <button type="button" class="sort-btn" data-field="uploadedAt">↕</button></th>
+            <th>Type <button type="button" class="sort-btn" data-field="type">↕</button></th>
+            <th>Sub Type <button type="button" class="sort-btn" data-field="subType">↕</button></th>
+            <th>Pot <button type="button" class="sort-btn" data-field="pot">↕</button></th>
+            <th>Confirmed <button type="button" class="sort-btn" data-field="confirmed">↕</button></th>
+            <th>Transfer <button type="button" class="sort-btn" data-field="transfer">↕</button></th>
+            <th>Notes <button type="button" class="sort-btn" data-field="notes">↕</button></th>
+            <th>Month <button type="button" class="sort-btn" data-field="month">↕</button></th>
+          </tr>
+        </thead>
+        <tbody></tbody>
+      </table>
+      <div id="duplicates-modal" style="display:none;position:fixed;top:10%;left:10%;right:10%;background:#fff;border:1px solid #ccc;padding:1rem;max-height:80%;overflow:auto;">
+        <button id="close-duplicates" type="button">Close</button>
+        <table id="duplicates-table">
+          <thead>
+            <tr><th>Date</th><th>Description</th><th>Amount</th><th>Account</th><th>File</th><th>Action</th></tr>
+          </thead>
+          <tbody></tbody>
+        </table>
+      </div>
+    </div>
   </div>
-  <table id="tx-table">
-    <thead>
-      <tr>
-        <th><input type="checkbox" id="select-all"></th>
-        <th>Date <button type="button" class="sort-btn" data-field="date">↕</button></th>
-        <th>Description <button type="button" class="sort-btn" data-field="description">↕</button></th>
-        <th>Amount <button type="button" class="sort-btn" data-field="amount">↕</button></th>
-        <th>Account <button type="button" class="sort-btn" data-field="accountName">↕</button></th>
-        <th class="file-col" style="display:none;">File <button type="button" class="sort-btn" data-field="sourceFile">↕</button></th>
-        <th class="file-col" style="display:none;">Uploaded <button type="button" class="sort-btn" data-field="uploadedAt">↕</button></th>
-        <th>Type <button type="button" class="sort-btn" data-field="type">↕</button></th>
-        <th>Sub Type <button type="button" class="sort-btn" data-field="subType">↕</button></th>
-        <th>Pot <button type="button" class="sort-btn" data-field="pot">↕</button></th>
-        <th>Confirmed <button type="button" class="sort-btn" data-field="confirmed">↕</button></th>
-        <th>Transfer <button type="button" class="sort-btn" data-field="transfer">↕</button></th>
-        <th>Notes <button type="button" class="sort-btn" data-field="notes">↕</button></th>
-        <th>Month <button type="button" class="sort-btn" data-field="month">↕</button></th>
-      </tr>
-    </thead>
-    <tbody></tbody>
-  </table>
-  <div id="duplicates-modal" style="display:none;position:fixed;top:10%;left:10%;right:10%;background:#fff;border:1px solid #ccc;padding:1rem;max-height:80%;overflow:auto;">
-    <button id="close-duplicates" type="button">Close</button>
-    <table id="duplicates-table">
-      <thead>
-        <tr><th>Date</th><th>Description</th><th>Amount</th><th>Account</th><th>File</th><th>Action</th></tr>
-      </thead>
-      <tbody></tbody>
-    </table>
+  <div class="code-section">
+    <div class="toggle section-header" onclick="toggle('rule-main')">Autofill Rules</div>
+    <div id="rule-main">
+      <form id="rule-form">
+        <div style="display:flex;gap:1rem;flex-wrap:wrap;">
+          <div>
+            <div>Select what to look for</div>
+            <input type="text" id="rule-desc" placeholder="Description contains">
+            <select id="rule-account"><option value="">Any account</option></select>
+            <input type="number" id="rule-amount" placeholder="Amount">
+          </div>
+          <div>
+            <div>What is auto coded</div>
+            <select id="rule-type"><option value="">Select category</option></select>
+            <input type="text" id="rule-subtype" placeholder="Sub category" list="rule-subtype-list">
+            <select id="rule-pot"><option value="">Select pot</option></select>
+          </div>
+        </div>
+        <button type="submit">Add Rule</button>
+      </form>
+      <table id="rule-table">
+        <thead><tr><th>Description</th><th>Account</th><th>Amount</th><th>Category</th><th>Sub Category</th><th>Pot</th><th>Action</th></tr></thead>
+        <tbody></tbody>
+      </table>
+      <datalist id="rule-subtype-list"></datalist>
+    </div>
   </div>
-  <h3>Autofill Rules</h3>
-  <form id="rule-form">
-    <input type="text" id="rule-desc" placeholder="Description contains" required>
-    <select id="rule-type"><option value="">Select type</option></select>
-    <input type="text" id="rule-subtype" placeholder="Sub type" list="rule-subtype-list">
-    <button type="submit">Add Rule</button>
-  </form>
-    <table id="rule-table">
-      <thead><tr><th>Match</th><th>Type</th><th>Sub Type</th><th>Action</th></tr></thead>
-      <tbody></tbody>
-    </table>
-    <datalist id="rule-subtype-list"></datalist>
-    <div id="code-settings" class="settings-section"></div>
+  <div class="code-section">
+    <div class="toggle section-header" onclick="toggle('code-settings-main')">Category Settings</div>
+    <div id="code-settings-main">
+      <div id="code-settings" class="settings-section"></div>
+    </div>
+  </div>
   </div>
   <div id="budgets" class="tab-content">
   <h2>Budgets</h2>
@@ -354,6 +383,11 @@ function updateAccountList(){
     viewPotSel.innerHTML = '<option value="">No account</option>';
     financeData.accounts.forEach(a=>{ const opt=document.createElement('option'); opt.value=a; opt.textContent=a; viewPotSel.appendChild(opt); });
   }
+  const ruleAccountSel = document.getElementById('rule-account');
+  if(ruleAccountSel){
+    ruleAccountSel.innerHTML = '<option value="">Any account</option>';
+    financeData.accounts.forEach(a=>{ const opt=document.createElement('option'); opt.value=a; opt.textContent=a; ruleAccountSel.appendChild(opt); });
+  }
 }
 
 function parseDate(val){
@@ -444,15 +478,19 @@ function normalizeVersions(sub){
 function applyRules(tx){
   const matches = [];
   financeData.rules.forEach(r=>{
-    if(tx.description && tx.description.toLowerCase().includes(r.match.toLowerCase())){
-      matches.push(r);
-    }
+    if(r.match && (!tx.description || !tx.description.toLowerCase().includes(r.match.toLowerCase()))) return;
+    if(r.account && tx.accountName!==r.account) return;
+    if(r.amount!=null && parseFloat(tx.amount)!==r.amount) return;
+    matches.push(r);
   });
   if(matches.length===1){
-    tx.type = matches[0].type;
-    tx.subType = matches[0].subType || '';
+    const rule = matches[0];
+    tx.type = rule.type;
+    tx.subType = rule.subType || '';
+    if(rule.potId!=null) tx.potId = rule.potId;
     tx.autofill = true;
     tx.confirmed = false;
+    delete tx.multipleRules;
   } else if(matches.length>1){
     tx.multipleRules = matches.map(m=>m.id);
     tx.autofill = true;
@@ -761,6 +799,49 @@ function renderBudgets(){
       tbody.appendChild(tr2);
     });
   });
+
+  const uncat = groups[''] || {amount:0, items:[]};
+  if(uncat.items.length){
+    const tr=document.createElement('tr');
+    tr.appendChild(document.createElement('td')).textContent='Uncategorised';
+    tr.appendChild(document.createElement('td')).textContent='';
+    tr.appendChild(document.createElement('td')).textContent=uncat.amount;
+    tr.appendChild(document.createElement('td'));
+    tr.appendChild(document.createElement('td'));
+    tr.appendChild(document.createElement('td'));
+    tr.appendChild(document.createElement('td'));
+    tbody.appendChild(tr);
+    uncat.items.forEach(sub=>{
+      const tr2=document.createElement('tr');
+      const v=currentBudgetVersion(sub)||{amount:'',interval:1,mode:'within',start:'',end:''};
+      tr2.innerHTML = `<td style="padding-left:20px;">${sub.name}</td><td>${sub.desc||''}</td><td>${v.amount}</td><td>${v.interval>1?`Every ${v.interval} (${v.mode})`:'Monthly'}</td><td>${v.start}</td>`;
+      const editSubBtn=document.createElement('button');
+      editSubBtn.textContent='Edit';
+      editSubBtn.addEventListener('click',()=>openBudgetModal(sub));
+      const delSubBtn=document.createElement('button');
+      delSubBtn.textContent='Delete';
+      delSubBtn.addEventListener('click',()=>{
+        if(confirm('Delete this sub budget? This will remove it from any transactions.')){
+          financeData.budgets = financeData.budgets.filter(b=>!(b.type===sub.type && b.name===sub.name));
+          financeData.transactions.forEach(t=>{ if(t.type===sub.type && t.subType===sub.name){ t.type=''; t.subType=''; } });
+          financeData.rules = financeData.rules.filter(r=>!(r.type===sub.type && r.subType===sub.name));
+          saveFinance();
+          renderBudgets();
+          renderOverview();
+          renderTransactions();
+          renderRules();
+          renderSettingsSections();
+        }
+      });
+      const actionTd2=document.createElement('td'); actionTd2.appendChild(editSubBtn); actionTd2.appendChild(delSubBtn); tr2.appendChild(actionTd2);
+      const arch=document.createElement('input');
+      arch.type='checkbox';
+      arch.checked=!!sub.archived;
+      arch.addEventListener('change',()=>{ sub.archived=arch.checked; saveFinance(); renderOverview(); });
+      const tdArch=document.createElement('td'); tdArch.appendChild(arch); tr2.appendChild(tdArch);
+      tbody.appendChild(tr2);
+    });
+  }
   updateTypeOptions();
   renderBalance();
 }
@@ -795,6 +876,14 @@ function updateSubtypeFilterOptions(){
   filter.value = curr;
 }
 
+function updateRulePotOptions(){
+  const sel = document.getElementById('rule-pot');
+  if(sel){
+    sel.innerHTML = '<option value="">Select pot</option>';
+    financeData.pots.forEach(p=>{ const o=document.createElement('option'); o.value=p.id; o.textContent=p.name; sel.appendChild(o); });
+  }
+}
+
 function currentBudgetVersion(sub){
   if(!sub.versions || !sub.versions.length) return null;
   const today=new Date();
@@ -822,15 +911,16 @@ function monthsBetween(startDate,endDate){
 
 function baseAmountForMonth(sub, month){
   if(!sub.versions || !sub.versions.length) return 0;
-  const mDate=monthToDate(month);
+  const mStart=monthToDate(month);
+  const mEnd=new Date(mStart.getFullYear(), mStart.getMonth()+1, 0);
   let amt=0;
   sub.versions.forEach(v=>{
     const s=parseDate(v.start);
     const e=parseDate(v.end);
-    if(mDate>=s && mDate<=e){
+    if(e>=mStart && s<=mEnd){
       const interval=parseInt(v.interval||1,10);
       const mode=v.mode||'within';
-      const diffMonths=(mDate.getFullYear()-s.getFullYear())*12 + (mDate.getMonth()-s.getMonth());
+      const diffMonths=(mStart.getFullYear()-s.getFullYear())*12 + (mStart.getMonth()-s.getMonth());
       if(interval<=1){
         amt+=parseFloat(v.amount||0);
       } else if(mode==='within'){
@@ -845,13 +935,14 @@ function baseAmountForMonth(sub, month){
 
 function budgetAppliesToMonth(sub, month){
   if(!sub.versions || !sub.versions.length) return false;
-  const mDate=monthToDate(month);
+  const mStart=monthToDate(month);
+  const mEnd=new Date(mStart.getFullYear(), mStart.getMonth()+1, 0);
   return sub.versions.some(v=>{
     const s=parseDate(v.start);
     const e=parseDate(v.end);
-    if(mDate<s || mDate>e) return false;
+    if(e<mStart || s>mEnd) return false;
     const interval=parseInt(v.interval||1,10);
-    const diffMonths=(mDate.getFullYear()-s.getFullYear())*12 + (mDate.getMonth()-s.getMonth());
+    const diffMonths=(mStart.getFullYear()-s.getFullYear())*12 + (mStart.getMonth()-s.getMonth());
     if(interval<=1) return true;
     return (v.mode||'within')==='within' ? diffMonths%interval===0 : true;
   });
@@ -870,8 +961,12 @@ function openBudgetModal(sub, editIndex=-1, isNew=false){
   normalizeVersions(sub);
   const modal=document.getElementById('budget-modal');
   if(!modal) return;
-  const todayStr=new Date().toISOString().slice(0,10);
-  const far=new Date(new Date(todayStr).setFullYear(new Date(todayStr).getFullYear()+100)).toISOString().slice(0,10);
+  const monthStart=new Date();
+  monthStart.setDate(1);
+  const todayStr=monthStart.toISOString().slice(0,10);
+  const farDate=new Date(monthStart);
+  farDate.setFullYear(farDate.getFullYear()+100);
+  const far=farDate.toISOString().slice(0,10);
   const curr=sub.versions.length?currentBudgetVersion(sub):null;
   const defaultVer={amount:0,start:todayStr,end:far,interval:1,mode:'within'};
   const v=editIndex>=0 && sub.versions[editIndex]? sub.versions[editIndex] : (curr || defaultVer);
@@ -1144,10 +1239,42 @@ function renderSettingsSections(){
       div.appendChild(ul);
       subLists.appendChild(div);
     });
+    const uncats = financeData.budgets.filter(b=>!b.type);
+    if(uncats.length){
+      const div=document.createElement('div');
+      const title=document.createElement('strong'); title.textContent='Uncategorised'; div.appendChild(title);
+      const ul=document.createElement('ul');
+      uncats.forEach(sub=>{
+        const li=document.createElement('li');
+        li.textContent=sub.desc?`${sub.name} - ${sub.desc}`:sub.name;
+        const edit=document.createElement('button'); edit.textContent='Edit';
+        edit.addEventListener('click',()=>openBudgetModal(sub));
+        const del=document.createElement('button'); del.textContent='Delete';
+        del.addEventListener('click',()=>{
+          if(confirm('Delete this sub budget? This will remove it from any transactions.')){
+            financeData.budgets = financeData.budgets.filter(b=>!(b.type===sub.type && b.name===sub.name));
+            financeData.transactions.forEach(t=>{ if(t.type===sub.type && t.subType===sub.name){ t.type=''; t.subType=''; } });
+            financeData.rules = financeData.rules.filter(r=>!(r.type===sub.type && r.subType===sub.name));
+            saveFinance();
+            renderBudgets();
+            renderOverview();
+            renderTransactions();
+            renderRules();
+            renderSettingsSections();
+          }
+        });
+        li.appendChild(edit);
+        li.appendChild(del);
+        ul.appendChild(li);
+      });
+      div.appendChild(ul);
+      subLists.appendChild(div);
+    }
   });
 }
 
 function renderRules(){
+  updateRulePotOptions();
   const tbody = document.querySelector('#rule-table tbody');
   if(!tbody) return;
   tbody.innerHTML='';
@@ -1160,12 +1287,20 @@ function renderRules(){
       saveFinance();
       renderRules();
     });
-    tr.innerHTML=`<td>${r.match}</td><td>${r.type}</td><td>${r.subType||''}</td>`;
+    const pot = financeData.pots.find(p=>p.id===r.potId);
+    const potName = pot ? pot.name : '';
+    tr.innerHTML=`<td>${r.match||''}</td><td>${r.account||''}</td><td>${r.amount!=null?r.amount:''}</td><td>${r.type}</td><td>${r.subType||''}</td><td>${potName}</td>`;
     const td=document.createElement('td'); td.appendChild(delBtn); tr.appendChild(td);
     tbody.appendChild(tr);
   });
   document.getElementById('rule-desc').value='';
+  document.getElementById('rule-account').value='';
+  document.getElementById('rule-amount').value='';
+  document.getElementById('rule-type').value='';
   document.getElementById('rule-subtype').value='';
+  document.getElementById('rule-pot').value='';
+  const list=document.getElementById('rule-subtype-list');
+  if(list) list.innerHTML='';
 }
 
 async function saveFinance(){
@@ -1386,12 +1521,16 @@ document.getElementById('close-duplicates').addEventListener('click', () => {
 document.getElementById('rule-form').addEventListener('submit', e=>{
   e.preventDefault();
   const match = document.getElementById('rule-desc').value.trim();
+  const account = document.getElementById('rule-account').value;
+  const amountStr = document.getElementById('rule-amount').value;
+  const amount = amountStr ? parseFloat(amountStr) : null;
   const type = document.getElementById('rule-type').value;
   const sub = document.getElementById('rule-subtype').value.trim();
-  if(!match || !type) return;
-  financeData.rules.push({ id: Date.now(), match, type, subType: sub });
-  document.getElementById('rule-desc').value='';
-  document.getElementById('rule-subtype').value='';
+  const potIdStr = document.getElementById('rule-pot').value;
+  const potId = potIdStr ? parseInt(potIdStr) : null;
+  if(!type) return;
+  if(!match && !account && amount===null) return;
+  financeData.rules.push({ id: Date.now(), match, account, amount, type, subType: sub, potId });
   saveFinance();
   renderRules();
   applyRulesToAll();
@@ -1624,8 +1763,17 @@ function renderBalance(){
   tbody.innerHTML='';
   const opening=[]; const closing=[];
   opening[0]=startTotal;
+  const curIncome=Object.values(data.income).reduce((s,c)=>s+Math.max(c.actual[3],c.budget[3]),0);
+  const curExpense=Object.values(data.expense).reduce((s,c)=>s+Math.max(c.actual[3],c.budget[3]),0);
   for(let i=0;i<7;i++){
-    const net=(i<4?totals.income.actual[i]-totals.expense.actual[i]:totals.income.budget[i]-totals.expense.budget[i]);
+    let net;
+    if(i<3){
+      net=totals.income.actual[i]-totals.expense.actual[i];
+    } else if(i===3){
+      net=curIncome-curExpense;
+    } else {
+      net=totals.income.budget[i]-totals.expense.budget[i];
+    }
     closing[i]=(opening[i]||0)+net;
     if(i<6) opening[i+1]=closing[i];
   }
@@ -1788,6 +1936,7 @@ function renderPots(){
     box.appendChild(actions);
     if(p.kind==='saving') saveDiv.appendChild(box); else debtDiv.appendChild(box);
   });
+  updateRulePotOptions();
 }
 
 // Index of the pot currently being edited (null when creating new)
