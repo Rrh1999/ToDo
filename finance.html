@@ -31,13 +31,12 @@ th,td{border:1px solid #ccc;padding:0.25rem 0.5rem;}
 </header>
 <script src="nav-loader.js"></script>
 <div class="tabs">
-  <button id="tab-upload" type="button">Upload</button>
+  <button id="tab-settings" type="button">Settings</button>
   <button id="tab-code" type="button">Code</button>
   <button id="tab-budgets" type="button">Budgets</button>
   <button id="tab-pots" type="button">Pots</button>
 </div>
-<div id="pots-display"><div id="debt-pots" class="pot-column"></div><div id="saving-pots" class="pot-column"></div></div>
-<div id="upload" class="tab-content active">
+<div id="settings" class="tab-content active">
   <h2>Upload Transactions</h2>
   <form id="upload-form">
     <label>Account Type
@@ -59,6 +58,8 @@ th,td{border:1px solid #ccc;padding:0.25rem 0.5rem;}
   <input type="text" id="new-account" placeholder="Add account">
   <button id="add-account">Add</button>
   <datalist id="type-list"></datalist>
+  <h3>Thirds</h3>
+  <div id="upload-settings" class="settings-section"></div>
 </div>
 <div id="code" class="tab-content">
   <h2>Transactions</h2>
@@ -192,6 +193,7 @@ th,td{border:1px solid #ccc;padding:0.25rem 0.5rem;}
     <input type="number" id="pot-starting" placeholder="Starting Amount" required>
     <button type="submit" id="pot-submit">Create</button>
   </form>
+  <div id="pots-display"><div id="debt-pots" class="pot-column"></div><div id="saving-pots" class="pot-column"></div></div>
 </div>
 <div id="pot-modal" style="display:none;position:fixed;top:10%;left:10%;right:10%;background:#fff;border:1px solid #ccc;padding:1rem;max-height:80%;overflow:auto;">
   <button type="button" id="close-pot-modal">Close</button>
@@ -1210,7 +1212,8 @@ function parseFile(file, accountType, accountName){
         sourceFile: file.name,
         uploadedAt: new Date().toISOString(),
         notes: '',
-        transfer: false
+        transfer: false,
+        potId: null
       };
       assignMonth(tx);
       applyRules(tx);
@@ -1233,7 +1236,7 @@ function parseFile(file, accountType, accountName){
 
 window.addEventListener('DOMContentLoaded', () => {
   loadFinance();
-  document.getElementById('tab-upload').addEventListener('click', () => showTab('upload'));
+  document.getElementById('tab-settings').addEventListener('click', () => showTab('settings'));
   document.getElementById('tab-code').addEventListener('click', () => showTab('code'));
   document.getElementById('tab-budgets').addEventListener('click', () => showTab('budgets'));
   document.getElementById('tab-pots').addEventListener('click', () => { resetPotForm(); showTab('pots'); });
@@ -1346,7 +1349,6 @@ document.getElementById('select-all').addEventListener('change', e=>{
 document.getElementById('delete-selected').addEventListener('click', ()=>{
   const ids=Array.from(document.querySelectorAll('#tx-table tbody .tx-select:checked')).map(cb=>parseInt(cb.dataset.id));
   if(!ids.length) return;
-  financeData.transactions.forEach(tx=>{ if(ids.includes(tx.id) && tx.potId){ const pot=financeData.pots.find(p=>p.id===tx.potId); if(pot) pot.current-=parseFloat(tx.amount)||0; }});
   financeData.transactions=financeData.transactions.filter(tx=>!ids.includes(tx.id));
   saveFinance();
   renderTransactions();
@@ -1766,10 +1768,11 @@ function renderOverview(){
   
 function recalcPots(){
   financeData.pots.forEach(p=>{
-    const start=parseFloat(p.startAmount)||0;
-    const total=financeData.transactions.filter(t=>t.potId===p.id)
-      .reduce((s,t)=>s+(parseFloat(t.amount)||0),0);
-    p.current=start+total;
+    const start = parseFloat(p.startAmount) || 0;
+    const total = financeData.transactions
+      .filter(t => t.potId === p.id)
+      .reduce((sum, t) => sum + (parseFloat(t.amount) || 0), 0);
+    p.current = parseFloat((start + total).toFixed(2));
   });
 }
 
