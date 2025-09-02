@@ -4,11 +4,13 @@
 <meta charset="UTF-8">
 <meta name="viewport" content="width=device-width, initial-scale=1">
 <title>Finance Manager</title>
+<link rel="stylesheet" href="styles.css">
 <style>
-body{font-family:'Segoe UI',Tahoma,sans-serif;margin:0;padding:0;}
-header{background:#fff;color:#ff69b4;padding:1rem;text-align:center;border-bottom:1px solid #ddd;}
-.tabs{display:flex;gap:0.5rem;padding:0.5rem;background:#eee;justify-content:center;}
-.tabs button{padding:0.5rem 1rem;border:none;background:#cfe2ff;cursor:pointer;}
+body{margin:0;padding:0;}
+/* header styling removed to inherit global */
+.tabs{display:flex;gap:0;padding:0;background:#B5A89A;justify-content:center;width:100%;border-radius:0;margin:0;font-weight:bold;}
+.tabs button{padding:0.7rem 1rem;border:none;cursor:pointer;background:transparent;color:#2B2C29;font-weight:bold;border-radius:0;transition:background .18s,color .18s;}
+.tabs button:hover, .tabs button.active{background:#2B2C29;color:#E7E4D6;}
 .tab-content{display:none;padding:1rem;}
 .tab-content.active{display:block;}
 table{border-collapse:collapse;width:100%;margin-top:1rem;font-size:0.9rem;}
@@ -22,11 +24,28 @@ th,td{border:1px solid #ccc;padding:0.25rem 0.5rem;}
 .pot.debt{background:#f8d7da;}
 .pot .actions{display:flex;gap:0.25rem;}
 .pot .actions button{margin:0 2px;}
-.toggle{cursor:pointer;background:#f4f4f4;padding:0.5rem;border-radius:4px;margin:1rem 0;text-align:center;}
-.section-header{font-size:1.2rem;font-weight:bold;background:#cfe2ff;}
+.toggle{cursor:pointer;padding:0.5rem;border-radius:4px;margin:1rem 0;text-align:center;}
+.section-header{font-size:1.2rem;font-weight:bold;position:relative;}
+.section-header .pin-star {
+  position: absolute;
+  top: 50%;
+  right: 8px;
+  transform: translateY(-50%);
+  cursor: pointer;
+  z-index: 10;
+}
+.section-header .pin-star svg {
+  width: 16px;
+  height: 16px;
+}
+.section-header .pin-star.pinned svg {
+  fill: #F7F6F3;
+  stroke: #2B2C29;
+  stroke-width: 1;
+}
 .hidden{display:none!important;}
-.budget-section{border-bottom:4px solid #bbb;padding-bottom:1rem;margin-bottom:1rem;}
-.code-section{border-bottom:4px solid #bbb;padding-bottom:1rem;margin-bottom:1rem;}
+.budget-section{padding-bottom:1rem;margin-bottom:1rem;}
+.code-section{padding-bottom:1rem;margin-bottom:1rem;}
 #budgets table{resize:horizontal;overflow:auto;display:block;}
 #budgets table tbody tr:nth-child(even){background:#f2f2f2;}
 #budgets table tbody tr td:first-child{color:#007bff;}
@@ -35,8 +54,8 @@ th,td{border:1px solid #ccc;padding:0.25rem 0.5rem;}
 <body>
 <header>
   <h1>Finance Manager</h1>
-  <div id="nav-placeholder"></div>
 </header>
+<div id="nav-placeholder"></div>
 <script src="nav-loader.js"></script>
 <div class="tabs">
   <button id="tab-settings" type="button">Settings</button>
@@ -45,34 +64,77 @@ th,td{border:1px solid #ccc;padding:0.25rem 0.5rem;}
   <button id="tab-pots" type="button">Pots</button>
 </div>
 <div id="settings" class="tab-content active">
-  <h2>Upload Transactions</h2>
-  <form id="upload-form">
-    <label>Account Type
-      <select id="account-type">
-        <option value="TSB">TSB</option>
-        <option value="Monzo">Monzo</option>
-        <option value="Credit Card">Credit Card</option>
-      </select>
-    </label>
-    <label>Account Name
-      <select id="account-name" required></select>
-    </label>
-    <input type="file" id="file-input" accept=".csv,.xls,.xlsx" required>
-    <button type="submit">Upload</button>
-  </form>
-  <div id="upload-msg"></div>
-  <h3>Accounts</h3>
-  <ul id="accounts-display"></ul>
-  <input type="text" id="new-account" placeholder="Add account">
-  <button id="add-account">Add</button>
-  <datalist id="type-list"></datalist>
-  <h3>Thirds</h3>
-  <div id="upload-settings" class="settings-section"></div>
+  <section>
+    <div class="toggle section-header" onclick="toggle('upload-section')">
+      Upload Transactions
+      <span class="pin-star" onclick="event.stopPropagation(); togglePin('upload-section')" title="Pin section open">
+        <svg viewBox="0 0 24 24" fill="#2B2C29" stroke="#F7F6F3" stroke-width="1">
+          <polygon points="12,2 15.09,8.26 22,9.27 17,14.14 18.18,21.02 12,17.77 5.82,21.02 7,14.14 2,9.27 8.91,8.26"></polygon>
+        </svg>
+      </span>
+    </div>
+    <div id="upload-section">
+      <form id="upload-form">
+        <label>Account Type
+          <select id="account-type">
+            <option value="TSB">TSB</option>
+            <option value="Monzo">Monzo</option>
+            <option value="Credit Card">Credit Card</option>
+          </select>
+        </label>
+        <label>Account Name
+          <select id="account-name" required></select>
+        </label>
+        <input type="file" id="file-input" accept=".csv,.xls,.xlsx" required>
+        <button type="submit">Upload</button>
+      </form>
+      <div id="upload-msg"></div>
+    </div>
+  </section>
+
+  <section>
+    <div class="toggle section-header" onclick="toggle('accounts-section')">
+      Account Management
+      <span class="pin-star" onclick="event.stopPropagation(); togglePin('accounts-section')" title="Pin section open">
+        <svg viewBox="0 0 24 24" fill="#2B2C29" stroke="#F7F6F3" stroke-width="1">
+          <polygon points="12,2 15.09,8.26 22,9.27 17,14.14 18.18,21.02 12,17.77 5.82,21.02 7,14.14 2,9.27 8.91,8.26"></polygon>
+        </svg>
+      </span>
+    </div>
+    <div id="accounts-section">
+      <h3>Accounts</h3>
+      <ul id="accounts-display"></ul>
+      <input type="text" id="new-account" placeholder="Add account">
+      <button id="add-account">Add</button>
+      <datalist id="type-list"></datalist>
+    </div>
+  </section>
+
+  <section>
+    <div class="toggle section-header" onclick="toggle('budget-settings-section')">
+      Budget Settings
+      <span class="pin-star" onclick="event.stopPropagation(); togglePin('budget-settings-section')" title="Pin section open">
+        <svg viewBox="0 0 24 24" fill="#2B2C29" stroke="#F7F6F3" stroke-width="1">
+          <polygon points="12,2 15.09,8.26 22,9.27 17,14.14 18.18,21.02 12,17.77 5.82,21.02 7,14.14 2,9.27 8.91,8.26"></polygon>
+        </svg>
+      </span>
+    </div>
+    <div id="budget-settings-section">
+      <h3>Thirds</h3>
+      <div id="upload-settings" class="settings-section"></div>
+    </div>
+  </section>
 </div>
 <div id="code" class="tab-content">
-  <h2>Code</h2>
-  <div class="code-section">
-    <div class="toggle section-header" onclick="toggle('tx-main')">Transactions</div>
+  <section>
+    <div class="toggle section-header" onclick="toggle('tx-main')">
+      Transactions
+      <span class="pin-star" onclick="event.stopPropagation(); togglePin('tx-main')" title="Pin section open">
+        <svg viewBox="0 0 24 24" fill="#2B2C29" stroke="#F7F6F3" stroke-width="1">
+          <polygon points="12,2 15.09,8.26 22,9.27 17,14.14 18.18,21.02 12,17.77 5.82,21.02 7,14.14 2,9.27 8.91,8.26"></polygon>
+        </svg>
+      </span>
+    </div>
     <div id="tx-main">
       <label><input type="checkbox" id="filter-uncoded">Uncoded only</label>
       <button id="show-duplicates" type="button">Show Duplicates</button>
@@ -121,45 +183,33 @@ th,td{border:1px solid #ccc;padding:0.25rem 0.5rem;}
         </table>
       </div>
     </div>
-  </div>
-  <div class="code-section">
-    <div class="toggle section-header" onclick="toggle('rule-main')">Autofill Rules</div>
-    <div id="rule-main">
-      <form id="rule-form">
-        <div style="display:flex;gap:1rem;flex-wrap:wrap;">
-          <div>
-            <div>Select what to look for</div>
-            <input type="text" id="rule-desc" placeholder="Description contains">
-            <select id="rule-account"><option value="">Any account</option></select>
-            <input type="number" id="rule-amount" placeholder="Amount">
-          </div>
-          <div>
-            <div>What is auto coded</div>
-            <select id="rule-type"><option value="">Select category</option></select>
-            <input type="text" id="rule-subtype" placeholder="Sub category" list="rule-subtype-list">
-            <select id="rule-pot"><option value="">Select pot</option></select>
-          </div>
-        </div>
-        <button type="submit">Add Rule</button>
-      </form>
-      <table id="rule-table">
-        <thead><tr><th>Description</th><th>Account</th><th>Amount</th><th>Category</th><th>Sub Category</th><th>Pot</th><th>Action</th></tr></thead>
-        <tbody></tbody>
-      </table>
-      <datalist id="rule-subtype-list"></datalist>
+  </section>
+
+  <section>
+    <div class="toggle section-header" onclick="toggle('code-rules-main')">
+      Autofill Rules
+      <span class="pin-star" onclick="event.stopPropagation(); togglePin('code-rules-main')" title="Pin section open">
+        <svg viewBox="0 0 24 24" fill="#2B2C29" stroke="#F7F6F3" stroke-width="1">
+          <polygon points="12,2 15.09,8.26 22,9.27 17,14.14 18.18,21.02 12,17.77 5.82,21.02 7,14.14 2,9.27 8.91,8.26"></polygon>
+        </svg>
+      </span>
     </div>
-  </div>
-  <div class="code-section">
-    <div class="toggle section-header" onclick="toggle('code-settings-main')">Category Settings</div>
-    <div id="code-settings-main">
+    <div id="code-rules-main">
       <div id="code-settings" class="settings-section"></div>
     </div>
-  </div>
-  </div>
-  <div id="budgets" class="tab-content">
-  <h2>Budgets</h2>
-  <div class="budget-section">
-    <div class="toggle section-header" onclick="toggle('budget-main')">Budgets</div>
+  </section>
+</div>
+
+<div id="budgets" class="tab-content">
+  <section>
+    <div class="toggle section-header" onclick="toggle('budget-main')">
+      Budgets
+      <span class="pin-star" onclick="event.stopPropagation(); togglePin('budget-main')" title="Pin section open">
+        <svg viewBox="0 0 24 24" fill="#F7F6F3" stroke="#2B2C29" stroke-width="1">
+          <polygon points="12,2 15.09,8.26 22,9.27 17,14.14 18.18,21.02 12,17.77 5.82,21.02 7,14.14 2,9.27 8.91,8.26"></polygon>
+        </svg>
+      </span>
+    </div>
     <div id="budget-main">
       <div id="budget-settings" class="settings-section"></div>
       <label>Extra Display
@@ -175,9 +225,17 @@ th,td{border:1px solid #ccc;padding:0.25rem 0.5rem;}
         <tbody></tbody>
       </table>
     </div>
-  </div>
-  <div class="budget-section">
-    <div class="toggle section-header" onclick="toggle('period-main')">Budget Periods</div>
+  </section>
+
+  <section>
+    <div class="toggle section-header" onclick="toggle('period-main')">
+      Budget Periods
+      <span class="pin-star" onclick="event.stopPropagation(); togglePin('period-main')" title="Pin section open">
+        <svg viewBox="0 0 24 24" fill="#2B2C29" stroke="#F7F6F3" stroke-width="1">
+          <polygon points="12,2 15.09,8.26 22,9.27 17,14.14 18.18,21.02 12,17.77 5.82,21.02 7,14.14 2,9.27 8.91,8.26"></polygon>
+        </svg>
+      </span>
+    </div>
     <div id="period-main">
       <form id="period-form">
         <input type="date" id="period-start" required>
@@ -190,9 +248,17 @@ th,td{border:1px solid #ccc;padding:0.25rem 0.5rem;}
         <tbody></tbody>
       </table>
     </div>
-  </div>
-  <div class="budget-section">
-    <div class="toggle section-header" onclick="toggle('overview-main')">Budget Overview</div>
+  </section>
+
+  <section>
+    <div class="toggle section-header" onclick="toggle('overview-main')">
+      Budget Overview
+      <span class="pin-star" onclick="event.stopPropagation(); togglePin('overview-main')" title="Pin section open">
+        <svg viewBox="0 0 24 24" fill="#2B2C29" stroke="#F7F6F3" stroke-width="1">
+          <polygon points="12,2 15.09,8.26 22,9.27 17,14.14 18.18,21.02 12,17.77 5.82,21.02 7,14.14 2,9.27 8.91,8.26"></polygon>
+        </svg>
+      </span>
+    </div>
     <div id="overview-main">
       <label>Months
         <select id="overview-month" multiple size="4"></select>
@@ -206,9 +272,17 @@ th,td{border:1px solid #ccc;padding:0.25rem 0.5rem;}
         <tbody></tbody>
       </table>
     </div>
-  </div>
-  <div class="budget-section">
-    <div class="toggle section-header" onclick="toggle('balance-main')">Balance Sheet</div>
+  </section>
+
+  <section>
+    <div class="toggle section-header" onclick="toggle('balance-main')">
+      Balance Sheet
+      <span class="pin-star" onclick="event.stopPropagation(); togglePin('balance-main')" title="Pin section open">
+        <svg viewBox="0 0 24 24" fill="#2B2C29" stroke="#F7F6F3" stroke-width="1">
+          <polygon points="12,2 15.09,8.26 22,9.27 17,14.14 18.18,21.02 12,17.77 5.82,21.02 7,14.14 2,9.27 8.91,8.26"></polygon>
+        </svg>
+      </span>
+    </div>
     <div id="balance-main">
       <form id="start-balance-form">
         <label>Starting Date <input type="date" id="start-balance-date"></label>
@@ -223,26 +297,53 @@ th,td{border:1px solid #ccc;padding:0.25rem 0.5rem;}
         <tbody></tbody>
       </table>
     </div>
-  </div>
+  </section>
 </div>
 <div id="pots" class="tab-content">
-  <h2>Pots</h2>
-  <form id="pot-form">
-    <select id="pot-kind">
-      <option value="saving">Saving</option>
-      <option value="debt">Debt</option>
-    </select>
-    <input type="text" id="pot-name" placeholder="Name" required>
-    <select id="pot-account"><option value="">No account</option></select>
-    <input type="text" id="pot-desc" placeholder="Description">
-    <input type="date" id="pot-start" required>
-    <input type="date" id="pot-end">
-    <input type="number" id="pot-goal" placeholder="Goal Amount">
-    <input type="number" id="pot-target" placeholder="Monthly Target">
-    <input type="number" id="pot-starting" placeholder="Starting Amount" required>
-    <button type="submit" id="pot-submit">Create</button>
-  </form>
-  <div id="pots-display"><div id="debt-pots" class="pot-column"></div><div id="saving-pots" class="pot-column"></div></div>
+  <section>
+    <div class="toggle section-header" onclick="toggle('create-pots-section')">
+      Create Pots
+      <span class="pin-star" onclick="event.stopPropagation(); togglePin('create-pots-section')" title="Pin section open">
+        <svg viewBox="0 0 24 24" fill="#2B2C29" stroke="#F7F6F3" stroke-width="1">
+          <polygon points="12,2 15.09,8.26 22,9.27 17,14.14 18.18,21.02 12,17.77 5.82,21.02 7,14.14 2,9.27 8.91,8.26"></polygon>
+        </svg>
+      </span>
+    </div>
+    <div id="create-pots-section">
+      <form id="pot-form">
+        <select id="pot-kind">
+          <option value="saving">Saving</option>
+          <option value="debt">Debt</option>
+        </select>
+        <input type="text" id="pot-name" placeholder="Name" required>
+        <select id="pot-account"><option value="">No account</option></select>
+        <input type="text" id="pot-desc" placeholder="Description">
+        <input type="date" id="pot-start" required>
+        <input type="date" id="pot-end">
+        <input type="number" id="pot-goal" placeholder="Goal Amount">
+        <input type="number" id="pot-target" placeholder="Monthly Target">
+        <input type="number" id="pot-starting" placeholder="Starting Amount" required>
+        <button type="submit" id="pot-submit">Create</button>
+      </form>
+    </div>
+  </section>
+
+  <section>
+    <div class="toggle section-header" onclick="toggle('view-pots-section')">
+      View Pots
+      <span class="pin-star" onclick="event.stopPropagation(); togglePin('view-pots-section')" title="Pin section open">
+        <svg viewBox="0 0 24 24" fill="#2B2C29" stroke="#F7F6F3" stroke-width="1">
+          <polygon points="12,2 15.09,8.26 22,9.27 17,14.14 18.18,21.02 12,17.77 5.82,21.02 7,14.14 2,9.27 8.91,8.26"></polygon>
+        </svg>
+      </span>
+    </div>
+    <div id="view-pots-section">
+      <div id="pots-display">
+        <div id="debt-pots" class="pot-column"></div>
+        <div id="saving-pots" class="pot-column"></div>
+      </div>
+    </div>
+  </section>
 </div>
 <div id="pot-modal" style="display:none;position:fixed;top:10%;left:10%;right:10%;background:#fff;border:1px solid #ccc;padding:1rem;max-height:80%;overflow:auto;">
   <button type="button" id="close-pot-modal">Close</button>
@@ -282,8 +383,13 @@ function showTab(id){
 }
 
 async function loadFinance(){
+  console.log('Loading finance data...');
   const res = await fetch('/api/finance-data');
   financeData = await res.json();
+  console.log('Raw finance data loaded:', financeData);
+  console.log('Pots in loaded data:', financeData.pots ? financeData.pots.length : 'NO POTS ARRAY');
+  console.log('Budgets in loaded data:', financeData.budgets ? financeData.budgets.length : 'NO BUDGETS ARRAY');
+  console.log('Budget periods in loaded data:', financeData.budgetPeriods ? financeData.budgetPeriods.length : 'NO BUDGET PERIODS ARRAY');
   financeData.budgetCategories = financeData.budgetCategories || [];
   if(!financeData.budgetCategories.includes('Other \u2013 Budgeted')){
     financeData.budgetCategories.push('Other \u2013 Budgeted');
@@ -331,6 +437,8 @@ async function loadFinance(){
   renderTransactions();
   renderBudgets();
   renderRules();
+  renderCodeSettings();
+  renderUploadSettings();
   renderPeriods();
   renderStartBalances();
   populateOverviewMonths();
@@ -726,9 +834,21 @@ function renderTransactions(){
 }
 
 function renderBudgets(){
+  console.log('renderBudgets called');
+  console.log('financeData.budgets:', financeData.budgets);
   const tbody = document.querySelector('#budget-table tbody');
-  if(!tbody) return;
+  if(!tbody) {
+    console.log('ERROR: budget-table tbody not found');
+    return;
+  }
   tbody.innerHTML = '';
+  
+  if (!financeData.budgets) {
+    console.log('ERROR: financeData.budgets is undefined or null');
+    return;
+  }
+  
+  console.log('About to render budgets, budgets count:', financeData.budgets.length);
   const groups = {};
   financeData.budgets.forEach(b=>{
     groups[b.type] = groups[b.type] || { amount:0, items:[] };
@@ -1061,7 +1181,7 @@ function openBudgetModal(sub, editIndex=-1, isNew=false){
       openBudgetModal(sub);
     });
   });
-  modal.querySelector('#extra-form').addEventListener('submit',e=>{
+  modal.querySelector('#extra-form').addEventListener('submit', e=>{
     e.preventDefault();
     const amt=parseFloat(modal.querySelector('#extra-amount').value);
     const months=Array.from(extraSel.selectedOptions).map(o=>o.value);
@@ -1133,8 +1253,10 @@ function openBudgetModal(sub, editIndex=-1, isNew=false){
 }
 
 function renderSettingsSections(){
-  document.querySelectorAll('.settings-section').forEach(container=>{
-    container.innerHTML = `
+  // Only render budget category settings in the budgets tab
+  const budgetContainer = document.getElementById('budget-settings');
+  if(budgetContainer) {
+    budgetContainer.innerHTML = `
       <h3>Budget Settings</h3>
       <form class="type-form">
         <input type="text" class="new-type-name" placeholder="New Category">
@@ -1147,24 +1269,26 @@ function renderSettingsSections(){
         <button type="button" class="add-subtype-btn">Add Sub Type</button>
       </form>
       <div class="subtype-lists"></div>`;
-    const typeForm = container.querySelector('.type-form');
+    
+    const typeForm = budgetContainer.querySelector('.type-form');
     typeForm.addEventListener('submit', e=>{
       e.preventDefault();
-      const name = container.querySelector('.new-type-name').value.trim();
-      const start = container.querySelector('.new-type-start').value || new Date().toISOString().slice(0,10);
+      const name = budgetContainer.querySelector('.new-type-name').value.trim();
+      const start = budgetContainer.querySelector('.new-type-start').value || new Date().toISOString().slice(0,10);
       if(!name || financeData.budgetCategories.includes(name)) return;
       financeData.budgetCategories.push(name);
       financeData.categoryStarts[name]=start;
-      container.querySelector('.new-type-name').value='';
-      container.querySelector('.new-type-start').value='';
+      budgetContainer.querySelector('.new-type-name').value='';
+      budgetContainer.querySelector('.new-type-start').value='';
       saveFinance();
       updateTypeOptions();
       renderBudgets();
       renderOverview();
       renderSettingsSections();
     });
-    const subtypeForm = container.querySelector('.subtype-form');
-    const typeSelect = container.querySelector('.subtype-type');
+    
+    const subtypeForm = budgetContainer.querySelector('.subtype-form');
+    const typeSelect = budgetContainer.querySelector('.subtype-type');
     function fillTypes(){
       typeSelect.innerHTML = '<option value="">Select type</option>';
       financeData.budgetCategories.forEach(t=>{ const o=document.createElement('option'); o.value=t; o.textContent=t; typeSelect.appendChild(o); });
@@ -1177,7 +1301,7 @@ function renderSettingsSections(){
       openBudgetModal(nb, -1, true);
     });
 
-    const typeList = container.querySelector('.type-list');
+    const typeList = budgetContainer.querySelector('.type-list');
     financeData.budgetCategories.forEach(cat=>{
       const li=document.createElement('li');
       const start=financeData.categoryStarts[cat]||'';
@@ -1206,7 +1330,7 @@ function renderSettingsSections(){
       typeList.appendChild(li);
     });
 
-    const subLists = container.querySelector('.subtype-lists');
+    const subLists = budgetContainer.querySelector('.subtype-lists');
     financeData.budgetCategories.forEach(cat=>{
       const subs = financeData.budgets.filter(b=>b.type===cat);
       if(!subs.length) return;
@@ -1239,6 +1363,7 @@ function renderSettingsSections(){
       div.appendChild(ul);
       subLists.appendChild(div);
     });
+    
     const uncats = financeData.budgets.filter(b=>!b.type);
     if(uncats.length){
       const div=document.createElement('div');
@@ -1270,7 +1395,132 @@ function renderSettingsSections(){
       div.appendChild(ul);
       subLists.appendChild(div);
     }
-  });
+  }
+}
+
+function renderCodeSettings(){
+  // Only render autofill rules in the code tab
+  const codeContainer = document.getElementById('code-settings');
+  if(codeContainer) {
+    codeContainer.innerHTML = `
+      <h3>Autofill Rules</h3>
+      <p>Create rules to automatically categorize transactions based on description, account, or amount.</p>
+      <form id="rule-form">
+        <div class="rule-inputs">
+          <div>
+            <label>Description Contains:</label>
+            <input type="text" id="rule-desc" placeholder="Text to match in description">
+          </div>
+          <div>
+            <label>Account:</label>
+            <select id="rule-account">
+              <option value="">Any account</option>
+            </select>
+          </div>
+          <div>
+            <label>Amount:</label>
+            <input type="number" id="rule-amount" placeholder="Exact amount" step="0.01">
+          </div>
+          <div>
+            <label>Category:</label>
+            <select id="rule-type"><option value="">Select category</option></select>
+          </div>
+          <div>
+            <label>Sub Category:</label>
+            <input type="text" id="rule-subtype" placeholder="Sub category" list="rule-subtype-list">
+          </div>
+          <div>
+            <label>Pot:</label>
+            <select id="rule-pot"><option value="">Select pot</option></select>
+          </div>
+        </div>
+        <button type="submit">Add Rule</button>
+      </form>
+      <table id="rule-table">
+        <thead><tr><th>Description</th><th>Account</th><th>Amount</th><th>Category</th><th>Sub Category</th><th>Pot</th><th>Action</th></tr></thead>
+        <tbody></tbody>
+      </table>
+      <datalist id="rule-subtype-list"></datalist>`;
+    
+    // Set up the rule form event listener
+    const ruleForm = codeContainer.querySelector('#rule-form');
+    ruleForm.addEventListener('submit', e=>{
+      e.preventDefault();
+      const match = document.getElementById('rule-desc').value.trim();
+      const account = document.getElementById('rule-account').value;
+      const amount = document.getElementById('rule-amount').value;
+      const type = document.getElementById('rule-type').value;
+      const subType = document.getElementById('rule-subtype').value.trim();
+      const potId = document.getElementById('rule-pot').value;
+      if(!type) return;
+      
+      const rule = {
+        id: Date.now(),
+        match: match || null,
+        account: account || null,
+        amount: amount ? parseFloat(amount) : null,
+        type,
+        subType: subType || null,
+        potId: potId ? parseInt(potId) : null
+      };
+      
+      financeData.rules.push(rule);
+      saveFinance();
+      renderCodeSettings();
+      renderTransactions();
+    });
+    
+    // Populate the dropdowns
+    updateRuleOptions();
+    renderRules();
+  }
+}
+
+function updateRuleOptions(){
+  const accountSelect = document.getElementById('rule-account');
+  const typeSelect = document.getElementById('rule-type');
+  const potSelect = document.getElementById('rule-pot');
+  
+  if(accountSelect) {
+    accountSelect.innerHTML = '<option value="">Any account</option>';
+    financeData.accounts.forEach(acc=>{
+      const option = document.createElement('option');
+      option.value = acc.name;
+      option.textContent = acc.name;
+      accountSelect.appendChild(option);
+    });
+  }
+  
+  if(typeSelect) {
+    typeSelect.innerHTML = '<option value="">Select category</option>';
+    financeData.budgetCategories.forEach(cat=>{
+      const option = document.createElement('option');
+      option.value = cat;
+      option.textContent = cat;
+      typeSelect.appendChild(option);
+    });
+  }
+  
+  if(potSelect) {
+    potSelect.innerHTML = '<option value="">Select pot</option>';
+    financeData.pots.forEach(pot=>{
+      const option = document.createElement('option');
+      option.value = pot.id;
+      option.textContent = pot.name;
+      potSelect.appendChild(option);
+    });
+  }
+}
+
+function renderUploadSettings(){
+  // Only render upload settings in the settings tab
+  const uploadContainer = document.getElementById('upload-settings');
+  if(uploadContainer) {
+    uploadContainer.innerHTML = `
+      <h3>Upload Settings</h3>
+      <p>Configure file upload and account management settings.</p>
+      <!-- Add upload-specific content here -->`;
+  }
 }
 
 function renderRules(){
@@ -1518,34 +1768,6 @@ document.getElementById('close-duplicates').addEventListener('click', () => {
   document.getElementById('duplicates-modal').style.display = 'none';
 });
 
-document.getElementById('rule-form').addEventListener('submit', e=>{
-  e.preventDefault();
-  const match = document.getElementById('rule-desc').value.trim();
-  const account = document.getElementById('rule-account').value;
-  const amountStr = document.getElementById('rule-amount').value;
-  const amount = amountStr ? parseFloat(amountStr) : null;
-  const type = document.getElementById('rule-type').value;
-  const sub = document.getElementById('rule-subtype').value.trim();
-  const potIdStr = document.getElementById('rule-pot').value;
-  const potId = potIdStr ? parseInt(potIdStr) : null;
-  if(!type) return;
-  if(!match && !account && amount===null) return;
-  financeData.rules.push({ id: Date.now(), match, account, amount, type, subType: sub, potId });
-  saveFinance();
-  renderRules();
-  applyRulesToAll();
-  renderTransactions();
-});
-
-document.getElementById('rule-type').addEventListener('change', () => {
-  const type = document.getElementById('rule-type').value;
-  const list = document.getElementById('rule-subtype-list');
-  list.innerHTML='';
-  financeData.budgets.filter(b=>b.type===type).forEach(b=>{
-    const o=document.createElement('option');o.value=b.name;list.appendChild(o);
-  });
-});
-
 function renderDuplicates(){
   const tbody = document.querySelector('#duplicates-table tbody');
   tbody.innerHTML = '';
@@ -1708,6 +1930,12 @@ function renderBalance(){
   for(let i=3;i>0;i--) months.push(shiftMonth(sel.value,-i));
   months.push(sel.value);
   for(let i=1;i<=3;i++) months.push(shiftMonth(sel.value,i));
+  
+  // Define the show variables that are used later in the function
+  const showBud = document.getElementById('show-budgeted') ? document.getElementById('show-budgeted').checked : true;
+  const showIncome = document.getElementById('show-income') ? document.getElementById('show-income').checked : false;
+  const showRem = document.getElementById('show-remaining') ? document.getElementById('show-remaining').checked : false;
+  
   const sb=financeData.startBalances||{date:'',accounts:{}};
   const startTotal=Object.values(sb.accounts||{}).reduce((s,v)=>s+parseFloat(v||0),0);
   const data={income:{},expense:{}};
@@ -1756,8 +1984,14 @@ function renderBalance(){
   });
   const thead=document.querySelector('#balance-table thead');
   let head='<tr><th>Item</th>';
-  months.forEach(m=>{ head+=`<th>${formatMonth(m)}</th>`; });
-  head+='</tr>';
+  months.forEach(m=>{
+    const label=formatMonth(m);
+    if(showBud) head+=`<th>Budgeted (${label})</th>`;
+    head+=`<th>Spent (${label})</th>`;
+    if(showIncome) head+=`<th>Income (${label})</th>`;
+    if(showRem) head+=`<th>Remaining (${label})</th>`;
+  });
+  head+='<th>Status</th>';
   thead.innerHTML=head;
   const tbody=document.querySelector('#balance-table tbody');
   tbody.innerHTML='';
@@ -1918,10 +2152,22 @@ function recalcPots(){
 }
 
 function renderPots(){
+  console.log('renderPots called');
+  console.log('financeData.pots:', financeData.pots);
   const debtDiv=document.getElementById('debt-pots');
   const saveDiv=document.getElementById('saving-pots');
-  if(!debtDiv||!saveDiv) return;
+  if(!debtDiv||!saveDiv) {
+    console.log('ERROR: debt-pots or saving-pots divs not found');
+    return;
+  }
   debtDiv.innerHTML=''; saveDiv.innerHTML='';
+  
+  if (!financeData.pots) {
+    console.log('ERROR: financeData.pots is undefined or null');
+    return;
+  }
+  
+  console.log('About to recalc pots, pots count:', financeData.pots.length);
   recalcPots();
   financeData.pots.forEach((p,i)=>{
     const box=document.createElement('div');
@@ -2028,6 +2274,73 @@ document.addEventListener('click',e=>{
     }
   }
 });
+
+// Section toggle and pin functionality (copied from index.html)
+let pinnedSections = JSON.parse(localStorage.getItem('finance-pinnedSections') || '[]');
+
+function toggle(sectionId) {
+  const section = document.getElementById(sectionId);
+  if (!section) return;
+  
+  const isPinned = pinnedSections.includes(sectionId);
+  if (isPinned) return; // Don't toggle if pinned
+  
+  if (section.style.display === 'none') {
+    section.style.display = 'block';
+  } else {
+    section.style.display = 'none';
+  }
+}
+
+function togglePin(sectionId) {
+  const pinStar = document.querySelector(`[onclick*="togglePin('${sectionId}')"]`);
+  const section = document.getElementById(sectionId);
+  
+  if (pinnedSections.includes(sectionId)) {
+    // Unpin - star becomes black, section will be closed by default on next load
+    pinnedSections = pinnedSections.filter(id => id !== sectionId);
+    pinStar.classList.remove('pinned');
+    pinStar.title = 'Pin section open';
+  } else {
+    // Pin - star becomes white, section will be open by default on next load
+    pinnedSections.push(sectionId);
+    pinStar.classList.add('pinned');
+    pinStar.title = 'Unpin section';
+    section.style.display = 'block'; // Ensure pinned sections are visible
+  }
+  
+  localStorage.setItem('finance-pinnedSections', JSON.stringify(pinnedSections));
+}
+
+// Initialize sections on page load based on pin status
+function initializePinnedSections() {
+  document.querySelectorAll('.section-header .pin-star').forEach(pinStar => {
+    const onclickAttr = pinStar.getAttribute('onclick');
+    if (onclickAttr) {
+      const match = onclickAttr.match(/togglePin\('([^']+)'\)/);
+      if (match) {
+        const sectionId = match[1];
+        const section = document.getElementById(sectionId);
+        
+        if (pinnedSections.includes(sectionId)) {
+          // White star = pinned = open by default
+          pinStar.classList.add('pinned');
+          pinStar.title = 'Unpin section';
+          if (section) section.style.display = 'block';
+        } else {
+          // Black star = not pinned = closed by default
+          pinStar.classList.remove('pinned');
+          pinStar.title = 'Pin section open';
+          if (section) section.style.display = 'none';
+        }
+      }
+    }
+  });
+}
+
+// Call initialization when page loads
+window.addEventListener('DOMContentLoaded', initializePinnedSections);
+
 </script>
 </body>
 </html>

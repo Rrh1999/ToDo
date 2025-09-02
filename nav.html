@@ -5,20 +5,31 @@
   <a href="gardening.html">Gardening</a>
   <a href="diy.html">DIY</a>
   <a href="work.html">Work</a>
-  <a href="spending.html">Spending</a>
   <a href="finance.html">Finance</a>
+  <a href="parenting.html">Parenting</a>
+  <a href="soul.html">Soul</a>
+  <a href="relationships.html">Relationships</a>
+  <a href="timetracker.html">Time Tracker</a>
 </nav>
+<div id="runningTasks" class="running-tasks"></div>
 <style>
-  .main-nav {
-    display: flex;
-    gap: 1rem;
-    background: #eee;
-    padding: 0.5rem;
-    justify-content: center;
+  .main-nav { display:flex; gap:1rem; background:#C7BBB4; padding:0.6rem 0; justify-content:center; flex-wrap:wrap; width:100%; box-shadow:0 1px 2px rgba(0,0,0,.05); border-bottom:1px solid #e2e5e9; margin:0; }
+  .main-nav a { text-decoration:none; color:#2B2C29; padding:0.35rem 0.75rem; border-radius:24px; font-weight:500; transition:background .2s,color .2s; }
+  .main-nav a:hover { background:#B5A89A; }
+  .pin-star svg {
+    width: 1.2em;
+    height: 1.2em;
+    vertical-align: middle;
+    margin-left: 0.3em;
   }
-  .main-nav a {
-    text-decoration: none;
-    color: #333;
-    padding: 0.25rem 0.5rem;
+  .running-tasks { text-align:right; padding:0.5rem; font-size:0.9rem; }
+  .running-tasks div { margin-left:0.5rem; }
+  @media (max-width:600px){
+    .main-nav { gap:0.5rem; padding:0.5rem 0; min-height:auto; }
+    .main-nav a { font-size:0.9rem; }
+    .pin-star svg {
+      width: 1em;
+      height: 1em;
+    }
   }
 </style>

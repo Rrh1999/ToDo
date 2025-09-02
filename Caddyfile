@@ -1,0 +1,14 @@
+# Caddyfile for ToDo app behind HTTPS
+# Replace example.com with your real domain or use localhost for local HTTPS
+
+todostuff.duckdns.org {
+  encode zstd gzip
+  # Simplest and most reliable: proxy everything to the Node app
+  reverse_proxy 127.0.0.1:3000
+}
+
+# For local testing with a cert you trust via Caddy, you can also use:
+# localhost {
+#   encode zstd gzip
+#   reverse_proxy 127.0.0.1:3000
+# }

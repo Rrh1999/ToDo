@@ -1,0 +1,271 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>Relationships</title>
+<link rel="stylesheet" href="styles.css">
+<style>
+  section { padding:1rem; }
+  .hidden { display:none !important; }
+  .form-grid { display:grid; grid-template-columns:repeat(auto-fill,minmax(200px,1fr)); gap:1rem; align-items:center; }
+  .form-grid label { display:flex; flex-direction:column; font-size:0.9rem; font-weight:bold; }
+  .form-grid input, .form-grid select, .form-grid textarea { width:100%; font-size:1rem; padding:0.4rem; margin-top:0.3rem; box-sizing:border-box; font-weight:normal; }
+  .item-grid { margin-top:1rem; }
+  .modal{position:fixed;top:0;left:0;width:100%;height:100%;background:rgba(43,44,41,0.5);display:flex;align-items:center;justify-content:center;z-index:1000;}
+  .modal-content{background:#fff;padding:1rem;border-radius:8px;max-width:90%;width:400px;}
+</style>
+</head>
+<body>
+<header>
+  <h1>Relationships</h1>
+</header>
+<div id="nav-placeholder"></div>
+<script src="nav-loader.js"></script>
+
+<section>
+  <div class="toggle section-header" onclick="toggle('relationshipSection')">
+    Relationship Log
+    <span class="pin-star" onclick="event.stopPropagation(); togglePin('relationshipSection')" title="Pin section open">
+      <svg viewBox="0 0 20 20" fill="none" stroke="#2B2C29" stroke-width="1.5"><polygon points="10,2 12.5,7.5 18,8 14,12 15,18 10,15 5,18 6,12 2,8 7.5,7.5"/></svg>
+    </span>
+  </div>
+  <div id="relationshipSection" class="hidden">
+    <div class="form-grid">
+      <label>Date<input type="date" id="relDate"></label>
+      <label>Trigger<input type="text" id="relTrigger"></label>
+      <label>Content<textarea id="relContent"></textarea></label>
+      <label>With Who
+        <div style="display:flex; gap:0.5rem;">
+          <select id="relWithWho" style="flex:1;"></select>
+          <button class="btn-outline" type="button" onclick="addPerson()">+</button>
+        </div>
+      </label>
+      <label>Intensity<input type="number" id="relIntensity" min="0" max="100"></label>
+      <label>Duration
+        <div style="display:flex; gap:0.5rem;">
+          <input type="number" id="relDurationValue" style="flex:1;">
+          <select id="relDurationUnit">
+            <option value="mins">mins</option>
+            <option value="hours">hours</option>
+            <option value="days">days</option>
+            <option value="weeks">weeks</option>
+          </select>
+        </div>
+      </label>
+      <label>Resolution<textarea id="relResolution"></textarea></label>
+      <label>Lessons<textarea id="relLessons"></textarea></label>
+      <div style="grid-column:1/-1;text-align:center;">
+        <button class="submit-btn" onclick="addRelationship()">Submit</button>
+      </div>
+    </div>
+    <div id="relationshipList"></div>
+  </div>
+</section>
+
+<div id="editRelModal" class="modal hidden">
+  <div class="modal-content form-grid">
+    <label>Date<input type="date" id="editRelDate"></label>
+    <label>Trigger<input type="text" id="editRelTrigger"></label>
+    <label>Content<textarea id="editRelContent"></textarea></label>
+    <label>With Who<select id="editRelWithWho"></select></label>
+    <label>Intensity<input type="number" id="editRelIntensity" min="0" max="100"></label>
+    <label>Duration
+      <div style="display:flex;gap:0.5rem;">
+        <input type="number" id="editRelDurationValue" style="flex:1;">
+        <select id="editRelDurationUnit">
+          <option value="mins">mins</option>
+          <option value="hours">hours</option>
+          <option value="days">days</option>
+          <option value="weeks">weeks</option>
+        </select>
+      </div>
+    </label>
+    <label>Resolution<textarea id="editRelResolution"></textarea></label>
+    <label>Lessons<textarea id="editRelLessons"></textarea></label>
+    <div style="grid-column:1/-1;text-align:right;">
+      <button class="btn" onclick="saveEdit()">Save</button>
+      <button class="btn" onclick="closeEditModal()">Cancel</button>
+    </div>
+  </div>
+</div>
+
+<script>
+let people=[];
+let entries=[];
+let nextEntryId=1;
+let editingId=null;
+
+function toggle(id){ const el=document.getElementById(id); if(el) el.classList.toggle('hidden'); }
+
+function togglePin(sectionId){
+  const star=document.querySelector(`[onclick*="togglePin('${sectionId}')"]`);
+  const pinned=!star.classList.contains('pinned');
+  star.classList.toggle('pinned');
+  let pins=JSON.parse(localStorage.getItem('relationshipPins')||'[]');
+  if(pinned){
+    pins.push(sectionId);
+    const sec=document.getElementById(sectionId); if(sec) sec.classList.remove('hidden');
+  } else {
+    pins=pins.filter(id=>id!==sectionId);
+  }
+  localStorage.setItem('relationshipPins',JSON.stringify(pins));
+}
+
+function restorePins(){
+  const pins=JSON.parse(localStorage.getItem('relationshipPins')||'[]');
+  pins.forEach(id=>{
+    const star=document.querySelector(`[onclick*="togglePin('${id}')"]`);
+    if(star) star.classList.add('pinned');
+    const sec=document.getElementById(id); if(sec) sec.classList.remove('hidden');
+  });
+}
+
+function renderPeople(){
+  const sel=document.getElementById('relWithWho');
+  sel.innerHTML='';
+  people.forEach(p=>{
+    const opt=document.createElement('option');
+    opt.value=p;
+    opt.textContent=p;
+    sel.appendChild(opt);
+  });
+}
+
+function addPerson(){
+  const name=prompt('Name?');
+  if(!name || people.includes(name)) return;
+  people.push(name);
+  renderPeople();
+  saveRelationships();
+}
+
+function addRelationship(){
+  const date=document.getElementById('relDate').value;
+  const trigger=document.getElementById('relTrigger').value.trim();
+  const content=document.getElementById('relContent').value.trim();
+  const withWho=document.getElementById('relWithWho').value;
+  const intensity=parseInt(document.getElementById('relIntensity').value)||0;
+  const durationVal=document.getElementById('relDurationValue').value;
+  const durationUnit=document.getElementById('relDurationUnit').value;
+  const duration=durationVal?`${durationVal} ${durationUnit}`:'';
+  const resolution=document.getElementById('relResolution').value.trim();
+  const lessons=document.getElementById('relLessons').value.trim();
+  entries.push({id:nextEntryId++,date,trigger,content,withWho,intensity,duration,resolution,lessons,archived:false});
+  document.querySelectorAll('#relationshipSection input, #relationshipSection textarea').forEach(el=>{if(el.type!=='button') el.value='';});
+  renderEntries();
+  saveRelationships();
+}
+
+function renderEntries(){
+  const list=document.getElementById('relationshipList');
+  const active=entries.filter(e=>!e.archived);
+  if(!active.length){ list.innerHTML='<p style="opacity:.7">No entries yet.</p>'; return; }
+  const table=document.createElement('table');
+  table.className='task-table';
+  const head=document.createElement('tr');
+  head.innerHTML='<th>Date</th><th>Duration</th><th>Intensity</th><th>Resolution</th><th>Actions</th>';
+  table.appendChild(head);
+  active.forEach(e=>{
+    const tr=document.createElement('tr');
+    tr.innerHTML=`<td>${e.date||''}</td><td>${e.duration||''}</td><td>${e.intensity}</td><td>${e.resolution||''}</td>`;
+    const actTd=document.createElement('td');
+    actTd.style.textAlign='center';
+    const editBtn=document.createElement('button');
+    editBtn.innerHTML='<svg width="18" height="18" viewBox="0 0 20 20" fill="none" xmlns="http://www.w3.org/2000/svg"><path d="M13.5858 3.58579C14.3668 2.80474 15.6332 2.80474 16.4142 3.58579C17.1953 4.36683 17.1953 5.63316 16.4142 6.41421L15.6213 7.20711L12.7929 4.37868L13.5858 3.58579Z" fill="#B5A89A"/><path d="M11.3787 5.79289L3 14.1716V17H5.82842L14.2071 8.62132L11.3787 5.79289Z" fill="#C7BBB4"/></svg>';
+    editBtn.title='Edit';
+    editBtn.style.background='none'; editBtn.style.border='none'; editBtn.style.cursor='pointer'; editBtn.style.padding='2px';
+    editBtn.onclick=()=>openEdit(e.id);
+    const delBtn=document.createElement('button');
+    delBtn.innerHTML='<svg width="18" height="18" viewBox="0 0 20 20" fill="none" xmlns="http://www.w3.org/2000/svg"><rect x="6" y="8" width="8" height="8" rx="2" fill="#E07A5F"/><rect x="9" y="11" width="2" height="3" rx="1" fill="#fff"/><rect x="8" y="4" width="4" height="2" rx="1" fill="#2B2C29"/></svg>';
+    delBtn.title='Delete';
+    delBtn.style.background='none'; delBtn.style.border='none'; delBtn.style.cursor='pointer'; delBtn.style.padding='2px';
+    delBtn.onclick=()=>deleteEntry(e.id);
+    const archBtn=document.createElement('button');
+    archBtn.innerHTML='<svg width="18" height="18" viewBox="0 0 20 20" fill="none" xmlns="http://www.w3.org/2000/svg"><rect x="3" y="4" width="14" height="3" rx="2" fill="#B5A89A"/><rect x="5" y="8" width="10" height="8" rx="2" fill="#C7BBB4"/><rect x="8" y="11" width="4" height="2" rx="1" fill="#2B2C29"/></svg>';
+    archBtn.title='Archive';
+    archBtn.style.background='none'; archBtn.style.border='none'; archBtn.style.cursor='pointer'; archBtn.style.padding='2px';
+    archBtn.onclick=()=>archiveEntry(e.id);
+    actTd.appendChild(editBtn); actTd.appendChild(delBtn); actTd.appendChild(archBtn);
+    tr.appendChild(actTd);
+    table.appendChild(tr);
+  });
+  list.innerHTML='';
+  list.appendChild(table);
+}
+
+async function saveRelationships(){
+  const data={people,entries,nextEntryId};
+  await fetch('/api/relationships-data',{method:'POST',headers:{'Content-Type':'application/json'},body:JSON.stringify(data)});
+}
+
+async function loadRelationships(){
+  const res=await fetch('/api/relationships-data');
+  if(!res.ok) return;
+  const obj=await res.json();
+  people=obj.people||[];
+  entries=obj.entries||[];
+  nextEntryId=obj.nextEntryId||1;
+  renderPeople();
+  renderEntries();
+}
+
+function openEdit(id){
+  const e=entries.find(en=>en.id===id); if(!e) return;
+  editingId=id;
+  document.getElementById('editRelDate').value=e.date||'';
+  document.getElementById('editRelTrigger').value=e.trigger||'';
+  document.getElementById('editRelContent').value=e.content||'';
+  const sel=document.getElementById('editRelWithWho');
+  sel.innerHTML='';
+  people.forEach(p=>{ const opt=document.createElement('option'); opt.value=p; opt.textContent=p; if(p===e.withWho) opt.selected=true; sel.appendChild(opt); });
+  document.getElementById('editRelIntensity').value=e.intensity||0;
+  const parts=e.duration?e.duration.split(' '):['','mins'];
+  document.getElementById('editRelDurationValue').value=parts[0]||'';
+  document.getElementById('editRelDurationUnit').value=parts[1]||'mins';
+  document.getElementById('editRelResolution').value=e.resolution||'';
+  document.getElementById('editRelLessons').value=e.lessons||'';
+  document.getElementById('editRelModal').classList.remove('hidden');
+}
+
+function closeEditModal(){
+  document.getElementById('editRelModal').classList.add('hidden');
+  editingId=null;
+}
+
+function saveEdit(){
+  const e=entries.find(en=>en.id===editingId); if(!e) return;
+  e.date=document.getElementById('editRelDate').value;
+  e.trigger=document.getElementById('editRelTrigger').value.trim();
+  e.content=document.getElementById('editRelContent').value.trim();
+  e.withWho=document.getElementById('editRelWithWho').value;
+  e.intensity=parseInt(document.getElementById('editRelIntensity').value)||0;
+  const dv=document.getElementById('editRelDurationValue').value;
+  const du=document.getElementById('editRelDurationUnit').value;
+  e.duration=dv?`${dv} ${du}`:'';
+  e.resolution=document.getElementById('editRelResolution').value.trim();
+  e.lessons=document.getElementById('editRelLessons').value.trim();
+  closeEditModal();
+  renderEntries();
+  saveRelationships();
+}
+
+function deleteEntry(id){
+  if(!confirm('Delete this entry?')) return;
+  entries=entries.filter(e=>e.id!==id);
+  renderEntries();
+  saveRelationships();
+}
+
+function archiveEntry(id){
+  const e=entries.find(en=>en.id===id); if(!e) return;
+  e.archived=true;
+  renderEntries();
+  saveRelationships();
+}
+
+async function init(){ await loadRelationships(); restorePins(); }
+document.addEventListener('DOMContentLoaded', init);
+</script>
+</body>
+</html>

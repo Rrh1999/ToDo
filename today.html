@@ -4,42 +4,98 @@
 <meta charset="UTF-8">
 <meta name="viewport" content="width=device-width, initial-scale=1">
 <title>Today</title>
+<link rel="stylesheet" href="styles.css">
 <style>
-body { font-family: 'Segoe UI', Tahoma, sans-serif; margin: 0; padding: 0; }
-header {
-  background: #fff;
-  color: #333;
-  padding: 1rem;
-  text-align: center;
-  border-bottom: 1px solid #ddd;
-}
+/* page specific layout only */
+body { margin: 0; padding: 0; }
+/* header styling removed to defer to global stylesheet */
+#todaySection { padding: 1rem; border-bottom: 2px solid #e2e5e9; margin-bottom: 1rem; }
 #container { display: flex; }
-#side { width: 40%; padding: 1rem; border-left: 1px solid #ccc; }
+#side { width: 50%; padding: 1rem; border-right: 1px solid #ccc; }
 #main { flex: 1; padding: 1rem; }
 .task-list { list-style: none; padding: 0; }
 .task-list li { margin: 0.25rem 0; padding: 0.25rem; border-bottom: 1px solid #ddd; display:flex; justify-content: space-between; align-items:center; flex-wrap:wrap; }
-#todayListContainer{width:calc(100% - 1rem);padding-right:1rem;}
+#todayListContainer{width:100%;}
 .overdue { color: red; }
 .due { color: orange; }
 .due-soon { font-weight: bold; }
 .today-item { cursor: move; }
+
+/* Modal styles */
+.modal { display: none; position: fixed; z-index: 1000; left: 0; top: 0; width: 100%; height: 100%; overflow: auto; background-color: rgba(0,0,0,0.4); }
+.modal-content { background-color: #fefefe; margin: 5% auto; padding: 20px; border: none; width: 90%; max-width: 1200px; border-radius: 8px; box-shadow: 0 4px 6px rgba(0, 0, 0, 0.1); }
+.modal-header { display: flex; justify-content: space-between; align-items: center; margin-bottom: 20px; }
+.close { color: #aaa; float: right; font-size: 28px; font-weight: bold; cursor: pointer; }
+.close:hover, .close:focus { color: black; text-decoration: none; }
+
+/* Task grid for modal */
+.task-grid { display: grid; grid-template-columns: 2fr repeat(7, 1fr); gap: 0.5rem; border: 1px solid #e2e5e9; background: #fff; padding: 0.5rem; border-radius: 4px; }
+.task-grid div { padding: 0.5rem; border: 1px solid #e2e5e9; text-align: center; }
+.grid-header { background: #C7BBB4; font-weight: bold; color: #2B2C29; }
+.task-info { display: flex; justify-content: space-between; align-items: center; text-align: left; }
+.task-details { flex: 1; }
+.task-name { font-size: 0.9rem; font-weight: 500; color: #2B2C29; }
+.task-meta { font-size: 0.8rem; color: #7D7D7D; }
+.task-actions { display: flex; gap: 0.25rem; }
+.circle { display: inline-block; width: 20px; height: 20px; border-radius: 50%; cursor: pointer; }
+.purple { background: #E8B4A3; }
+.grey { background: #ccc; }
+.green { background: #81B29A; color: #fff; }
+
+.today-col { background: #C8B8DB !important; }
+
 @media (max-width: 600px) {
   html { font-size: 14px; }
+  .modal-content { width: 95%; margin: 2% auto; }
+  .task-grid { grid-template-columns: 1fr; }
 }
 </style>
 </head>
 <body>
 <header>
   <h1>Today</h1>
-  <div id="nav-placeholder"></div>
 </header>
+<div id="nav-placeholder"></div>
 <script src="nav-loader.js"></script>
+<script>
+// Timer fallback to avoid crashes if time-tracker.js loads later
+(function(){
+  try{
+    if(typeof window.createTimerButton!=="function"){
+      window.createTimerButton=function(source,name){
+        const btn=document.createElement('button');
+        btn.innerHTML='<svg width="18" height="18" viewBox="0 0 20 20" fill="none" xmlns="http://www.w3.org/2000/svg"><circle cx="10" cy="10" r="8" stroke="#2B2C29" stroke-width="2" fill="#C7BBB4"/><path d="M10 5v5l3 3" stroke="#2B2C29" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"/></svg>';
+        btn.title='Start timer';
+        btn.style.background='none';
+        btn.style.border='none';
+        btn.style.cursor='pointer';
+        btn.addEventListener('click',()=>{
+          if(typeof window.startTask==='function') window.startTask(source,name);
+          else console.warn('[time-tracker] startTask not ready yet');
+        });
+        return btn;
+      };
+    }
+    if(typeof window.startTask!=="function"){ window.startTask=function(){ console.warn('[time-tracker] startTask not ready yet'); }; }
+    if(typeof window.stopTask!=="function"){ window.stopTask=function(){ console.warn('[time-tracker] stopTask not ready yet'); }; }
+  }catch(e){}
+})();
+</script>
+
+<!-- Today Section at the top -->
+<div id="todaySection">
+  <h2>Today</h2>
+  <input type="text" id="quickInput" placeholder="New item">
+  <button onclick="addQuickItem()">Add</button>
+  <button onclick="clearToday()">Clear</button>
+  <div id="todayListContainer">
+    <ul id="todayList" class="task-list"></ul>
+  </div>
+</div>
+
+<!-- Side pickers (work/DIY/stretch/big) below -->
 <div id="container">
   <div id="side">
-    <h2>Overdue</h2>
-    <ul id="overdueList" class="task-list"></ul>
-    <h2>Due Soon</h2>
-    <ul id="dueList" class="task-list"></ul>
     <label style="display:block;margin-top:0.5rem;"><input type="checkbox" id="workToggle"> Show Work Tasks</label>
     <ul id="workTaskList" class="task-list hidden"></ul>
     <label style="display:block;margin-top:0.5rem;"><input type="checkbox" id="diyToggle"> Show DIY Tasks</label>
@@ -50,21 +106,135 @@ header {
     <ul id="bigTaskList" class="task-list hidden"></ul>
     <label style="display:block;margin-top:0.5rem;"><input type="checkbox" id="diyBigToggle"> Show DIY Big Tasks</label>
     <ul id="diyBigTaskList" class="task-list hidden"></ul>
+    <label style="display:block;margin-top:0.5rem;"><input type="checkbox" id="devToggle"> Show Development Activities</label>
+    <ul id="devTaskList" class="task-list hidden"></ul>
   </div>
   <div id="main">
-    <h2>Today</h2>
-    <input type="text" id="quickInput" placeholder="New item">
-    <button onclick="addQuickItem()">Add</button>
-    <button onclick="clearToday()">Clear</button>
-    <div id="todayListContainer">
-      <ul id="todayList" class="task-list"></ul>
+    <!-- This can be used for additional content later -->
+  </div>
+</div>
+
+<!-- To Do Tasks Section -->
+<div id="todoTasksSection" style="padding: 1rem; border-top: 2px solid #e2e5e9; margin-top: 1rem;">
+  <h2>To Do Tasks</h2>
+  <div style="display: flex; gap: 1rem; flex-wrap: wrap;">
+    <button onclick="openWeeklyTasksModal()" style="padding: 0.75rem 1.5rem; background: #B5A89A; color: #2B2C29; border: none; border-radius: 6px; cursor: pointer; font-weight: 500;">Weekly Tasks</button>
+  <button onclick="openOneOffTasksModal()" style="padding: 0.75rem 1.5rem; background: #B5A89A; color: #2B2C29; border: none; border-radius: 6px; cursor: pointer; font-weight: 500;">One-Off Tasks</button>
+  <button onclick="openRecurringTasksModal()" style="padding: 0.75rem 1.5rem; background: #B5A89A; color: #2B2C29; border: none; border-radius: 6px; cursor: pointer; font-weight: 500;">Recurring Tasks</button>
+  <button onclick="openWorkTasksModal()" style="padding: 0.75rem 1.5rem; background: #B5A89A; color: #2B2C29; border: none; border-radius: 6px; cursor: pointer; font-weight: 500;">Work Tasks</button>
+  <button onclick="openDiyTasksModal()" style="padding: 0.75rem 1.5rem; background: #B5A89A; color: #2B2C29; border: none; border-radius: 6px; cursor: pointer; font-weight: 500;">DIY Tasks</button>
+  <button onclick="openBigTasksModal()" style="padding: 0.75rem 1.5rem; background: #B5A89A; color: #2B2C29; border: none; border-radius: 6px; cursor: pointer; font-weight: 500;">Big Tasks</button>
+  <button onclick="openStretchTasksModal()" style="padding: 0.75rem 1.5rem; background: #B5A89A; color: #2B2C29; border: none; border-radius: 6px; cursor: pointer; font-weight: 500;">Stretch Tasks</button>
+  </div>
+</div>
+
+<!-- Weekly Tasks Modal -->
+<div id="weeklyTasksModal" class="modal" style="display: none; position: fixed; z-index: 1000; left: 0; top: 0; width: 100%; height: 100%; overflow: auto; background-color: rgba(0,0,0,0.4);">
+  <div class="modal-content" style="background-color: #fefefe; margin: 5% auto; padding: 20px; border: none; width: 90%; max-width: 1200px; border-radius: 8px; box-shadow: 0 4px 6px rgba(0, 0, 0, 0.1);">
+    <div class="modal-header" style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 20px;">
+      <h3 style="margin: 0;">Weekly Tasks</h3>
+      <span class="close" onclick="closeWeeklyTasksModal()" style="color: #aaa; float: right; font-size: 28px; font-weight: bold; cursor: pointer;">&times;</span>
+    </div>
+    <div class="modal-body">
+      <div class="week-controls" style="text-align: center; margin-bottom: 1rem;">
+        <button onclick="changeModalWeek(-1)" style="padding: 0.5rem 1rem; margin: 0 0.5rem; background: #C7BBB4; border: none; border-radius: 4px; cursor: pointer;">&#8592;</button>
+        <span id="modalWeekLabel" style="font-weight:bold;color:#2B2C29; margin: 0 1rem;"></span>
+        <button onclick="changeModalWeek(1)" style="padding: 0.5rem 1rem; margin: 0 0.5rem; background: #C7BBB4; border: none; border-radius: 4px; cursor: pointer;">&#8594;</button>
+      </div>
+      <div id="modalWeeklyGrid" class="task-grid" style="display: grid; grid-template-columns: 2fr repeat(7, 1fr); gap: 0.5rem; border: 1px solid #e2e5e9; background: #fff;">
+        <!-- Grid content will be populated by JavaScript -->
+      </div>
     </div>
   </div>
 </div>
+
+<!-- One-Off Tasks Modal -->
+<div id="oneOffTasksModal" class="modal" style="display: none; position: fixed; z-index: 1000; left: 0; top: 0; width: 100%; height: 100%; overflow: auto; background-color: rgba(0,0,0,0.4);">
+  <div class="modal-content">
+    <div class="modal-header">
+      <h3 style="margin:0;">One-Off Tasks</h3>
+      <span class="close" onclick="closeOneOffTasksModal()">&times;</span>
+    </div>
+    <div class="modal-body">
+      <div id="modalOneOffTable" style="overflow:auto;"></div>
+    </div>
+  </div>
+  
+</div>
+
+<!-- Recurring Tasks Modal -->
+<div id="recurringTasksModal" class="modal" style="display: none; position: fixed; z-index: 1000; left: 0; top: 0; width: 100%; height: 100%; overflow: auto; background-color: rgba(0,0,0,0.4);">
+  <div class="modal-content">
+    <div class="modal-header">
+      <h3 style="margin:0;">Recurring Tasks</h3>
+      <span class="close" onclick="closeRecurringTasksModal()">&times;</span>
+    </div>
+    <div class="modal-body">
+      <div id="modalRecurringTable" style="overflow:auto;"></div>
+    </div>
+  </div>
+</div>
+
+<!-- Work Tasks Modal -->
+<div id="workTasksModal" class="modal" style="display: none; position: fixed; z-index: 1000; left: 0; top: 0; width: 100%; height: 100%; overflow: auto; background-color: rgba(0,0,0,0.4);">
+  <div class="modal-content">
+    <div class="modal-header">
+      <h3 style="margin:0;">Work Tasks</h3>
+      <span class="close" onclick="closeWorkTasksModal()">&times;</span>
+    </div>
+    <div class="modal-body">
+      <div id="modalWorkTable" style="overflow:auto;"></div>
+    </div>
+  </div>
+  
+</div>
+
+<!-- DIY Tasks Modal -->
+<div id="diyTasksModal" class="modal" style="display: none; position: fixed; z-index: 1000; left: 0; top: 0; width: 100%; height: 100%; overflow: auto; background-color: rgba(0,0,0,0.4);">
+  <div class="modal-content">
+    <div class="modal-header">
+      <h3 style="margin:0;">DIY Tasks</h3>
+      <span class="close" onclick="closeDiyTasksModal()">&times;</span>
+    </div>
+    <div class="modal-body">
+      <div id="modalDiyTable" style="overflow:auto;"></div>
+    </div>
+  </div>
+  
+</div>
+
+<!-- Big Tasks Modal -->
+<div id="bigTasksModal" class="modal" style="display: none; position: fixed; z-index: 1000; left: 0; top: 0; width: 100%; height: 100%; overflow: auto; background-color: rgba(0,0,0,0.4);">
+  <div class="modal-content">
+    <div class="modal-header">
+      <h3 style="margin:0;">Big Tasks</h3>
+      <span class="close" onclick="closeBigTasksModal()">&times;</span>
+    </div>
+    <div class="modal-body">
+      <div id="modalBigTable" style="overflow:auto;"></div>
+    </div>
+  </div>
+  
+</div>
+
+<!-- Stretch Tasks Modal -->
+<div id="stretchTasksModal" class="modal" style="display: none; position: fixed; z-index: 1000; left: 0; top: 0; width: 100%; height: 100%; overflow: auto; background-color: rgba(0,0,0,0.4);">
+  <div class="modal-content">
+    <div class="modal-header">
+      <h3 style="margin:0;">Stretch Tasks</h3>
+      <span class="close" onclick="closeStretchTasksModal()">&times;</span>
+    </div>
+    <div class="modal-body">
+      <div id="modalStretchTable" style="overflow:auto;"></div>
+    </div>
+  </div>
+  
+</div>
+
 <script>
-let projects=[], weeklyTasks=[], oneOffTasks=[], recurringTasks=[], stretchTasks=[], bigTasks=[], deletedTasks=[], shoppingList=[], longTermList=[], generalList=[];
+let projects=[], weeklyTasks=[], oneOffTasks=[], recurringTasks=[], stretchTasks=[], bigTasks=[], deletedTasks=[], shoppingList=[], longTermList=[], generalList=[], parentingSkills=[], parentingActivities=[], parentingNextSkillId=1, parentingNextActivityId=1;
 let todayList=[], todayTasks=[], todayQuickHistory=[];
-let overdueTasks=[], dueTasks=[];
+// Removed Overdue/Due Soon lists
 let nextId=1;
 let workDataStore={}, workTasks=[], workCalendar=[];
 let diyDataStore={}, diyTasks=[], diyBigTasks=[], diyCalendar=[];
@@ -138,6 +308,14 @@ async function loadData(){
       diyBigTasks=diyDataStore.diyBigTasks||[];
       diyCalendar=diyDataStore.calendarEvents||[];
     }
+    const resP=await fetch('/api/parenting-data');
+    if(resP.ok){
+      const pd=await resP.json();
+      parentingSkills=pd.skills||[];
+      parentingActivities=pd.activities||[];
+      parentingNextSkillId=pd.nextSkillId||1;
+      parentingNextActivityId=pd.nextActivityId||1;
+    }
   }catch(e){console.error('Failed to load data',e);}
 }
 async function saveData(){const data={projects,weeklyTasks,oneOffTasks,recurringTasks,stretchTasks,bigTasks,deletedTasks,shoppingList,longTermList,generalList,todayList,nextId,todayQuickHistory};try{await fetch('/api/index-data',{method:'POST',headers:{'Content-Type':'application/json'},body:JSON.stringify(data)});}catch(e){console.error('Failed to save data',e);}}
@@ -154,39 +332,11 @@ async function saveDiyData(){
     await fetch('/api/diy-data',{method:'POST',headers:{'Content-Type':'application/json'},body:JSON.stringify(diyDataStore)});
   }catch(e){console.error('Failed to save diy data',e);}
 }
-function weeklyDueSoon(task){const today=new Date();for(let i=0;i<7;i++){const d=new Date(today);d.setDate(today.getDate()+i);const name=['Sun','Mon','Tue','Wed','Thu','Fri','Sat'][d.getDay()];if(task.days.includes(name))return true;}return false;}
-function weeklyMissed(task){const last=lastDueDate(task);if(!last) return false;const iso=formatISO(last);return task.missedDates&&task.missedDates.includes(iso);}
-function categorize(){
-  overdueTasks=[];
-  dueTasks=[];
-  const today=new Date();
-  const nextWeek=new Date();
-  nextWeek.setDate(today.getDate()+7);
-
-  const pushDue=(type,item,soon)=>dueTasks.push({category:'due',type,item,soon});
-
-  weeklyTasks.filter(t=>t.status==='open').forEach(t=>{updateMissed(t);if(weeklyMissed(t)){overdueTasks.push({category:'overdue',type:'weekly',item:t});}else{pushDue('weekly',t,weeklyDueSoon(t));}});
-
-  oneOffTasks.filter(t=>t.status==='open').forEach(t=>{
-    const due=t.dueDate?new Date(t.dueDate):null;
-    if(due && due<today){
-      overdueTasks.push({category:'overdue',type:'oneoff',item:t});
-    }else{
-      const soon=due && due<=nextWeek;
-      pushDue('oneoff',t,soon);
-    }
-  });
-
-  recurringTasks.filter(t=>t.status==='open').forEach(t=>{
-    const due=new Date(t.dueDate);
-    if(due<today){
-      overdueTasks.push({category:'overdue',type:'recurring',item:t});
-    }else{
-      const soon=due<=nextWeek;
-      pushDue('recurring',t,soon);
-    }
-  });
+async function saveParentingData(){
+  const data={skills:parentingSkills,activities:parentingActivities,nextSkillId:parentingNextSkillId,nextActivityId:parentingNextActivityId};
+  try{await fetch('/api/parenting-data',{method:'POST',headers:{'Content-Type':'application/json'},body:JSON.stringify(data)});}catch(e){console.error('Failed to save parenting data',e);}
 }
+// Removed categorize/overdue logic
 function rebuildToday(){
   todayTasks=[];
   todayList.forEach(r=>{
@@ -194,6 +344,8 @@ function rebuildToday(){
       todayTasks.push({category:'quick',type:'quick',item:r});
       return;
     }
+    // Support both local shape {type,id} and server shape {type,originalId}
+    const refId = (r.id !== undefined) ? r.id : (r.originalId !== undefined ? r.originalId : undefined);
     let arr;
     if(r.type==='oneoff') arr=oneOffTasks;
     else if(r.type==='recurring') arr=recurringTasks;
@@ -201,6 +353,7 @@ function rebuildToday(){
     else if(r.type==='stretch') arr=stretchTasks;
     else if(r.type==='big') arr=bigTasks;
     else if(r.type==='diybig') arr=diyBigTasks;
+    else if(r.type==='dev') arr=parentingActivities;
     let task=null, depth=0;
     if(r.type==='work'){
       const info=getWorkTaskInfo(r.id);
@@ -209,7 +362,7 @@ function rebuildToday(){
       const info=getDiyTaskInfo(r.id);
       if(info){ task=info.task; depth=info.depth; }
     }else if(arr){
-      task=arr.find(t=>t.id===r.id);
+      task=arr.find(t=>t.id===refId);
     }
     if(!task) return;
     if(r.type==='work'){
@@ -227,59 +380,21 @@ function rebuildToday(){
     } else if(r.type==='diybig'){
       todayTasks.push({category:'diybig',type:'diybig',item:task});
       return;
+    } else if(r.type==='dev'){
+      todayTasks.push({category:'dev',type:'dev',item:task});
+      return;
     }
-    let i=overdueTasks.findIndex(o=>o.type===r.type&&o.item.id===r.id);
-    if(i!==-1){
-      overdueTasks.splice(i,1);
-      todayTasks.push({category:'overdue',type:r.type,item:task});
-    }else{
-      i=dueTasks.findIndex(o=>o.type===r.type&&o.item.id===r.id);
-      if(i!==-1){
-        dueTasks.splice(i,1);
-        todayTasks.push({category:'due',type:r.type,item:task});
-      }
-    }
+  // No overdue/due buckets anymore; just push a simple today item
+  todayTasks.push({category:'today',type:r.type,item:task});
   });
 }
 function renderSide(){
-  const ov=document.getElementById('overdueList');
-  ov.innerHTML='';
-  overdueTasks.forEach((t,i)=>{
-    const li=document.createElement('li');
-    li.className='overdue';
-    li.textContent=`[Todo - ${t.type}] ${t.item.name} (${t.item.project})`;
-    const b=document.createElement('button');
-    b.textContent='Select';
-    b.onclick=()=>selectTask(t,i,'overdue');
-    li.appendChild(b);
-    ov.appendChild(li);
-  });
-
-  const due=document.getElementById('dueList');
-  due.innerHTML='';
-  dueTasks.forEach((t,i)=>{
-    const li=document.createElement('li');
-    li.className='due';
-    if(t.soon) li.classList.add('due-soon');
-    let info='';
-    if(t.type==='weekly'){
-      info='('+t.item.days.join(', ')+')';
-    }else{
-      info='due '+formatUK(t.item.dueDate);
-    }
-    if(t.soon) info+=' (soon)';
-    li.textContent=`[Todo - ${t.type}] ${t.item.name} (${t.item.project}) ${info}`;
-    const b=document.createElement('button');
-    b.textContent='Select';
-    b.onclick=()=>selectTask(t,i,'due');
-    li.appendChild(b);
-    due.appendChild(li);
-  });
   if(document.getElementById('workToggle').checked) renderWorkTasks();
   if(document.getElementById('diyToggle').checked) renderDiyTasks();
   if(document.getElementById('stretchToggle').checked) renderStretchTasks();
   if(document.getElementById('bigToggle').checked) renderBigTasks();
   if(document.getElementById('diyBigToggle').checked) renderDiyBigTasks();
+  if(document.getElementById('devToggle').checked) renderDevTasks();
 }
 function renderWorkTasks(){
   const ul=document.getElementById('workTaskList');
@@ -350,13 +465,42 @@ function renderDiyBigTasks(){
     ul.appendChild(li);
   });
 }
+
+function renderDevTasks(){
+  const ul=document.getElementById('devTaskList');
+  ul.innerHTML='';
+  parentingActivities.filter(a=>a.status==='open').forEach(a=>{
+    const skill=parentingSkills.find(s=>s.id===a.skillId);
+    const li=document.createElement('li');
+    li.textContent=`[Parenting - dev] ${a.name} (${skill?skill.name:''})`;
+    const b=document.createElement('button');
+    b.textContent='Add';
+    b.onclick=()=>addDevToToday(a.id);
+    li.appendChild(b);
+    ul.appendChild(li);
+  });
+}
+
+function addDevToToday(id){
+  const task=parentingActivities.find(a=>a.id===id);
+  if(!task) return;
+  todayTasks.push({category:'dev',type:'dev',item:task});
+  todayList.push({type:'dev',id});
+  saveData();
+  saveParentingData();
+  renderToday();
+}
 function updateToggles(){
   const wt=document.getElementById('workToggle');
   const dt=document.getElementById('diyToggle');
+  const bt=document.getElementById('bigToggle');
   const db=document.getElementById('diyBigToggle');
+  const dv=document.getElementById('devToggle');
   document.getElementById('workTaskList').classList.toggle('hidden', !wt.checked);
   document.getElementById('diyTaskList').classList.toggle('hidden', !dt.checked);
+  document.getElementById('bigTaskList').classList.toggle('hidden', !bt.checked);
   document.getElementById('diyBigTaskList').classList.toggle('hidden', !db.checked);
+  document.getElementById('devTaskList').classList.toggle('hidden', !dv.checked);
 }
 function renderToday(){
   const ul=document.getElementById('todayList');
@@ -375,7 +519,15 @@ function renderToday(){
       if(['oneoff','recurring','weekly','stretch','big'].includes(t.type)) page='Todo';
       else if(t.type==='work') page='Work';
       else if(t.type==='diy' || t.type==='diybig') page='DIY';
-      label=`${t.item.name} (${t.item.project})`;
+      else if(t.type==='dev') page='Parenting';
+      let projectText='';
+      if(t.type==='dev'){
+        const skill=parentingSkills.find(s=>s.id===t.item.skillId);
+        projectText=skill?skill.name:'';
+      }else{
+        projectText=t.item.project;
+      }
+      label=`${t.item.name} (${projectText})`;
       if(t.type==='big' || t.type==='diybig') label='[BIG] '+label;
       let info='';
       if(page==='Todo'){info=t.type;}
@@ -384,6 +536,11 @@ function renderToday(){
       if(taskScheduledToday(t.type,t.item.id)) text.style.fontWeight='bold';
     }
     text.textContent=prefix+label;
+    if(page){
+      const timerBtn=createTimerButton(page.toLowerCase(), t.item.name);
+      timerBtn.style.marginLeft='0.25rem';
+      text.appendChild(timerBtn);
+    }
     const btnBox=document.createElement('span');
     const up=document.createElement('button');
     up.textContent='Up';
@@ -410,15 +567,7 @@ function renderToday(){
   });
   updateToggles();
 }
-function selectTask(t,idx,list){
-  if(list==='overdue')overdueTasks.splice(idx,1);else dueTasks.splice(idx,1);
-  todayTasks.push(t);
-  todayList.push({type:t.type,id:t.item.id});
-  saveData();
-  renderSide();
-  renderToday();
-  updateToggles();
-}
+// Removed selectTask for overdue/due lists
 function addWorkToToday(id){
   const info=getWorkTaskInfo(id);
   if(!info) return;
@@ -489,21 +638,18 @@ function addQuickItem(){
 }
 function removeToday(idx){
   const t=todayTasks.splice(idx,1)[0];
-  todayList=todayList.filter(r=>!(r.type===t.type&&r.id===t.item.id));
+  todayList=todayList.filter(r=>{
+    const rid = (r.id !== undefined) ? r.id : (r.originalId !== undefined ? r.originalId : undefined);
+    return !(r.type===t.type && rid===t.item.id);
+  });
   if(t.type==='quick') todayQuickHistory.push({name:t.item.name,added:t.item.added,done:false});
-  else if(t.category==='overdue') overdueTasks.push(t);
-  else if(t.category==='due') dueTasks.push(t);
   saveData();
   renderSide();
   renderToday();
   updateToggles();
 }
 function clearToday(){
-  todayTasks.forEach(t=>{
-    if(t.type==='quick') todayQuickHistory.push({name:t.item.name,added:t.item.added,done:false});
-    else if(t.category==='overdue') overdueTasks.push(t);
-    else if(t.category==='due') dueTasks.push(t);
-  });
+  todayTasks.forEach(t=>{ if(t.type==='quick') todayQuickHistory.push({name:t.item.name,added:t.item.added,done:false}); });
   todayTasks=[];
   todayList=[];
   saveData();
@@ -550,11 +696,12 @@ function completeToday(idx){
   }else if(t.type==='diybig'){
     t.item.status='closed';
     saveDiyData();
+  }else if(t.type==='dev'){
+    t.item.completedDates.push(formatISO(now));
+    saveParentingData();
   }
-  if(t.category==='overdue'){/* do nothing */}
-  else if(t.category==='due'){/* keep order */}
+  // Overdue/Due categories removed
   saveData();
-  categorize();
   renderSide();
   renderToday();
 }
@@ -576,13 +723,730 @@ document.getElementById('stretchToggle').addEventListener('change',e=>{
 document.getElementById('bigToggle').addEventListener('change',e=>{
   document.getElementById('bigTaskList').classList.toggle('hidden',!e.target.checked);
   if(e.target.checked) renderBigTasks();
+  updateToggles();
 });
 document.getElementById('diyBigToggle').addEventListener('change',e=>{
   document.getElementById('diyBigTaskList').classList.toggle('hidden',!e.target.checked);
   if(e.target.checked) renderDiyBigTasks();
   updateToggles();
 });
-async function init(){await loadData();categorize();rebuildToday();renderSide();renderToday();}
+document.getElementById('devToggle').addEventListener('change',e=>{
+  document.getElementById('devTaskList').classList.toggle('hidden',!e.target.checked);
+  if(e.target.checked) renderDevTasks();
+  updateToggles();
+});
+
+// Modal functionality for task selection
+let modalCurrentWeekStart = new Date();
+
+function openWeeklyTasksModal() {
+  modalCurrentWeekStart = new Date();
+  modalCurrentWeekStart.setDate(modalCurrentWeekStart.getDate() - modalCurrentWeekStart.getDay() + 1); // Start of current week (Monday)
+  updateModalWeekLabel();
+  renderModalWeeklyGrid();
+  document.getElementById('weeklyTasksModal').style.display = 'block';
+}
+
+function closeWeeklyTasksModal() {
+  document.getElementById('weeklyTasksModal').style.display = 'none';
+}
+
+function openOneOffTasksModal() {
+  renderModalOneOffTable();
+  document.getElementById('oneOffTasksModal').style.display = 'block';
+}
+function closeOneOffTasksModal() {
+  document.getElementById('oneOffTasksModal').style.display = 'none';
+}
+
+function openRecurringTasksModal() {
+  renderModalRecurringTable();
+  document.getElementById('recurringTasksModal').style.display = 'block';
+}
+function closeRecurringTasksModal() {
+  document.getElementById('recurringTasksModal').style.display = 'none';
+}
+
+function openWorkTasksModal() {
+  renderModalWorkTable();
+  document.getElementById('workTasksModal').style.display = 'block';
+}
+function closeWorkTasksModal() {
+  document.getElementById('workTasksModal').style.display = 'none';
+}
+
+function openDiyTasksModal() {
+  renderModalDiyTable();
+  document.getElementById('diyTasksModal').style.display = 'block';
+}
+function closeDiyTasksModal() {
+  document.getElementById('diyTasksModal').style.display = 'none';
+}
+
+function openBigTasksModal() {
+  renderModalBigTable();
+  document.getElementById('bigTasksModal').style.display = 'block';
+}
+function closeBigTasksModal() {
+  document.getElementById('bigTasksModal').style.display = 'none';
+}
+
+function openStretchTasksModal() {
+  renderModalStretchTable();
+  document.getElementById('stretchTasksModal').style.display = 'block';
+}
+function closeStretchTasksModal() {
+  document.getElementById('stretchTasksModal').style.display = 'none';
+}
+
+function changeModalWeek(direction) {
+  modalCurrentWeekStart.setDate(modalCurrentWeekStart.getDate() + (direction * 7));
+  updateModalWeekLabel();
+  renderModalWeeklyGrid();
+}
+
+function updateModalWeekLabel() {
+  const start = new Date(modalCurrentWeekStart);
+  const end = new Date(modalCurrentWeekStart);
+  end.setDate(end.getDate() + 6);
+  document.getElementById('modalWeekLabel').textContent = 
+    `${start.toLocaleDateString()} - ${end.toLocaleDateString()}`;
+}
+
+// UK helpers for current-week highlighting and sorting
+function ukDayIndex(date=new Date()){
+  try{
+    const short=new Intl.DateTimeFormat('en-GB',{weekday:'short',timeZone:'Europe/London'}).format(date);
+    const map={Mon:0,Tue:1,Wed:2,Thu:3,Fri:4,Sat:5,Sun:6};
+    if(short in map) return map[short];
+  }catch(_){/* ignore */}
+  const d=new Date(date).getDay();
+  return d===0?6:d-1;
+}
+function ukDayName(date=new Date()){
+  const names=['Mon','Tue','Wed','Thu','Fri','Sat','Sun'];
+  try{
+    const short=new Intl.DateTimeFormat('en-GB',{weekday:'short',timeZone:'Europe/London'}).format(date);
+    if(names.includes(short)) return short;
+  }catch(_){/* ignore */}
+  return names[ukDayIndex(date)];
+}
+function isCurrentUKWeek(weekStart){
+  return formatISO(startOfWeek(new Date()))===formatISO(startOfWeek(weekStart));
+}
+function weekISOArray(weekStart){
+  const arr=[];for(let i=0;i<7;i++){const d=new Date(weekStart);d.setDate(weekStart.getDate()+i);arr.push(formatISO(d));}
+  return arr;
+}
+
+function renderModalWeeklyGrid() {
+  const grid = document.getElementById('modalWeeklyGrid');
+  const headers = ['Task', 'Mon', 'Tue', 'Wed', 'Thu', 'Fri', 'Sat', 'Sun'];
+  
+  grid.innerHTML = '';
+  
+  // Add headers
+  const viewingCurrentWeek=isCurrentUKWeek(modalCurrentWeekStart);
+  const todayIdx=ukDayIndex(new Date());
+  const todayName=ukDayName(new Date());
+  headers.forEach(headerText => {
+    const header = document.createElement('div');
+    header.className = 'grid-header';
+    header.textContent = headerText;
+    if(viewingCurrentWeek && headerText===todayName) header.classList.add('today-col');
+    grid.appendChild(header);
+  });
+  
+  // Add tasks
+  let openTasks = weeklyTasks.filter(t => t.status === 'open');
+  if (openTasks.length === 0) {
+    const row = document.createElement('div');
+    row.textContent = 'No weekly tasks';
+    row.style.gridColumn = '1 / -1';
+    row.style.textAlign = 'center';
+    row.style.padding = '2rem';
+    grid.appendChild(row);
+    return;
+  }
+  if(viewingCurrentWeek){
+    const names=['Mon','Tue','Wed','Thu','Fri','Sat','Sun'];
+    const weekISO=weekISOArray(modalCurrentWeekStart);
+    const hasMissedEarlier=(task)=>{
+      for(let i=0;i<todayIdx;i++){
+        const day=names[i];
+        if(task.days && task.days.includes(day)){
+          const iso=weekISO[i];
+          if(!task.completedDates.includes(iso)) return true;
+        }
+      }
+      return false;
+    };
+    openTasks=openTasks.slice().sort((a,b)=>{
+      const aDue=a.days && a.days.includes(todayName);
+      const bDue=b.days && b.days.includes(todayName);
+      if(aDue!==bDue) return aDue?-1:1;
+      const aMiss=hasMissedEarlier(a);
+      const bMiss=hasMissedEarlier(b);
+      if(aMiss!==bMiss) return aMiss?-1:1;
+      return (a.name||'').localeCompare(b.name||'');
+    });
+  }
+  
+  openTasks.forEach(task => {
+    // Task cell with add to today button
+    const taskCell = createModalTaskCell(task);
+    grid.appendChild(taskCell);
+    
+    // Day cells
+    ['Mon','Tue','Wed','Thu','Fri','Sat','Sun'].forEach((day, idx) => {
+      const cell = document.createElement('div');
+      const date = new Date(modalCurrentWeekStart);
+      date.setDate(modalCurrentWeekStart.getDate() + idx);
+      const iso = formatISO(date);
+      const due = task.days.includes(day);
+      const completed = task.completedDates.includes(iso);
+      
+      const circle = document.createElement('span');
+      circle.className = 'circle ' + (completed ? 'green' : due ? 'purple' : 'grey');
+      circle.innerHTML = completed ? '&#10004;' : '';
+      circle.onclick = () => toggleModalComplete(task.id, iso, due);
+      if(viewingCurrentWeek && idx===todayIdx) cell.classList.add('today-col');
+      cell.appendChild(circle);
+      grid.appendChild(cell);
+    });
+  });
+}
+
+function renderModalOneOffTable() {
+  const container = document.getElementById('modalOneOffTable');
+  container.innerHTML = '';
+  const open = (oneOffTasks || []).filter(t => t.status === 'open');
+  if (open.length === 0) {
+    const empty = document.createElement('div');
+    empty.textContent = 'No one-off tasks';
+    empty.style.textAlign = 'center';
+    empty.style.padding = '1rem';
+    container.appendChild(empty);
+    return;
+  }
+  const table = document.createElement('table');
+  table.style.width = '100%';
+  table.style.borderCollapse = 'collapse';
+  const thead = document.createElement('thead');
+  const headRow = document.createElement('tr');
+  headRow.innerHTML = '<th style="text-align:left;border-bottom:1px solid #e2e5e9;padding:8px;">Task</th><th style="border-bottom:1px solid #e2e5e9;padding:8px;">Due</th><th style="min-width:120px;border-bottom:1px solid #e2e5e9;padding:8px;">Action</th>';
+  thead.appendChild(headRow);
+  table.appendChild(thead);
+  const tbody = document.createElement('tbody');
+  open.forEach(t => {
+    const tr = document.createElement('tr');
+    const proj = projects.find(p => p.name === t.project);
+    const color = proj ? proj.color : '#2B2C29';
+    const taskTd = document.createElement('td');
+    taskTd.style.padding = '8px';
+    const nameDiv = document.createElement('div');
+    nameDiv.textContent = t.name;
+    nameDiv.style.fontWeight = '500';
+    const projDiv = document.createElement('div');
+    projDiv.textContent = t.project || '';
+    projDiv.style.color = color;
+    projDiv.style.fontSize = '0.85rem';
+    projDiv.style.marginTop = '2px';
+    taskTd.appendChild(nameDiv);
+    taskTd.appendChild(projDiv);
+    const dueTd = document.createElement('td');
+    dueTd.style.padding = '8px';
+    dueTd.textContent = t.dueDate ? formatUK(t.dueDate) : '';
+    const actionTd = document.createElement('td');
+    actionTd.style.padding = '8px';
+    const addBtn = document.createElement('button');
+    addBtn.title = 'Add to Today';
+    addBtn.innerHTML = '<svg width="22" height="22" viewBox="0 0 20 20" fill="none" xmlns="http://www.w3.org/2000/svg"><circle cx="10" cy="10" r="8" fill="#B5A89A"/><path d="M10 6v8M6 10h8" stroke="#fff" stroke-width="2" stroke-linecap="round"/></svg>';
+    addBtn.style.background = 'none';
+    addBtn.style.border = 'none';
+    addBtn.style.cursor = 'pointer';
+    addBtn.onclick = () => addTaskToToday('oneoff', t.id, t.name);
+    actionTd.appendChild(addBtn);
+    const timerBtn = createTimerButton('todo', t.name);
+    actionTd.appendChild(timerBtn);
+    tr.appendChild(taskTd);
+    tr.appendChild(dueTd);
+    tr.appendChild(actionTd);
+    tbody.appendChild(tr);
+  });
+  table.appendChild(tbody);
+  container.appendChild(table);
+}
+
+function renderModalRecurringTable() {
+  const container = document.getElementById('modalRecurringTable');
+  container.innerHTML = '';
+  const open = (recurringTasks || []).filter(t => t.status === 'open');
+  if (open.length === 0) {
+    const empty = document.createElement('div');
+    empty.textContent = 'No recurring tasks';
+    empty.style.textAlign = 'center';
+    empty.style.padding = '1rem';
+    container.appendChild(empty);
+    return;
+  }
+  const table = document.createElement('table');
+  table.style.width = '100%';
+  table.style.borderCollapse = 'collapse';
+  const thead = document.createElement('thead');
+  const headRow = document.createElement('tr');
+  headRow.innerHTML = '<th style="text-align:left;border-bottom:1px solid #e2e5e9;padding:8px;">Task</th><th style="border-bottom:1px solid #e2e5e9;padding:8px;">Due</th><th style="border-bottom:1px solid #e2e5e9;padding:8px;">Frequency</th><th style="min-width:120px;border-bottom:1px solid #e2e5e9;padding:8px;">Action</th>';
+  thead.appendChild(headRow);
+  table.appendChild(thead);
+  const tbody = document.createElement('tbody');
+  open.forEach(t => {
+    const tr = document.createElement('tr');
+    const proj = projects.find(p => p.name === t.project);
+    const color = proj ? proj.color : '#2B2C29';
+    const taskTd = document.createElement('td');
+    taskTd.style.padding = '8px';
+    const nameDiv = document.createElement('div');
+    nameDiv.textContent = t.name;
+    nameDiv.style.fontWeight = '500';
+    const projDiv = document.createElement('div');
+    projDiv.textContent = t.project || '';
+    projDiv.style.color = color;
+    projDiv.style.fontSize = '0.85rem';
+    projDiv.style.marginTop = '2px';
+    taskTd.appendChild(nameDiv);
+    taskTd.appendChild(projDiv);
+    const dueTd = document.createElement('td');
+    dueTd.style.padding = '8px';
+    dueTd.textContent = t.dueDate ? formatUK(t.dueDate) : '';
+    const freqTd = document.createElement('td');
+    freqTd.style.padding = '8px';
+    const freq = t.frequency || '';
+    const interval = t.interval || 1;
+    freqTd.textContent = interval>1 ? `${interval} ${freq}` : freq;
+    const actionTd = document.createElement('td');
+    actionTd.style.padding = '8px';
+    const addBtn = document.createElement('button');
+    addBtn.title = 'Add to Today';
+    addBtn.innerHTML = '<svg width="22" height="22" viewBox="0 0 20 20" fill="none" xmlns="http://www.w3.org/2000/svg"><circle cx="10" cy="10" r="8" fill="#B5A89A"/><path d="M10 6v8M6 10h8" stroke="#fff" stroke-width="2" stroke-linecap="round"/></svg>';
+    addBtn.style.background = 'none';
+    addBtn.style.border = 'none';
+    addBtn.style.cursor = 'pointer';
+    addBtn.onclick = () => addTaskToToday('recurring', t.id, t.name);
+    actionTd.appendChild(addBtn);
+    const timerBtn = createTimerButton('todo', t.name);
+    actionTd.appendChild(timerBtn);
+    tr.appendChild(taskTd);
+    tr.appendChild(dueTd);
+    tr.appendChild(freqTd);
+    tr.appendChild(actionTd);
+    tbody.appendChild(tr);
+  });
+  table.appendChild(tbody);
+  container.appendChild(table);
+}
+
+function renderModalWorkTable() {
+  const container = document.getElementById('modalWorkTable');
+  container.innerHTML = '';
+  const rows = [];
+  forEachWorkTask((t, depth) => {
+    if (t.status !== 'open') return;
+    rows.push({ t, depth });
+  });
+  if (rows.length === 0) {
+    const empty = document.createElement('div');
+    empty.textContent = 'No work tasks';
+    empty.style.textAlign = 'center';
+    empty.style.padding = '1rem';
+    container.appendChild(empty);
+    return;
+  }
+  const table = document.createElement('table');
+  table.style.width = '100%';
+  table.style.borderCollapse = 'collapse';
+  const thead = document.createElement('thead');
+  const headRow = document.createElement('tr');
+  headRow.innerHTML = '<th style="text-align:left;border-bottom:1px solid #e2e5e9;padding:8px;">Task</th><th style="border-bottom:1px solid #e2e5e9;padding:8px;">Due</th><th style="border-bottom:1px solid #e2e5e9;padding:8px;">Importance</th><th style="border-bottom:1px solid #e2e5e9;padding:8px;">Urgency</th><th style="min-width:120px;border-bottom:1px solid #e2e5e9;padding:8px;">Action</th>';
+  thead.appendChild(headRow);
+  table.appendChild(thead);
+  const tbody = document.createElement('tbody');
+  rows.forEach(({ t, depth }) => {
+    const tr = document.createElement('tr');
+    const projColor = (workDataStore.workProjects || []).find(p => p.name === t.project)?.color || '#2B2C29';
+    const taskTd = document.createElement('td');
+    taskTd.style.padding = '8px';
+    const nameDiv = document.createElement('div');
+    nameDiv.textContent = t.name;
+    nameDiv.style.fontWeight = '500';
+    nameDiv.style.paddingLeft = (depth) + 'rem';
+    const projDiv = document.createElement('div');
+    projDiv.textContent = t.project || '';
+    projDiv.style.color = projColor;
+    projDiv.style.fontSize = '0.85rem';
+    projDiv.style.marginTop = '2px';
+    taskTd.appendChild(nameDiv);
+    taskTd.appendChild(projDiv);
+    const dueTd = document.createElement('td');
+    dueTd.style.padding = '8px';
+    dueTd.textContent = t.dueDate ? formatUK(t.dueDate) : '';
+    const impTd = document.createElement('td');
+    impTd.style.padding = '8px';
+    impTd.textContent = t.importance || '';
+    const urgTd = document.createElement('td');
+    urgTd.style.padding = '8px';
+    urgTd.textContent = t.urgency || '';
+    const actionTd = document.createElement('td');
+    actionTd.style.padding = '8px';
+    const addBtn = document.createElement('button');
+    addBtn.title = 'Add to Today';
+    addBtn.innerHTML = '<svg width="22" height="22" viewBox="0 0 20 20" fill="none" xmlns="http://www.w3.org/2000/svg"><circle cx="10" cy="10" r="8" fill="#B5A89A"/><path d="M10 6v8M6 10h8" stroke="#fff" stroke-width="2" stroke-linecap="round"/></svg>';
+    addBtn.style.background = 'none';
+    addBtn.style.border = 'none';
+    addBtn.style.cursor = 'pointer';
+    addBtn.onclick = () => addTaskToToday('work', t.id, t.name);
+    actionTd.appendChild(addBtn);
+    const timerBtn = createTimerButton('work', t.name);
+    actionTd.appendChild(timerBtn);
+    tr.appendChild(taskTd);
+    tr.appendChild(dueTd);
+    tr.appendChild(impTd);
+    tr.appendChild(urgTd);
+    tr.appendChild(actionTd);
+    tbody.appendChild(tr);
+  });
+  table.appendChild(tbody);
+  container.appendChild(table);
+}
+
+function renderModalDiyTable() {
+  const container = document.getElementById('modalDiyTable');
+  container.innerHTML = '';
+  const rows = [];
+  forEachDiyTask((t, depth) => {
+    if (t.status !== 'open') return;
+    rows.push({ t, depth });
+  });
+  if (rows.length === 0) {
+    const empty = document.createElement('div');
+    empty.textContent = 'No DIY tasks';
+    empty.style.textAlign = 'center';
+    empty.style.padding = '1rem';
+    container.appendChild(empty);
+    return;
+  }
+  const table = document.createElement('table');
+  table.style.width = '100%';
+  table.style.borderCollapse = 'collapse';
+  const thead = document.createElement('thead');
+  const headRow = document.createElement('tr');
+  headRow.innerHTML = '<th style="text-align:left;border-bottom:1px solid #e2e5e9;padding:8px;">Task</th><th style="border-bottom:1px solid #e2e5e9;padding:8px;">Due</th><th style="border-bottom:1px solid #e2e5e9;padding:8px;">Urgent</th><th style="min-width:120px;border-bottom:1px solid #e2e5e9;padding:8px;">Action</th>';
+  thead.appendChild(headRow);
+  table.appendChild(thead);
+  const tbody = document.createElement('tbody');
+  rows.forEach(({ t, depth }) => {
+    const tr = document.createElement('tr');
+    const projColor = (diyDataStore.diyProjects || []).find(p => p.name === t.project)?.color || '#2B2C29';
+    const taskTd = document.createElement('td');
+    taskTd.style.padding = '8px';
+    const nameDiv = document.createElement('div');
+    nameDiv.textContent = t.name;
+    nameDiv.style.fontWeight = '500';
+    nameDiv.style.paddingLeft = (depth) + 'rem';
+    const projDiv = document.createElement('div');
+    projDiv.textContent = t.project || '';
+    projDiv.style.color = projColor;
+    projDiv.style.fontSize = '0.85rem';
+    projDiv.style.marginTop = '2px';
+    const typeDiv = document.createElement('div');
+    typeDiv.textContent = t.type || '';
+    typeDiv.style.fontSize = '0.75rem';
+    typeDiv.style.opacity = '0.8';
+    taskTd.appendChild(nameDiv);
+    taskTd.appendChild(projDiv);
+    taskTd.appendChild(typeDiv);
+    const dueTd = document.createElement('td');
+    dueTd.style.padding = '8px';
+    dueTd.textContent = t.dueDate ? formatUK(t.dueDate) : '';
+    const urgTd = document.createElement('td');
+    urgTd.style.padding = '8px';
+    urgTd.textContent = t.urgent ? 'Yes' : 'No';
+    const actionTd = document.createElement('td');
+    actionTd.style.padding = '8px';
+    const addBtn = document.createElement('button');
+    addBtn.title = 'Add to Today';
+    addBtn.innerHTML = '<svg width="22" height="22" viewBox="0 0 20 20" fill="none" xmlns="http://www.w3.org/2000/svg"><circle cx="10" cy="10" r="8" fill="#B5A89A"/><path d="M10 6v8M6 10h8" stroke="#fff" stroke-width="2" stroke-linecap="round"/></svg>';
+    addBtn.style.background = 'none';
+    addBtn.style.border = 'none';
+    addBtn.style.cursor = 'pointer';
+    addBtn.onclick = () => addTaskToToday('diy', t.id, t.name);
+    actionTd.appendChild(addBtn);
+    const timerBtn = createTimerButton('diy', t.name);
+    actionTd.appendChild(timerBtn);
+    tr.appendChild(taskTd);
+    tr.appendChild(dueTd);
+    tr.appendChild(urgTd);
+    tr.appendChild(actionTd);
+    tbody.appendChild(tr);
+  });
+  table.appendChild(tbody);
+  container.appendChild(table);
+}
+
+function renderModalBigTable() {
+  const container = document.getElementById('modalBigTable');
+  container.innerHTML = '';
+  const open = (bigTasks || []).filter(t => t.status === 'open');
+  if (open.length === 0) {
+    const empty = document.createElement('div');
+    empty.textContent = 'No big tasks';
+    empty.style.textAlign = 'center';
+    empty.style.padding = '1rem';
+    container.appendChild(empty);
+    return;
+  }
+  const table = document.createElement('table');
+  table.style.width = '100%';
+  table.style.borderCollapse = 'collapse';
+  const thead = document.createElement('thead');
+  const headRow = document.createElement('tr');
+  headRow.innerHTML = '<th style="text-align:left;border-bottom:1px solid #e2e5e9;padding:8px;">Task</th><th style="border-bottom:1px solid #e2e5e9;padding:8px;">Due</th><th style="min-width:120px;border-bottom:1px solid #e2e5e9;padding:8px;">Action</th>';
+  thead.appendChild(headRow);
+  table.appendChild(thead);
+  const tbody = document.createElement('tbody');
+  open.forEach(t => {
+    const tr = document.createElement('tr');
+    const proj = projects.find(p => p.name === t.project);
+    const color = proj ? proj.color : '#2B2C29';
+    const taskTd = document.createElement('td');
+    taskTd.style.padding = '8px';
+    const nameDiv = document.createElement('div');
+    nameDiv.textContent = t.name;
+    nameDiv.style.fontWeight = '500';
+    const projDiv = document.createElement('div');
+    projDiv.textContent = t.project || '';
+    projDiv.style.color = color;
+    projDiv.style.fontSize = '0.85rem';
+    projDiv.style.marginTop = '2px';
+    taskTd.appendChild(nameDiv);
+    taskTd.appendChild(projDiv);
+    const dueTd = document.createElement('td');
+    dueTd.style.padding = '8px';
+    dueTd.textContent = t.dueDate ? formatUK(t.dueDate) : '';
+    const actionTd = document.createElement('td');
+    actionTd.style.padding = '8px';
+    const addBtn = document.createElement('button');
+    addBtn.title = 'Add to Today';
+    addBtn.innerHTML = '<svg width="22" height="22" viewBox="0 0 20 20" fill="none" xmlns="http://www.w3.org/2000/svg"><circle cx="10" cy="10" r="8" fill="#B5A89A"/><path d="M10 6v8M6 10h8" stroke="#fff" stroke-width="2" stroke-linecap="round"/></svg>';
+    addBtn.style.background = 'none';
+    addBtn.style.border = 'none';
+    addBtn.style.cursor = 'pointer';
+    addBtn.onclick = () => addTaskToToday('big', t.id, t.name);
+    actionTd.appendChild(addBtn);
+    const timerBtn = createTimerButton('todo', t.name);
+    actionTd.appendChild(timerBtn);
+    tr.appendChild(taskTd);
+    tr.appendChild(dueTd);
+    tr.appendChild(actionTd);
+    tbody.appendChild(tr);
+  });
+  table.appendChild(tbody);
+  container.appendChild(table);
+}
+
+function renderModalStretchTable() {
+  const container = document.getElementById('modalStretchTable');
+  container.innerHTML = '';
+  const open = (stretchTasks || []).filter(t => t.status === 'open');
+  if (open.length === 0) {
+    const empty = document.createElement('div');
+    empty.textContent = 'No stretch tasks';
+    empty.style.textAlign = 'center';
+    empty.style.padding = '1rem';
+    container.appendChild(empty);
+    return;
+  }
+  const table = document.createElement('table');
+  table.style.width = '100%';
+  table.style.borderCollapse = 'collapse';
+  const thead = document.createElement('thead');
+  const headRow = document.createElement('tr');
+  headRow.innerHTML = '<th style="text-align:left;border-bottom:1px solid #e2e5e9;padding:8px;">Task</th><th style="border-bottom:1px solid #e2e5e9;padding:8px;">Last Done</th><th style="min-width:120px;border-bottom:1px solid #e2e5e9;padding:8px;">Action</th>';
+  thead.appendChild(headRow);
+  table.appendChild(thead);
+  const tbody = document.createElement('tbody');
+  open.forEach(t => {
+    const tr = document.createElement('tr');
+    const proj = projects.find(p => p.name === t.project);
+    const color = proj ? proj.color : '#2B2C29';
+    const taskTd = document.createElement('td');
+    taskTd.style.padding = '8px';
+    const nameDiv = document.createElement('div');
+    nameDiv.textContent = t.name;
+    nameDiv.style.fontWeight = '500';
+    const projDiv = document.createElement('div');
+    projDiv.textContent = t.project || '';
+    projDiv.style.color = color;
+    projDiv.style.fontSize = '0.85rem';
+    projDiv.style.marginTop = '2px';
+    taskTd.appendChild(nameDiv);
+    taskTd.appendChild(projDiv);
+    const lastTd = document.createElement('td');
+    lastTd.style.padding = '8px';
+    const last = (t.completedDates && t.completedDates.length) ? formatUK(t.completedDates[t.completedDates.length-1]) : '';
+    lastTd.textContent = last;
+    const actionTd = document.createElement('td');
+    actionTd.style.padding = '8px';
+    const addBtn = document.createElement('button');
+    addBtn.title = 'Add to Today';
+    addBtn.innerHTML = '<svg width="22" height="22" viewBox="0 0 20 20" fill="none" xmlns="http://www.w3.org/2000/svg"><circle cx="10" cy="10" r="8" fill="#B5A89A"/><path d="M10 6v8M6 10h8" stroke="#fff" stroke-width="2" stroke-linecap="round"/></svg>';
+    addBtn.style.background = 'none';
+    addBtn.style.border = 'none';
+    addBtn.style.cursor = 'pointer';
+    addBtn.onclick = () => addTaskToToday('stretch', t.id, t.name);
+    actionTd.appendChild(addBtn);
+    const timerBtn = createTimerButton('todo', t.name);
+    actionTd.appendChild(timerBtn);
+    tr.appendChild(taskTd);
+    tr.appendChild(lastTd);
+    tr.appendChild(actionTd);
+    tbody.appendChild(tr);
+  });
+  table.appendChild(tbody);
+  container.appendChild(table);
+}
+
+function createModalTaskCell(task) {
+  const cell = document.createElement('div');
+  cell.className = 'task-info';
+  
+  // Task details
+  const detailsDiv = document.createElement('div');
+  detailsDiv.className = 'task-details';
+  
+  const nameDiv = document.createElement('div');
+  nameDiv.className = 'task-name';
+  nameDiv.textContent = task.name;
+  
+  const projectDiv = document.createElement('div');
+  projectDiv.className = 'task-meta';
+  projectDiv.textContent = task.project;
+  
+  // Apply project color
+  const proj = projects.find(p => p.name === task.project);
+  if (proj) {
+    projectDiv.style.color = proj.color;
+  }
+  
+  detailsDiv.appendChild(nameDiv);
+  detailsDiv.appendChild(projectDiv);
+  
+  // Actions
+  const actionsDiv = document.createElement('div');
+  actionsDiv.className = 'task-actions';
+  
+  // Add to Today button
+  const addTodayBtn = document.createElement('button');
+  addTodayBtn.innerHTML = '<svg width="20" height="20" viewBox="0 0 20 20" fill="none" xmlns="http://www.w3.org/2000/svg"><circle cx="10" cy="10" r="8" fill="#B5A89A"/><path d="M10 6v8M6 10h8" stroke="#fff" stroke-width="2" stroke-linecap="round"/></svg>';
+  addTodayBtn.title = 'Add to Today';
+  addTodayBtn.style.background = 'none';
+  addTodayBtn.style.border = 'none';
+  addTodayBtn.style.cursor = 'pointer';
+  addTodayBtn.onclick = () => addTaskToToday('weekly', task.id, task.name);
+
+  actionsDiv.appendChild(addTodayBtn);
+  const timerBtn = createTimerButton('todo', task.name);
+  actionsDiv.appendChild(timerBtn);
+
+  cell.appendChild(detailsDiv);
+  cell.appendChild(actionsDiv);
+  
+  return cell;
+}
+
+function toggleModalComplete(id, day, due) {
+  const task = weeklyTasks.find(t => t.id === id);
+  if (!task) return;
+  
+  if (task.completedDates.includes(day)) {
+    task.completedDates = task.completedDates.filter(d => d !== day);
+    if (due && new Date(day) < new Date()) {
+      if (!task.missedDates.includes(day)) task.missedDates.push(day);
+    }
+  } else {
+    task.completedDates.push(day);
+    if (due) {
+      task.missedDates = task.missedDates.filter(d => d !== day);
+    }
+  }
+  
+  saveData();
+  renderModalWeeklyGrid();
+}
+
+async function addTaskToToday(taskType, taskId, taskName) {
+  try {
+    const response = await fetch('/api/add-to-today', {
+      method: 'POST',
+      headers: { 'Content-Type': 'application/json' },
+      body: JSON.stringify({ taskType, taskId, taskName })
+    });
+    
+    if (response.ok) {
+      // Regardless of server response shape, maintain local client shape
+      todayList.push({ type: taskType, id: taskId });
+      const result = await response.json(); // consume for completeness
+      rebuildToday();
+      renderToday();
+      // Optionally refresh the modal grid to reflect any UI state
+      if (document.getElementById('weeklyTasksModal').style.display === 'block') {
+        renderModalWeeklyGrid();
+      }
+      if (document.getElementById('oneOffTasksModal').style.display === 'block') {
+        renderModalOneOffTable();
+      }
+      if (document.getElementById('recurringTasksModal').style.display === 'block') {
+        renderModalRecurringTable();
+      }
+      if (document.getElementById('workTasksModal').style.display === 'block') {
+        renderModalWorkTable();
+      }
+      if (document.getElementById('diyTasksModal').style.display === 'block') {
+        renderModalDiyTable();
+      }
+      if (document.getElementById('bigTasksModal').style.display === 'block') {
+        renderModalBigTable();
+      }
+      if (document.getElementById('stretchTasksModal').style.display === 'block') {
+        renderModalStretchTable();
+      }
+    } else {
+      alert('Failed to add task to Today list');
+    }
+  } catch (error) {
+    console.error('Error adding task to Today:', error);
+    alert('Error adding task to Today list');
+  }
+}
+
+// Close modal when clicking outside
+window.onclick = function(event) {
+  const weekly = document.getElementById('weeklyTasksModal');
+  const oneoff = document.getElementById('oneOffTasksModal');
+  const recurring = document.getElementById('recurringTasksModal');
+  if (event.target === weekly) closeWeeklyTasksModal();
+  if (event.target === oneoff) closeOneOffTasksModal();
+  if (event.target === recurring) closeRecurringTasksModal();
+  const workM = document.getElementById('workTasksModal');
+  const diyM = document.getElementById('diyTasksModal');
+  const bigM = document.getElementById('bigTasksModal');
+  const stretchM = document.getElementById('stretchTasksModal');
+  if (event.target === workM) closeWorkTasksModal();
+  if (event.target === diyM) closeDiyTasksModal();
+  if (event.target === bigM) closeBigTasksModal();
+  if (event.target === stretchM) closeStretchTasksModal();
+}
+
+async function init(){await loadData();rebuildToday();renderSide();renderToday();}
 init();
 </script>
 </body>

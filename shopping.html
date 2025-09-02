@@ -4,55 +4,268 @@
 <meta charset="UTF-8">
 <meta name="viewport" content="width=device-width, initial-scale=1">
 <title>Shopping</title>
+<link rel="stylesheet" href="styles.css">
 <style>
-body { font-family: 'Segoe UI', Tahoma, sans-serif; margin: 0; padding: 0; }
-header {
-  background: #fff;
-  color: #ff69b4;
-  padding: 1rem;
-  text-align: center;
-  border-bottom: 1px solid #ddd;
-}
+body { margin: 0; padding: 0; }
+
+/* Match ToDo page styling */
 section {
   padding: 1rem;
-  border-bottom: 10px solid pink;
+  margin: 0;
 }
 .toggle {
   cursor: pointer;
-  background: #f4f4f4;
+  background: #C7BBB4;
   padding: 0.5rem;
   border-radius: 4px;
   margin: 1rem 0;
   text-align: center;
 }
-.add-toggle { background: #eee; font-size: 0.8rem; }
+.add-toggle { 
+  background: #2B2C29; 
+  color: #C7BBB4;
+  font-size: 0.8rem; 
+  padding: 0.5rem;
+  transition: all 0.2s ease;
+}
+.add-toggle:hover {
+  background: #C7BBB4;
+  color: #2B2C29;
+  box-shadow: 0 0 12px 2px #2B2C29;
+}
 .section-header {
   font-size: 1.2rem;
   font-weight: bold;
-  background: #cfe2ff;
+  position: relative;
+  /* background removed to inherit from CSS */
+}
+
+.section-header .pin-star {
+  position: absolute;
+  top: 50%;
+  right: 8px;
+  transform: translateY(-50%);
+  cursor: pointer;
+  z-index: 10;
+}
+
+.section-header .pin-star svg {
+  width: 16px;
+  height: 16px;
+}
+
+.section-header .pin-star.pinned svg {
+  fill: #F7F6F3;
+  stroke: #2B2C29;
+  stroke-width: 1;
 }
 .subtoggle { font-size: 0.9rem; margin-top: 0.5rem; }
 .task-table { width: 100%; border-collapse: collapse; }
 .task-table th, .task-table td { border: 1px solid #ccc; padding: 0.25rem; text-align: left; }
-.form-grid { display: grid; grid-template-columns: repeat(auto-fill, minmax(200px, 1fr)); gap: 0.5rem; align-items: center; }
-.form-grid label { display: flex; flex-direction: column; font-size: 0.9rem; }
+.task-table th { text-align: center; font-weight: bold; }
+.task-table tr { height: 100%; }
+/* Unified action cell styling so every row height matches content rows */
+.action-cell { 
+  display: flex; 
+  align-items: center; 
+  justify-content: center; 
+  gap: 8px; 
+  height: 100%; 
+  min-height: 40px; 
+  box-sizing: border-box;
+}
+.action-cell button { display:inline-flex; align-items:center; justify-content:center; }
+.form-grid { 
+  display: grid; 
+  grid-template-columns: repeat(auto-fit, minmax(180px, 1fr)); 
+  gap: 0.5rem; 
+  align-items: end; 
+}
+.form-grid label { 
+  display: flex; 
+  flex-direction: column; 
+  font-size: 0.9rem;
+  font-weight: 500;
+  color: #2B2C29;
+  min-width: 0;
+}
 .hidden { display: none !important; }
-.form-grid input, .form-grid select, .form-grid textarea { width: 100%; font-size: 1rem; padding: 0.4rem; }
+.form-grid input, .form-grid select, .form-grid textarea { 
+  width: 100%; 
+  font-size: 1rem; 
+  padding: 0.4rem;
+  border: 1px solid #C7BBB4;
+  border-radius: 4px;
+  background: #F7F6F3;
+  color: #2B2C29;
+  box-sizing: border-box;
+}
+.submit-btn {
+  background: #C7BBB4;
+  color: #2B2C29;
+  border: none;
+  border-radius: 12px;
+  padding: 0.7rem 1.5rem;
+  font-size: 1rem;
+  font-weight: bold;
+  box-shadow: 0 1px 2px rgba(44,44,44,0.04);
+  transition: box-shadow 0.18s, background 0.18s, color 0.18s;
+  cursor: pointer;
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+}
+.submit-btn:hover {
+  box-shadow: 0 0 12px 2px #2B2C29;
+  background: #B5A89A;
+  color: #E7E4D6;
+}
+
+/* Modal Styles */
+.modal {
+  position: fixed;
+  z-index: 1000;
+  left: 0;
+  top: 0;
+  width: 100%;
+  height: 100%;
+  background-color: rgba(43, 44, 41, 0.5);
+}
+
+.modal-content {
+  background-color: #E7E4D6;
+  margin: 10% auto;
+  padding: 0;
+  border-radius: 8px;
+  width: 90%;
+  max-width: 500px;
+  box-shadow: 0 4px 20px rgba(43, 44, 41, 0.3);
+}
+
+.modal-header {
+  background-color: #C7BBB4;
+  padding: 1rem;
+  border-radius: 8px 8px 0 0;
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+}
+
+.modal-header h3 {
+  margin: 0;
+  color: #2B2C29;
+  font-weight: bold;
+}
+
+.close {
+  font-size: 1.5rem;
+  font-weight: bold;
+  color: #2B2C29;
+  cursor: pointer;
+  line-height: 1;
+}
+
+.close:hover {
+  color: #B5A89A;
+}
+
+.modal-body {
+  padding: 1.5rem;
+}
+
+.modal-footer {
+  padding: 1rem 1.5rem;
+  display: flex;
+  gap: 1rem;
+  justify-content: flex-end;
+  border-top: 1px solid #C7BBB4;
+}
+
+.cancel-btn {
+  background: #B5A89A;
+  color: #2B2C29;
+  border: none;
+  padding: 8px 16px;
+  border-radius: 12px !important;
+  cursor: pointer;
+  font-size: 0.9rem;
+  font-weight: bold !important;
+  transition: all 0.2s ease;
+}
+
+.cancel-btn:hover {
+  background: #C7BBB4;
+}
+
 #toast { position: fixed; bottom: 1rem; left: 50%; transform: translateX(-50%); background: #333; color: #fff; padding: 0.5rem 1rem; border-radius: 4px; }
+
 @media (max-width: 600px) {
   html { font-size: 14px; }
-}
+  .form-grid {
+    grid-template-columns: 1fr;
+    gap: 0.75rem;
+  }
+  .form-grid label {
+    margin-bottom: 0.5rem;
+  }
+  section {
+    padding: 0.5rem;
+  }
+
+  /* Settings section styles - match ToDo page exactly */
+  #shoppingSettings .add-toggle {
+    font-size: 1rem;
+    padding: 12px 20px;
+    border-radius: 8px;
+    font-weight: bold;
+    background: #2B2C29; 
+    color: #C7BBB4;
+    border: none;
+    cursor: pointer;
+    transition: all 0.2s ease;
+    min-width: 140px;
+  }
+
+  #shoppingSettings .add-toggle:hover {
+    background: #C7BBB4;
+    color: #2B2C29;
+    box-shadow: 0 0 12px 2px #2B2C29;
+  }
+
+  .box {
+    background: #F7F6F3;
+    border: 1px solid #C7BBB4;
+    border-radius: 8px;
+    padding: 1rem;
+    margin: 1rem 0;
+    max-height: 300px;
+    overflow-y: auto;
+  }
+
+  .box h4 {
+    margin: 0 0 1rem 0;
+    color: #2B2C29;
+    font-size: 1.1rem;
+  }
 </style>
 </head>
 <body>
 <header>
-  <h1>Shopping</h1>
-  <div id="nav-placeholder"></div>
+  <div style="padding-left: 2rem;">
+    <h1>Shopping</h1>
+  </div>
 </header>
+<div id="nav-placeholder"></div>
 <script src="nav-loader.js"></script>
-<div id="toast" class="hidden"></div>
 <section>
-  <div class="toggle section-header" onclick="toggle('shoppingSection')">Thigns to Buy list</div>
+  <div class="toggle section-header" onclick="toggle('shoppingSection')">
+    Things to Buy List
+    <span class="pin-star" onclick="event.stopPropagation(); togglePin('shoppingSection')" title="Pin section open">
+      <svg viewBox="0 0 24 24" fill="#2B2C29" stroke="#F7F6F3" stroke-width="1">
+        <polygon points="12,2 15.09,8.26 22,9.27 17,14.14 18.18,21.02 12,17.77 5.82,21.02 7,14.14 2,9.27 8.91,8.26"></polygon>
+      </svg>
+    </span>
+  </div>
   <div id="shoppingSection" class="hidden">
     <div id="shoppingList"></div>
     <div class="toggle add-toggle" onclick="toggle('addShopping')">Add Item</div>
@@ -62,14 +275,21 @@ section {
       <label>Est. Cost<input type="number" id="shoppingCost" step="0.01"></label>
       <label>Month<input type="month" id="shoppingMonth"></label>
       <div style="grid-column:1/-1;text-align:center;">
-        <button onclick="addShoppingItem()">Submit</button>
+        <button class="submit-btn" onclick="addShoppingItem()">Submit</button>
       </div>
     </div>
   </div><!-- end shoppingSection -->
 </section>
 
 <section>
-  <div class="toggle section-header" onclick="toggle('diyShopSection')">DIY Shopping List</div>
+  <div class="toggle section-header" onclick="toggle('diyShopSection')">
+    DIY Shopping List
+    <span class="pin-star" onclick="event.stopPropagation(); togglePin('diyShopSection')" title="Pin section open">
+      <svg viewBox="0 0 24 24" fill="#2B2C29" stroke="#F7F6F3" stroke-width="1">
+        <polygon points="12,2 15.09,8.26 22,9.27 17,14.14 18.18,21.02 12,17.77 5.82,21.02 7,14.14 2,9.27 8.91,8.26"></polygon>
+      </svg>
+    </span>
+  </div>
   <div id="diyShopSection" class="hidden">
     <div id="diyShopList"></div>
     <div class="toggle add-toggle" onclick="toggle('addDiyShop')">Add Item</div>
@@ -81,14 +301,21 @@ section {
       <label>Month<input type="month" id="diyShopMonth"></label>
       <input type="hidden" id="diyShopTask">
       <div style="grid-column:1/-1;text-align:center;">
-        <button onclick="addDiyShopItem()">Submit</button>
+        <button class="submit-btn" onclick="addDiyShopItem()">Submit</button>
       </div>
     </div>
   </div>
 </section>
 
 <section>
-  <div class="toggle section-header" onclick="toggle('longTermSection')">Long Term Buying</div>
+  <div class="toggle section-header" onclick="toggle('longTermSection')">
+    Long Term Buying
+    <span class="pin-star" onclick="event.stopPropagation(); togglePin('longTermSection')" title="Pin section open">
+      <svg viewBox="0 0 24 24" fill="#2B2C29" stroke="#F7F6F3" stroke-width="1">
+        <polygon points="12,2 15.09,8.26 22,9.27 17,14.14 18.18,21.02 12,17.77 5.82,21.02 7,14.14 2,9.27 8.91,8.26"></polygon>
+      </svg>
+    </span>
+  </div>
   <div id="longTermSection" class="hidden">
     <div id="longTermList"></div>
     <div class="toggle add-toggle" onclick="toggle('addLongTerm')">Add Item</div>
@@ -99,25 +326,113 @@ section {
       <label>Target Month<input type="month" id="longTermMonth"></label>
       <label style="grid-column:1/-1;">Info<textarea id="longTermInfo"></textarea></label>
       <div style="grid-column:1/-1;text-align:center;">
-        <button onclick="addLongTermItem()">Submit</button>
+        <button class="submit-btn" onclick="addLongTermItem()">Submit</button>
       </div>
     </div>
   </div>
 </section>
 
 <section>
-  <div class="toggle section-header" onclick="toggle('generalSection')">General Shopping List</div>
+  <div class="toggle section-header" onclick="toggle('generalSection')">
+    General Shopping List
+    <span class="pin-star" onclick="event.stopPropagation(); togglePin('generalSection')" title="Pin section open">
+      <svg viewBox="0 0 24 24" fill="#2B2C29" stroke="#F7F6F3" stroke-width="1">
+        <polygon points="12,2 15.09,8.26 22,9.27 17,14.14 18.18,21.02 12,17.77 5.82,21.02 7,14.14 2,9.27 8.91,8.26"></polygon>
+      </svg>
+    </span>
+  </div>
   <div id="generalSection" class="hidden">
     <div id="generalList"></div>
     <div class="toggle add-toggle" onclick="toggle('addGeneral')">Add Item</div>
     <div id="addGeneral" class="hidden subtoggle form-grid">
       <label>Name<input type="text" id="generalName"></label>
       <div style="grid-column:1/-1;text-align:center;">
-        <button onclick="addGeneralItem()">Submit</button>
+        <button class="submit-btn" onclick="addGeneralItem()">Submit</button>
       </div>
     </div>
   </div>
 </section>
+
+<section>
+  <div class="toggle section-header" onclick="toggle('shoppingSettings')">
+    Settings
+    <span class="pin-star" onclick="event.stopPropagation(); togglePin('shoppingSettings')" title="Pin section open">
+      <svg viewBox="0 0 24 24" fill="#2B2C29" stroke="#F7F6F3" stroke-width="1">
+        <polygon points="12,2 15.09,8.26 22,9.27 17,14.14 18.18,21.02 12,17.77 5.82,21.02 7,14.14 2,9.27 8.91,8.26"></polygon>
+      </svg>
+    </span>
+  </div>
+  <div id="shoppingSettings" class="hidden">
+    <h3 style="margin-top: 2rem;">Click to view...</h3>
+    <div style="display: flex; gap: 1rem; margin: 1rem 0;">
+      <button class="add-toggle" onclick="toggle('deletedShoppingBox')">Deleted Items</button>
+      <button class="add-toggle" onclick="toggle('archivedShoppingBox')">Archived Items</button>
+    </div>
+    <div style="margin: 1rem 0;">
+      <button class="add-toggle" onclick="toggle('boughtShoppingBox')">Bought Items</button>
+    </div>
+    
+    <div id="deletedShoppingBox" class="hidden box">
+      <h4>Deleted Items</h4>
+      <div id="deletedShoppingList"></div>
+    </div>
+    
+    <div id="archivedShoppingBox" class="hidden box">
+      <h4>Archived Items</h4>
+      <div id="archivedShoppingList"></div>
+    </div>
+    
+    <div id="boughtShoppingBox" class="hidden box">
+      <h4>Bought Items</h4>
+      <div id="boughtShoppingList"></div>
+    </div>
+  </div>
+</section>
+
+<!-- Edit Item Modal -->
+<div id="editItemModal" class="modal hidden">
+  <div class="modal-content">
+    <div class="modal-header">
+      <h3>Edit Item</h3>
+      <span class="close" onclick="closeEditModal()">&times;</span>
+    </div>
+    <div class="modal-body">
+      <div class="form-grid">
+        <label>Name<input type="text" id="editItemName"></label>
+        <label>Project<select id="editItemProject"></select></label>
+        <label>Cost<input type="number" id="editItemCost" step="0.01"></label>
+        <label>Month<input type="month" id="editItemMonth"></label>
+        <div id="editItemInfoSection" class="hidden" style="grid-column:1/-1;">
+          <label>Info<textarea id="editItemInfo" rows="4"></textarea></label>
+        </div>
+      </div>
+    </div>
+    <div class="modal-footer">
+      <button class="submit-btn" onclick="saveItemChanges()">Save Changes</button>
+      <button class="cancel-btn" onclick="closeEditModal()">Cancel</button>
+    </div>
+  </div>
+</div>
+
+<!-- Info Modal -->
+<div id="infoModal" class="modal hidden">
+  <div class="modal-content">
+    <div class="modal-header">
+      <h3>Item Information</h3>
+      <span class="close" onclick="closeInfoModal()">&times;</span>
+    </div>
+    <div class="modal-body">
+      <div class="form-grid">
+        <label style="grid-column:1/-1;">Info<textarea id="infoText" rows="6"></textarea></label>
+      </div>
+    </div>
+    <div class="modal-footer">
+      <button class="submit-btn" onclick="saveInfoChanges()">Save Changes</button>
+      <button class="cancel-btn" onclick="closeInfoModal()">Cancel</button>
+    </div>
+  </div>
+</div>
+
 <script>
 let projects = [];
 let shoppingList = [];
@@ -133,9 +448,55 @@ let recurringTasks = [];
 let deletedTasks = [];
 let todayList = [];
 let nextId = 1;
+// Moved up so saveData can safely reference them
+let deletedShoppingItems = [];
+let archivedShoppingItems = [];
+
+// Pin/Star functionality for shopping sections
+function togglePin(sectionId) {
+  const star = document.querySelector(`[onclick*="${sectionId}"] .pin-star`);
+  const section = document.getElementById(sectionId);
+  
+  if (!star || !section) return;
+  
+  const isCurrentlyPinned = star.classList.contains('pinned');
+  
+  if (isCurrentlyPinned) {
+    star.classList.remove('pinned');
+    star.querySelector('svg').setAttribute('fill', '#2B2C29');
+    section.classList.add('hidden');
+    localStorage.removeItem(`pin-${sectionId}`);
+  } else {
+    star.classList.add('pinned');
+    star.querySelector('svg').setAttribute('fill', '#E7E4D6');
+    section.classList.remove('hidden');
+    localStorage.setItem(`pin-${sectionId}`, 'true');
+  }
+}
+
+// Load pinned sections on page load
+function loadPinnedSections() {
+  const sections = ['shoppingSection', 'diyShopSection', 'longTermSection', 'generalSection', 'shoppingSettings'];
+  
+  sections.forEach(sectionId => {
+    if (localStorage.getItem(`pin-${sectionId}`) === 'true') {
+      const star = document.querySelector(`[onclick*="${sectionId}"] .pin-star`);
+      const section = document.getElementById(sectionId);
+      
+      if (star && section) {
+        star.classList.add('pinned');
+        star.querySelector('svg').setAttribute('fill', '#E7E4D6');
+        section.classList.remove('hidden');
+      }
+    }
+  });
+}
 
 async function saveData() {
-  const data = { projects, weeklyTasks, oneOffTasks, recurringTasks, deletedTasks, shoppingList, longTermList, generalList, todayList, nextId };
+  // Safeguard in case arrays not yet initialized
+  const ds = Array.isArray(deletedShoppingItems) ? deletedShoppingItems : [];
+  const as = Array.isArray(archivedShoppingItems) ? archivedShoppingItems : [];
+  const data = { projects, weeklyTasks, oneOffTasks, recurringTasks, deletedTasks, shoppingList, longTermList, generalList, todayList, nextId, deletedShoppingItems: ds, archivedShoppingItems: as };
   try {
     await fetch('/api/index-data', {
       method: 'POST',
@@ -169,6 +530,8 @@ async function loadData() {
     generalList = obj.generalList || [];
     todayList = obj.todayList || [];
     nextId = obj.nextId || 1;
+    deletedShoppingItems = obj.deletedShoppingItems || [];
+    archivedShoppingItems = obj.archivedShoppingItems || [];
     const resD = await fetch('/api/diy-data');
     if(resD.ok){
       diyDataStore = await resD.json();
@@ -197,7 +560,8 @@ function renderProjects() {
   const selects = [
     document.getElementById('shoppingProject'),
     document.getElementById('longTermProject'),
-    document.getElementById('diyShopProject')
+    document.getElementById('diyShopProject'),
+    document.getElementById('editItemProject')
   ];
   selects.forEach(select => {
     if (!select) return;
@@ -243,26 +607,90 @@ function renderShopping() {
   const table = document.createElement('table');
   table.className = 'task-table';
   const head = document.createElement('tr');
-  head.innerHTML = '<th>Item</th><th>Project</th><th>Est. Cost</th><th>Month</th><th></th>';
+  head.innerHTML = '<th>Item</th><th>Est. Cost</th><th>Month</th><th>Action</th>';
   table.appendChild(head);
   openItems.forEach(it => {
     const tr = document.createElement('tr');
     const proj = projects.find(p => p.name === it.project);
     const color = proj ? proj.color : '#000';
-    tr.innerHTML = `<td>${it.name}</td><td style="color:${color}">${it.project}</td><td>${it.cost||''}</td><td>${it.month||''}</td>`;
-    const td = document.createElement('td');
-    const b = document.createElement('button');
-    b.textContent = 'Bought';
-    b.onclick = () => toggleBoughtShopping(it.id);
-    const del = document.createElement('button');
-    del.textContent = 'Delete';
-    del.onclick = () => deleteShopping(it.id);
-    td.appendChild(b);
-    td.appendChild(del);
-    tr.appendChild(td);
+    
+    // Item cell with project underneath
+    const itemCell = document.createElement('td');
+    const itemName = document.createElement('div');
+    itemName.textContent = it.name;
+    itemName.style.fontWeight = '500';
+    const projectName = document.createElement('div');
+    projectName.textContent = it.project;
+    projectName.style.fontSize = '0.8rem';
+    projectName.style.color = color;
+    itemCell.appendChild(itemName);
+    itemCell.appendChild(projectName);
+    
+    // Other cells
+    const costCell = document.createElement('td');
+    costCell.textContent = it.cost || '';
+    
+    const monthCell = document.createElement('td');
+    monthCell.textContent = it.month || '';
+    
+  // Action cell
+  const actionCell = document.createElement('td');
+  actionCell.className = 'action-cell';
+    
+    // Edit button
+    const editBtn = document.createElement('button');
+    editBtn.innerHTML = '<svg width="16" height="16" viewBox="0 0 20 20" fill="none" xmlns="http://www.w3.org/2000/svg"><path d="M13.5858 3.58579C14.3668 2.80474 15.6332 2.80474 16.4142 3.58579C17.1953 4.36683 17.1953 5.63316 16.4142 6.41421L15.6213 7.20711L12.7929 4.37868L13.5858 3.58579Z" fill="#B5A89A"/><path d="M11.3787 5.79289L3 14.1716V17H5.82842L14.2071 8.62132L11.3787 5.79289Z" fill="#C7BBB4"/></svg>';
+    editBtn.title = 'Edit Item';
+    editBtn.style.background = 'none';
+    editBtn.style.border = 'none';
+    editBtn.style.cursor = 'pointer';
+    editBtn.style.padding = '4px';
+    editBtn.onclick = () => editShoppingItem(it.id);
+    actionCell.appendChild(editBtn);
+    
+    // Bought button (tick icon)
+    const boughtBtn = document.createElement('button');
+    boughtBtn.innerHTML = '<svg width="16" height="16" viewBox="0 0 20 20" fill="none" xmlns="http://www.w3.org/2000/svg"><path d="M16.707 5.293a1 1 0 010 1.414L9 14.414 4.293 9.707a1 1 0 011.414-1.414L9 11.586l6.293-6.293a1 1 0 011.414 0z" fill="#81B29A"/></svg>';
+    boughtBtn.title = 'Mark as Bought';
+    boughtBtn.style.background = 'none';
+    boughtBtn.style.border = 'none';
+    boughtBtn.style.cursor = 'pointer';
+    boughtBtn.style.padding = '4px';
+    boughtBtn.onclick = () => toggleBoughtShopping(it.id);
+    actionCell.appendChild(boughtBtn);
+    
+    // Delete button
+    const deleteBtn = document.createElement('button');
+    deleteBtn.innerHTML = '<svg width="16" height="16" viewBox="0 0 20 20" fill="none" xmlns="http://www.w3.org/2000/svg"><path d="M8.5 2C7.11929 2 6 3.11929 6 4.5H4C3.44772 4.5 3 4.94772 3 5.5C3 6.05228 3.44772 6.5 4 6.5H16C16.5523 6.5 17 6.05228 17 5.5C17 4.94772 16.5523 4.5 16 4.5H14C14 3.11929 12.8807 2 11.5 2H8.5Z" fill="#B5A89A"/><path d="M5 8.5C5 7.94772 5.44772 7.5 6 7.5H14C14.5523 7.5 15 7.94772 15 8.5V16C15 17.1046 14.1046 18 13 18H7C5.89543 18 5 17.1046 5 16V8.5Z" fill="#C7BBB4"/></svg>';
+    deleteBtn.title = 'Delete Item';
+    deleteBtn.style.background = 'none';
+    deleteBtn.style.border = 'none';
+    deleteBtn.style.cursor = 'pointer';
+    deleteBtn.style.padding = '4px';
+  deleteBtn.onclick = () => confirmDeleteShopping(it.id, it.name);
+    actionCell.appendChild(deleteBtn);
+    
+    tr.appendChild(itemCell);
+    tr.appendChild(costCell);
+    tr.appendChild(monthCell);
+    tr.appendChild(actionCell);
     table.appendChild(tr);
   });
   div.appendChild(table);
+}
+
+function editShoppingItem(id) {
+  const item = shoppingList.find(i => i.id === id);
+  if (!item) return;
+  
+  editingItemId = id;
+  editingItemType = 'shopping';
+  document.getElementById('editItemName').value = item.name;
+  document.getElementById('editItemProject').value = item.project;
+  document.getElementById('editItemCost').value = item.cost || '';
+  document.getElementById('editItemMonth').value = item.month || '';
+  document.getElementById('editItemInfoSection').classList.add('hidden');
+  document.getElementById('editItemModal').classList.remove('hidden');
 }
 
 function toggleBoughtShopping(id) {
@@ -271,14 +699,25 @@ function toggleBoughtShopping(id) {
   item.bought = true;
   saveData();
   renderShopping();
+  renderBoughtShopping();
+}
+
+function confirmDeleteShopping(id, itemName) {
+  if (!confirm(`Are you sure you want to delete "${itemName}"? This action cannot be undone.`)) return;
+  deleteShopping(id);
 }
 
 function deleteShopping(id) {
   const idx = shoppingList.findIndex(i => i.id === id);
   if (idx === -1) return;
+  const item = shoppingList[idx];
+  item.deletedAt = new Date().toISOString();
+  if (!deletedShoppingItems) deletedShoppingItems = [];
+  deletedShoppingItems.push(item);
   shoppingList.splice(idx, 1);
   saveData();
   renderShopping();
+  renderDeletedShopping();
 }
 
 function addLongTermItem() {
@@ -295,6 +734,7 @@ function addLongTermItem() {
   nextId++;
   longTermList.push(item);
   document.getElementById('longTermName').value = '';
+  document.getElementById('longTermProject').value = '';
   document.getElementById('longTermCost').value = '';
   document.getElementById('longTermMonth').value = '';
   document.getElementById('longTermInfo').value = '';
@@ -311,36 +751,177 @@ function renderLongTerm() {
   const table = document.createElement('table');
   table.className = 'task-table';
   const head = document.createElement('tr');
-  head.innerHTML = '<th>Item</th><th>Project</th><th>Cost</th><th>Target</th><th></th>';
+  head.innerHTML = '<th>Item</th><th>Cost</th><th>Target</th><th>Action</th>';
   table.appendChild(head);
   openItems.forEach(it => {
     const tr = document.createElement('tr');
     const proj = projects.find(p => p.name === it.project);
     const color = proj ? proj.color : '#000';
-    tr.innerHTML = `<td>${it.name}</td><td style="color:${color}">${it.project}</td><td>${it.cost||''}</td><td>${it.month||''}</td>`;
-    const td = document.createElement('td');
+    
+    // Item cell with project underneath
+    const itemCell = document.createElement('td');
+    const itemName = document.createElement('div');
+    itemName.textContent = it.name;
+    itemName.style.fontWeight = '500';
+    const projectName = document.createElement('div');
+    projectName.textContent = it.project;
+    projectName.style.fontSize = '0.8rem';
+    projectName.style.color = color;
+    itemCell.appendChild(itemName);
+    itemCell.appendChild(projectName);
+    
+    const costCell = document.createElement('td');
+    costCell.textContent = it.cost || '';
+    
+    const monthCell = document.createElement('td');
+    monthCell.textContent = it.month || '';
+    
+  // Action cell
+  const actionCell = document.createElement('td');
+  actionCell.className = 'action-cell';
+    
+    // Info button (info icon)
     const infoBtn = document.createElement('button');
-    infoBtn.textContent = 'View Info';
-    infoBtn.onclick = () => viewLongTermInfo(it.id);
-    const b = document.createElement('button');
-    b.textContent = 'Bought';
-    b.onclick = () => toggleBoughtLongTerm(it.id);
-    const del = document.createElement('button');
-    del.textContent = 'Delete';
-    del.onclick = () => deleteLongTerm(it.id);
-    td.appendChild(infoBtn);
-    td.appendChild(b);
-    td.appendChild(del);
-    tr.appendChild(td);
+    infoBtn.innerHTML = '<svg width="16" height="16" viewBox="0 0 20 20" fill="none" xmlns="http://www.w3.org/2000/svg"><circle cx="10" cy="10" r="8" fill="#B5A89A"/><path d="M10 14V10M10 6h.01" stroke="#2B2C29" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"/></svg>';
+    infoBtn.title = 'View/Edit Info';
+    infoBtn.style.background = 'none';
+    infoBtn.style.border = 'none';
+    infoBtn.style.cursor = 'pointer';
+    infoBtn.style.padding = '4px';
+    infoBtn.onclick = () => editLongTermInfo(it.id);
+    actionCell.appendChild(infoBtn);
+    
+    // Edit button
+    const editBtn = document.createElement('button');
+    editBtn.innerHTML = '<svg width="16" height="16" viewBox="0 0 20 20" fill="none" xmlns="http://www.w3.org/2000/svg"><path d="M13.5858 3.58579C14.3668 2.80474 15.6332 2.80474 16.4142 3.58579C17.1953 4.36683 17.1953 5.63316 16.4142 6.41421L15.6213 7.20711L12.7929 4.37868L13.5858 3.58579Z" fill="#B5A89A"/><path d="M11.3787 5.79289L3 14.1716V17H5.82842L14.2071 8.62132L11.3787 5.79289Z" fill="#C7BBB4"/></svg>';
+    editBtn.title = 'Edit Item';
+    editBtn.style.background = 'none';
+    editBtn.style.border = 'none';
+    editBtn.style.cursor = 'pointer';
+    editBtn.style.padding = '4px';
+    editBtn.onclick = () => editLongTermItem(it.id);
+    actionCell.appendChild(editBtn);
+    
+    // Bought button (tick icon)
+    const boughtBtn = document.createElement('button');
+    boughtBtn.innerHTML = '<svg width="16" height="16" viewBox="0 0 20 20" fill="none" xmlns="http://www.w3.org/2000/svg"><path d="M16.707 5.293a1 1 0 010 1.414L9 14.414 4.293 9.707a1 1 0 011.414-1.414L9 11.586l6.293-6.293a1 1 0 011.414 0z" fill="#81B29A"/></svg>';
+    boughtBtn.title = 'Mark as Bought';
+    boughtBtn.style.background = 'none';
+    boughtBtn.style.border = 'none';
+    boughtBtn.style.cursor = 'pointer';
+    boughtBtn.style.padding = '4px';
+    boughtBtn.onclick = () => toggleBoughtLongTerm(it.id);
+    actionCell.appendChild(boughtBtn);
+    
+    // Delete button
+    const deleteBtn = document.createElement('button');
+    deleteBtn.innerHTML = '<svg width="16" height="16" viewBox="0 0 20 20" fill="none" xmlns="http://www.w3.org/2000/svg"><path d="M8.5 2C7.11929 2 6 3.11929 6 4.5H4C3.44772 4.5 3 4.94772 3 5.5C3 6.05228 3.44772 6.5 4 6.5H16C16.5523 6.5 17 6.05228 17 5.5C17 4.94772 16.5523 4.5 16 4.5H14C14 3.11929 12.8807 2 11.5 2H8.5Z" fill="#B5A89A"/><path d="M5 8.5C5 7.94772 5.44772 7.5 6 7.5H14C14.5523 7.5 15 7.94772 15 8.5V16C15 17.1046 14.1046 18 13 18H7C5.89543 18 5 17.1046 5 16V8.5Z" fill="#C7BBB4"/></svg>';
+    deleteBtn.title = 'Delete Item';
+    deleteBtn.style.background = 'none';
+    deleteBtn.style.border = 'none';
+    deleteBtn.style.cursor = 'pointer';
+    deleteBtn.style.padding = '4px';
+    deleteBtn.onclick = () => confirmDeleteLongTerm(it.id, it.name);
+    actionCell.appendChild(deleteBtn);
+    
+    tr.appendChild(itemCell);
+    tr.appendChild(costCell);
+    tr.appendChild(monthCell);
+    tr.appendChild(actionCell);
     table.appendChild(tr);
   });
   div.appendChild(table);
 }
 
-function viewLongTermInfo(id) {
+let editingItemId = '';
+let editingItemType = '';
+
+function editLongTermInfo(id) {
   const item = longTermList.find(i => i.id === id);
   if (!item) return;
-  alert(item.info || '');
+  
+  editingItemId = id;
+  editingItemType = 'longterm';
+  document.getElementById('infoText').value = item.info || '';
+  document.getElementById('infoModal').classList.remove('hidden');
+}
+
+function editLongTermItem(id) {
+  const item = longTermList.find(i => i.id === id);
+  if (!item) return;
+  
+  editingItemId = id;
+  editingItemType = 'longterm';
+  document.getElementById('editItemName').value = item.name;
+  document.getElementById('editItemProject').value = item.project;
+  document.getElementById('editItemCost').value = item.cost || '';
+  document.getElementById('editItemMonth').value = item.month || '';
+  document.getElementById('editItemInfo').value = item.info || '';
+  document.getElementById('editItemInfoSection').classList.remove('hidden');
+  document.getElementById('editItemModal').classList.remove('hidden');
+}
+
+function closeEditModal() {
+  document.getElementById('editItemModal').classList.add('hidden');
+  document.getElementById('editItemInfoSection').classList.add('hidden');
+  editingItemId = '';
+  editingItemType = '';
+}
+
+function closeInfoModal() {
+  document.getElementById('infoModal').classList.add('hidden');
+  editingItemId = '';
+  editingItemType = '';
+}
+
+function saveItemChanges() {
+  if (!editingItemId || !editingItemType) return;
+  
+  let item;
+  if (editingItemType === 'longterm') {
+    item = longTermList.find(i => i.id === editingItemId);
+  } else if (editingItemType === 'shopping') {
+    item = shoppingList.find(i => i.id === editingItemId);
+  }
+  
+  if (!item) return;
+  
+  item.name = document.getElementById('editItemName').value;
+  item.project = document.getElementById('editItemProject').value;
+  item.cost = document.getElementById('editItemCost').value;
+  item.month = document.getElementById('editItemMonth').value;
+  
+  if (editingItemType === 'longterm') {
+    item.info = document.getElementById('editItemInfo').value;
+    renderLongTerm();
+  } else if (editingItemType === 'shopping') {
+    renderShopping();
+  }
+  
+  saveData();
+  closeEditModal();
+  showMessage('Item updated');
+}
+
+function saveInfoChanges() {
+  if (!editingItemId || !editingItemType) return;
+  
+  let item;
+  if (editingItemType === 'longterm') {
+    item = longTermList.find(i => i.id === editingItemId);
+  }
+  
+  if (!item) return;
+  
+  item.info = document.getElementById('infoText').value;
+  
+  if (editingItemType === 'longterm') {
+    renderLongTerm();
+  }
+  
+  saveData();
+  closeInfoModal();
+  showMessage('Info updated');
 }
 
 function toggleBoughtLongTerm(id) {
@@ -349,14 +930,25 @@ function toggleBoughtLongTerm(id) {
   item.bought = true;
   saveData();
   renderLongTerm();
+  renderBoughtShopping();
+}
+
+function confirmDeleteLongTerm(id, itemName) {
+  if (!confirm(`Are you sure you want to delete "${itemName}"? This action cannot be undone.`)) return;
+  deleteLongTerm(id);
 }
 
 function deleteLongTerm(id) {
   const idx = longTermList.findIndex(i => i.id === id);
   if (idx === -1) return;
+  const item = longTermList[idx];
+  item.deletedAt = new Date().toISOString();
+  if (!deletedShoppingItems) deletedShoppingItems = [];
+  deletedShoppingItems.push(item);
   longTermList.splice(idx, 1);
   saveData();
   renderLongTerm();
+  renderDeletedShopping();
 }
 
 function addGeneralItem() {
@@ -379,21 +971,43 @@ function renderGeneral() {
   const table = document.createElement('table');
   table.className = 'task-table';
   const head = document.createElement('tr');
-  head.innerHTML = '<th>Item</th><th></th>';
+  head.innerHTML = '<th>Item</th><th>Action</th>';
   table.appendChild(head);
   openItems.forEach(it => {
     const tr = document.createElement('tr');
-    tr.innerHTML = `<td>${it.name}</td>`;
-    const td = document.createElement('td');
-    const b = document.createElement('button');
-    b.textContent = 'Bought';
-    b.onclick = () => toggleBoughtGeneral(it.id);
-    const del = document.createElement('button');
-    del.textContent = 'Delete';
-    del.onclick = () => deleteGeneral(it.id);
-    td.appendChild(b);
-    td.appendChild(del);
-    tr.appendChild(td);
+    
+    const itemCell = document.createElement('td');
+    itemCell.textContent = it.name;
+    itemCell.style.fontWeight = '500';
+    
+  // Action cell
+  const actionCell = document.createElement('td');
+  actionCell.className = 'action-cell';
+    
+    // Bought button (tick icon)
+    const boughtBtn = document.createElement('button');
+    boughtBtn.innerHTML = '<svg width="16" height="16" viewBox="0 0 20 20" fill="none" xmlns="http://www.w3.org/2000/svg"><path d="M16.707 5.293a1 1 0 010 1.414L9 14.414 4.293 9.707a1 1 0 011.414-1.414L9 11.586l6.293-6.293a1 1 0 011.414 0z" fill="#81B29A"/></svg>';
+    boughtBtn.title = 'Mark as Bought';
+    boughtBtn.style.background = 'none';
+    boughtBtn.style.border = 'none';
+    boughtBtn.style.cursor = 'pointer';
+    boughtBtn.style.padding = '4px';
+    boughtBtn.onclick = () => toggleBoughtGeneral(it.id);
+    actionCell.appendChild(boughtBtn);
+    
+    // Delete button
+    const deleteBtn = document.createElement('button');
+    deleteBtn.innerHTML = '<svg width="16" height="16" viewBox="0 0 20 20" fill="none" xmlns="http://www.w3.org/2000/svg"><path d="M8.5 2C7.11929 2 6 3.11929 6 4.5H4C3.44772 4.5 3 4.94772 3 5.5C3 6.05228 3.44772 6.5 4 6.5H16C16.5523 6.5 17 6.05228 17 5.5C17 4.94772 16.5523 4.5 16 4.5H14C14 3.11929 12.8807 2 11.5 2H8.5Z" fill="#B5A89A"/><path d="M5 8.5C5 7.94772 5.44772 7.5 6 7.5H14C14.5523 7.5 15 7.94772 15 8.5V16C15 17.1046 14.1046 18 13 18H7C5.89543 18 5 17.1046 5 16V8.5Z" fill="#C7BBB4"/></svg>';
+    deleteBtn.title = 'Delete Item';
+    deleteBtn.style.background = 'none';
+    deleteBtn.style.border = 'none';
+    deleteBtn.style.cursor = 'pointer';
+    deleteBtn.style.padding = '4px';
+    deleteBtn.onclick = () => confirmDeleteGeneral(it.id, it.name);
+    actionCell.appendChild(deleteBtn);
+    
+    tr.appendChild(itemCell);
+    tr.appendChild(actionCell);
     table.appendChild(tr);
   });
   div.appendChild(table);
@@ -405,14 +1019,25 @@ function toggleBoughtGeneral(id) {
   item.bought = true;
   saveData();
   renderGeneral();
+  renderBoughtShopping();
+}
+
+function confirmDeleteGeneral(id, itemName) {
+  if (!confirm(`Are you sure you want to delete "${itemName}"? This action cannot be undone.`)) return;
+  deleteGeneral(id);
 }
 
 function deleteGeneral(id) {
   const idx = generalList.findIndex(i => i.id === id);
   if (idx === -1) return;
+  const item = generalList[idx];
+  item.deletedAt = new Date().toISOString();
+  if (!deletedShoppingItems) deletedShoppingItems = [];
+  deletedShoppingItems.push(item);
   generalList.splice(idx, 1);
   saveData();
   renderGeneral();
+  renderDeletedShopping();
 }
 
 function getTaskName(id){
@@ -440,36 +1065,190 @@ function renderDiyShop(){
   const open=diyShoppingList.filter(i=>!i.bought);
   if(open.length===0){div.textContent='No items';return;}
   const table=document.createElement('table'); table.className='task-table';
-  const head=document.createElement('tr'); head.innerHTML='<th>Item</th><th>Task</th><th>Project</th><th>Type</th><th>Cost</th><th>Month</th><th></th>'; table.appendChild(head);
+  const head=document.createElement('tr'); head.innerHTML='<th>Item</th><th>Task</th><th>Project</th><th>Type</th><th>Cost</th><th>Month</th><th>Action</th>'; table.appendChild(head);
   open.forEach(it=>{
     const tr=document.createElement('tr'); const proj=projects.find(p=>p.name===it.project); const color=proj?proj.color:'#000';
     const task=(diyShoppingList&&diyDataStore&&diyDataStore.diyTasks)?getTaskName(it.taskId):'';
     tr.innerHTML=`<td>${it.name}</td><td>${task}</td><td style="color:${color}">${it.project}</td><td>${it.type}</td><td>${it.cost||''}</td><td>${it.month||''}</td>`;
-    const td=document.createElement('td');
-    const b=document.createElement('button'); b.textContent='Bought'; b.onclick=()=>toggleBoughtDiyShop(it.id);
-    const del=document.createElement('button'); del.textContent='Delete'; del.onclick=()=>deleteDiyShopItem(it.id);
-    td.appendChild(b); td.appendChild(del); tr.appendChild(td); table.appendChild(tr);
+    
+  // Action cell
+  const actionCell = document.createElement('td');
+  actionCell.className = 'action-cell';
+    
+    // Bought button (tick icon)
+    const boughtBtn=document.createElement('button');
+    boughtBtn.innerHTML='<svg width="16" height="16" viewBox="0 0 20 20" fill="none" xmlns="http://www.w3.org/2000/svg"><path d="M16.707 5.293a1 1 0 010 1.414L9 14.414 4.293 9.707a1 1 0 011.414-1.414L9 11.586l6.293-6.293a1 1 0 011.414 0z" fill="#81B29A"/></svg>';
+    boughtBtn.title='Mark as Bought';
+    boughtBtn.style.background='none';
+    boughtBtn.style.border='none';
+    boughtBtn.style.cursor='pointer';
+    boughtBtn.style.padding='4px';
+    boughtBtn.onclick=()=>toggleBoughtDiyShop(it.id);
+    actionCell.appendChild(boughtBtn);
+    
+    // Delete button
+    const deleteBtn=document.createElement('button');
+    deleteBtn.innerHTML='<svg width="16" height="16" viewBox="0 0 20 20" fill="none" xmlns="http://www.w3.org/2000/svg"><path d="M8.5 2C7.11929 2 6 3.11929 6 4.5H4C3.44772 4.5 3 4.94772 3 5.5C3 6.05228 3.44772 6.5 4 6.5H16C16.5523 6.5 17 6.05228 17 5.5C17 4.94772 16.5523 4.5 16 4.5H14C14 3.11929 12.8807 2 11.5 2H8.5Z" fill="#B5A89A"/><path d="M5 8.5C5 7.94772 5.44772 7.5 6 7.5H14C14.5523 7.5 15 7.94772 15 8.5V16C15 17.1046 14.1046 18 13 18H7C5.89543 18 5 17.1046 5 16V8.5Z" fill="#C7BBB4"/></svg>';
+    deleteBtn.title='Delete Item';
+    deleteBtn.style.background='none';
+    deleteBtn.style.border='none';
+    deleteBtn.style.cursor='pointer';
+    deleteBtn.style.padding='4px';
+    deleteBtn.onclick=()=>confirmDeleteDiyShopItem(it.id, it.name);
+    actionCell.appendChild(deleteBtn);
+    
+    tr.appendChild(actionCell); table.appendChild(tr);
   });
   div.appendChild(table);
 }
 
 function toggleBoughtDiyShop(id){
-  const it=diyShoppingList.find(i=>i.id===id); if(!it) return; it.bought=true; saveDiyData(); renderDiyShop();
+  const it=diyShoppingList.find(i=>i.id===id); if(!it) return; it.bought=true; saveDiyData(); renderDiyShop(); renderBoughtShopping();
+}
+
+function confirmDeleteDiyShopItem(id, name) {
+  if (!confirm(`Are you sure you want to delete "${name}"? This action cannot be undone.`)) return;
+  deleteDiyShopItem(id);
 }
 
 function deleteDiyShopItem(id){
-  const idx=diyShoppingList.findIndex(i=>i.id===id); if(idx===-1) return; diyShoppingList.splice(idx,1); saveDiyData(); renderDiyShop();
+  const idx=diyShoppingList.findIndex(i=>i.id===id); 
+  if(idx===-1) return; 
+  const item = diyShoppingList[idx];
+  item.deletedAt = new Date().toISOString();
+  if (!deletedShoppingItems) deletedShoppingItems = [];
+  deletedShoppingItems.push(item);
+  diyShoppingList.splice(idx,1); 
+  saveDiyData(); 
+  renderDiyShop();
+  renderDeletedShopping();
+}
+
+// (Declarations moved to top)
+
+function renderDeletedShopping() {
+  const container = document.getElementById('deletedShoppingList');
+  if (!container) return;
+
+  if (!deletedShoppingItems || deletedShoppingItems.length === 0) {
+    container.textContent = 'No deleted shopping items';
+    return;
+  }
+
+  // Create table for deleted items grid
+  const table = document.createElement('table');
+  table.style.width = '100%';
+  table.style.borderCollapse = 'collapse';
+  
+  // Header
+  const headerRow = document.createElement('tr');
+  headerRow.innerHTML = '<th style="text-align:center; padding:8px; background:#C7BBB4; border:1px solid #B5A89A;">Item</th><th style="text-align:center; padding:8px; background:#C7BBB4; border:1px solid #B5A89A;">Type</th><th style="text-align:center; padding:8px; background:#C7BBB4; border:1px solid #B5A89A;">Deleted</th>';
+  table.appendChild(headerRow);
+
+  deletedShoppingItems.forEach(item => {
+    const row = document.createElement('tr');
+    const itemType = item.project ? 'Shopping' : item.cost ? 'Long Term' : item.name ? 'General/DIY' : 'Unknown';
+    const deletedDate = item.deletedAt ? new Date(item.deletedAt).toLocaleDateString() : 'Unknown';
+    
+    row.innerHTML = `
+      <td style="padding:8px; border:1px solid #C7BBB4;">${item.item || item.name || 'Unknown'}</td>
+      <td style="padding:8px; border:1px solid #C7BBB4; text-align:center;">${itemType}</td>
+      <td style="padding:8px; border:1px solid #C7BBB4; text-align:center;">${deletedDate}</td>
+    `;
+    table.appendChild(row);
+  });
+
+  container.innerHTML = '';
+  container.appendChild(table);
+}
+
+function renderArchivedShopping() {
+  const container = document.getElementById('archivedShoppingList');
+  if (!container) return;
+
+  if (!archivedShoppingItems || archivedShoppingItems.length === 0) {
+    container.textContent = 'No archived shopping items';
+    return;
+  }
+
+  // Create table for archived items grid
+  const table = document.createElement('table');
+  table.style.width = '100%';
+  table.style.borderCollapse = 'collapse';
+  
+  // Header
+  const headerRow = document.createElement('tr');
+  headerRow.innerHTML = '<th style="text-align:center; padding:8px; background:#C7BBB4; border:1px solid #B5A89A;">Item</th><th style="text-align:center; padding:8px; background:#C7BBB4; border:1px solid #B5A89A;">Type</th><th style="text-align:center; padding:8px; background:#C7BBB4; border:1px solid #B5A89A;">Archived</th>';
+  table.appendChild(headerRow);
+
+  archivedShoppingItems.forEach(item => {
+    const row = document.createElement('tr');
+    const itemType = item.project ? 'Shopping' : item.cost ? 'Long Term' : item.name ? 'General/DIY' : 'Unknown';
+    const archivedDate = item.archivedAt ? new Date(item.archivedAt).toLocaleDateString() : 'Unknown';
+    
+    row.innerHTML = `
+      <td style="padding:8px; border:1px solid #C7BBB4;">${item.item || item.name || 'Unknown'}</td>
+      <td style="padding:8px; border:1px solid #C7BBB4; text-align:center;">${itemType}</td>
+      <td style="padding:8px; border:1px solid #C7BBB4; text-align:center;">${archivedDate}</td>
+    `;
+    table.appendChild(row);
+  });
+
+  container.innerHTML = '';
+  container.appendChild(table);
+}
+
+// Render bought items in settings
+function renderBoughtShopping() {
+  const container = document.getElementById('boughtShoppingList');
+  if (!container) return;
+
+  // Gather all bought items from all lists
+  const bought = [];
+  shoppingList.forEach(it => { if (it.bought) bought.push({ ...it, type: 'Shopping' }); });
+  diyShoppingList.forEach(it => { if (it.bought) bought.push({ ...it, type: 'DIY' }); });
+  longTermList.forEach(it => { if (it.bought) bought.push({ ...it, type: 'Long Term' }); });
+  generalList.forEach(it => { if (it.bought) bought.push({ ...it, type: 'General' }); });
+
+  if (bought.length === 0) {
+    container.textContent = 'No bought items';
+    return;
+  }
+
+  // Create table for bought items grid
+  const table = document.createElement('table');
+  table.style.width = '100%';
+  table.style.borderCollapse = 'collapse';
+  const headerRow = document.createElement('tr');
+  headerRow.innerHTML = '<th style="text-align:center; padding:8px; background:#C7BBB4; border:1px solid #B5A89A;">Item</th><th style="text-align:center; padding:8px; background:#C7BBB4; border:1px solid #B5A89A;">Type</th><th style="text-align:center; padding:8px; background:#C7BBB4; border:1px solid #B5A89A;">Bought</th>';
+  table.appendChild(headerRow);
+  bought.forEach(item => {
+    const row = document.createElement('tr');
+    row.innerHTML = `
+      <td style="padding:8px; border:1px solid #C7BBB4;">${item.item || item.name || 'Unknown'}</td>
+      <td style="padding:8px; border:1px solid #C7BBB4; text-align:center;">${item.type}</td>
+      <td style="padding:8px; border:1px solid #C7BBB4; text-align:center;">Yes</td>
+    `;
+    table.appendChild(row);
+  });
+  container.innerHTML = '';
+  container.appendChild(table);
 }
 
 async function init() {
   await loadData();
+  loadPinnedSections();
   renderProjects();
   renderShopping();
   renderLongTerm();
   renderGeneral();
   renderDiyShop();
+  renderDeletedShopping();
+  renderArchivedShopping();
+  renderBoughtShopping();
 }
 init();
 </script>
+<div id="toast" style="display:none;"></div>
 </body>
 </html>

@@ -4,7 +4,8 @@
   "main": "server.js",
   "scripts": {
     "start": "node server.js",
-    "backup": "node backupMongo.js"
+    "backup": "node backupMongo.js",
+    "test": "node --test"
   },
   "dependencies": {
     "dotenv": "^17.2.1",

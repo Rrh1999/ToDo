@@ -80,7 +80,7 @@
       "dueDate": "",
       "urgent": false,
       "info": "",
-      "status": "open",
+      "status": "closed",
       "subtasks": []
     },
     {
@@ -109,7 +109,7 @@
         {
           "id": "00000069",
           "parent": "00000004",
-          "status": "open",
+          "status": "closed",
           "subtasks": [],
           "name": "Kari Room",
           "project": "Main Bedroom",
@@ -225,7 +225,7 @@
       "dueDate": "",
       "urgent": false,
       "info": "",
-      "status": "open",
+      "status": "closed",
       "subtasks": []
     },
     {
@@ -237,7 +237,7 @@
       "dueDate": "",
       "urgent": false,
       "info": "",
-      "status": "open",
+      "status": "closed",
       "subtasks": []
     },
     {
@@ -249,7 +249,7 @@
       "dueDate": "",
       "urgent": false,
       "info": "",
-      "status": "open",
+      "status": "closed",
       "subtasks": []
     },
     {
@@ -360,6 +360,18 @@
       "urgent": false,
       "info": "",
       "status": "open",
+      "subtasks": []
+    },
+    {
+      "id": "00000080",
+      "parent": null,
+      "name": "Paint the kitchen",
+      "project": "Kari Bed Room",
+      "type": "Decortation",
+      "dueDate": "",
+      "urgent": false,
+      "info": "",
+      "status": "closed",
       "subtasks": []
     }
   ],
@@ -614,7 +626,7 @@
       "dueDate": "",
       "urgent": false,
       "info": "",
-      "status": "open",
+      "status": "closed",
       "priority": 23
     },
     {
@@ -702,7 +714,7 @@
       "dueDate": "",
       "urgent": false,
       "info": "",
-      "status": "open",
+      "status": "closed",
       "priority": 31
     },
     {
@@ -713,7 +725,7 @@
       "dueDate": "",
       "urgent": false,
       "info": "",
-      "status": "open",
+      "status": "closed",
       "priority": 32
     },
     {
@@ -837,10 +849,10 @@
       "cost": "",
       "month": "",
       "taskId": null,
-      "bought": false
+      "bought": true
     }
   ],
-  "diyNextId": 80,
+  "diyNextId": 81,
   "maxSubDepth": 7,
   "calendarEvents": [],
   "calendarNextId": 1

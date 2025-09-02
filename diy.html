@@ -4,51 +4,378 @@
 <meta charset="UTF-8">
 <meta name="viewport" content="width=device-width, initial-scale=1">
 <title>DIY Tasks</title>
+<link rel="stylesheet" href="styles.css">
 <link href="https://cdn.jsdelivr.net/npm/fullcalendar@5.11.3/main.min.css" rel="stylesheet">
 <style>
-body{font-family:'Segoe UI',Tahoma,sans-serif;margin:0;padding:0;}
-header{background:#fff;color:#ff69b4;padding:1rem;text-align:center;border-bottom:1px solid #ddd;}
-section{padding:1rem;border-bottom:10px solid pink;}
-.toggle{cursor:pointer;background:#f4f4f4;padding:0.5rem;border-radius:4px;margin:1rem 0;text-align:center;}
+body{margin:0;padding:0;}
+/* header styling removed to inherit global */
+section{padding:1rem;}
+.toggle{cursor:pointer;padding:0.5rem;border-radius:4px;margin:1rem 0;text-align:center;}
 .add-toggle{background:#eee;font-size:0.8rem;}
-.section-header{font-size:1.2rem;font-weight:bold;background:#cfe2ff;}
+.section-header{font-size:1.2rem;font-weight:bold;}
+
+/* Pin star styling to match other pages */
+.section-header {
+  position: relative;
+}
+
+.section-header .pin-star {
+  position: absolute;
+  top: 50%;
+  right: 8px;
+  transform: translateY(-50%);
+  cursor: pointer;
+  z-index: 10;
+}
+
+.section-header .pin-star svg {
+  width: 16px;
+  height: 16px;
+}
+
+.section-header .pin-star.pinned svg {
+  fill: #F7F6F3;
+  stroke: #2B2C29;
+  stroke-width: 1;
+}
+
 .form-grid{display:grid;grid-template-columns:repeat(auto-fill,minmax(200px,1fr));gap:0.5rem;align-items:center;}
 .form-grid label{display:flex;flex-direction:column;font-size:0.9rem;}
 .form-grid input,.form-grid select,.form-grid textarea{width:100%;font-size:1rem;padding:0.4rem;}
 .hidden{display:none !important;}
-.task-row{display:grid;grid-template-columns:2fr 1fr 1fr 1fr 0.5fr;gap:0.25rem;align-items:center;border:1px solid #ccc;padding:0.25rem;margin-top:0.25rem;}
-#taskList{max-height:400px;overflow-y:auto;overflow-x:hidden;width:calc(100% - 1rem);padding-right:1rem;}
+#taskSection .task-row{display:grid;grid-template-columns:3fr 1fr 1fr 1fr 150px;gap:0.25rem;align-items:center;border:1px solid #ccc;padding:0.25rem;margin-top:0.25rem;background: var(--color-surface) !important;}
+#taskSection #taskHeader.task-header,#taskSection .task-row{display:grid;grid-template-columns:3fr 1fr 1fr 1fr 150px;gap:0.25rem;align-items:center;}
+#taskSection #taskHeader.task-header{
+  font-weight:bold;
+  background: var(--color-table-header);
+  color: var(--color-toggle-text);
+  border: 1px solid var(--color-border);
+  position: sticky;
+  top: 0;
+  z-index: 1;
+  height: 3rem;
+  text-align: center;
+}
+#taskSection #taskHeader.task-header > div{display:flex;align-items:center;justify-content:center;}
+#taskList{max-height:400px;overflow-y:auto;overflow-x:hidden;width:calc(100% - 1rem);padding-right:1rem;min-height:200px;position:relative;border:1px solid var(--color-border);border-radius:4px;background: var(--color-surface);}
 .task-row div{word-break:break-word;}
 .controls button{margin-left:0.25rem;font-size:0.7rem;}
 .filter-grid{display:flex;gap:0.5rem;flex-wrap:wrap;margin-bottom:0.5rem;}
 .calendar-container{display:flex;gap:1rem;flex-wrap:wrap;}
 #calendar{flex:1 1 300px;min-width:300px;}
 #calendarTaskList{flex:1 1 200px;min-width:200px;border:1px solid #ccc;padding:0.5rem;max-height:400px;overflow-y:auto;}
-.fc-task{background:#f4f4f4;margin:0.25rem 0;padding:0.25rem;border:1px solid #ccc;cursor:grab;}
+.fc-task{background:#C7BBB4;margin:0.25rem 0;padding:0.25rem;border:1px solid #ccc;cursor:grab;}
 .modal{position:fixed;top:0;left:0;width:100%;height:100%;display:flex;align-items:center;justify-content:center;background:rgba(0,0,0,0.5);}
 .modal-content{background:#fff;padding:1rem;border-radius:4px;max-width:90%;width:320px;}
 .modal-content input,.modal-content textarea,.modal-content select{width:100%;margin-bottom:0.5rem;}
+.submit-btn {
+  background: #C7BBB4;
+  color: #2B2C29;
+  border: none;
+  border-radius: 12px;
+  padding: 0.7rem 1.5rem;
+  font-size: 1rem;
+  font-weight: bold;
+  box-shadow: 0 1px 2px rgba(44,44,44,0.04);
+  transition: box-shadow 0.18s, background 0.18s, color 0.18s;
+  cursor: pointer;
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+}
+.submit-btn:hover {
+  box-shadow: 0 0 12px 2px #2B2C29;
+  background: #B5A89A;
+  color: #E7E4D6;
+}
+
+/* Name/Project/Type stack in first column */
+.task-name-project{display:flex;flex-direction:column;justify-content:center;}
+.task-name{font-weight:500;color:var(--color-text);}
+.project-name{font-size:0.85em;opacity:0.9;}
+.task-type{font-size:0.75em;opacity:0.8;color:var(--color-text-muted);}
+
+/* Actions icon grid like Work */
+.task-actions{display:flex;gap:4px;justify-content:center;align-items:center;}
+.task-icon-btn{background:none;border:none;font-size:1.2rem;cursor:pointer;padding:0.25rem;border-radius:4px;transition:background-color 0.2s;display:flex;align-items:center;justify-content:center;width:100%;height:30px;}
+.task-icon-btn:hover{background-color:var(--color-border);} 
+.task-icon-btn.complete{color:#28a745;} 
+.task-icon-btn.delete{color:#dc3545;} 
+.task-icon-btn.edit{color:#007bff;} 
+.task-icon-btn.add-sub{color:#17a2b8;}
+.task-table {
+  width: 100%;
+  border-collapse: separate;
+  border-spacing: 0;
+  border-radius: 10px;
+  overflow: hidden;
+  box-shadow: 0 2px 8px rgba(44,44,44,0.06);
+}
+.task-table th {
+  background: #C7BBB4;
+  color: #2B2C29;
+  font-weight: 600;
+  padding: 0.5rem 0.75rem;
+  border-bottom: 1px solid #EDEAE3;
+}
+.task-table td {
+  background: #fff;
+  color: #2B2C29;
+  padding: 0.45rem 0.75rem;
+  border-bottom: 1px solid #F7F6F3;
+  transition: background 0.18s;
+}
+.task-table tr:last-child td {
+  border-bottom: none;
+}
+.task-table tr:nth-child(even) td {
+  background: #F7F6F3;
+}
+.task-table tr:hover td {
+  background: #E7E4D6;
+}
+
+/* DIY-specific form styling to match widths */
+#diyProjectName, #newType {
+  width: 100%;
+  max-width: none;
+}
+
+/* Specific dimensions for task name and project name fields */
+#taskName, #bigTaskName, #diyProjectName, #editDiyProjectName, #editTypeName, #newType {
+  width: 221.19px !important;
+  height: 43.98px !important;
+  max-width: 221.19px !important;
+  box-sizing: border-box;
+  padding: 0.4rem;
+  font-size: 1rem;
+}
+
+#diyProjectColor, #editDiyProjectColor {
+  width: 50px !important;
+  height: 27px !important;
+  padding: 2px !important;
+  border-radius: 4px;
+}
+
+/* Make form-grid for projects/types match toggle width */
+.form-grid {
+  display: grid;
+  grid-template-columns: 221.19px 1fr auto auto;
+  gap: 0.5rem;
+  align-items: center;
+  width: 100%;
+  justify-content: start;
+}
+
+/* Special layout for project adding (name, spacer, color, button) */
+#projSection .form-grid:first-of-type {
+  grid-template-columns: 221.19px 1fr auto auto;
+}
+
+/* Special layout for type adding (name, spacer, button) */
+#projSection .form-grid:nth-of-type(2) {
+  grid-template-columns: 221.19px 1fr auto;
+}
+
+/* Shorter submit buttons to match ToDo page */
+.submit-btn {
+  background: #C7BBB4;
+  color: #2B2C29;
+  border: none;
+  border-radius: 12px;
+  padding: 0.6rem 1.2rem;
+  font-size: 0.9rem;
+  font-weight: bold;
+  box-shadow: 0 1px 2px rgba(44,44,44,0.04);
+  transition: box-shadow 0.18s, background 0.18s, color 0.18s;
+  cursor: pointer;
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  white-space: nowrap;
+}
+
+/* Modal Styles - match ToDo page exactly */
+.modal {
+  position: fixed;
+  z-index: 1000;
+  left: 0;
+  top: 0;
+  width: 100%;
+  height: 100%;
+  background-color: rgba(43, 44, 41, 0.5);
+}
+
+.modal-content {
+  background-color: #E7E4D6;
+  margin: 10% auto;
+  padding: 0;
+  border-radius: 8px;
+  width: 90%;
+  max-width: 500px;
+  box-shadow: 0 4px 20px rgba(43, 44, 41, 0.3);
+}
+
+.modal-header {
+  background-color: #C7BBB4;
+  padding: 1rem;
+  border-radius: 8px 8px 0 0;
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+}
+
+.modal-header h3 {
+  margin: 0;
+  color: #2B2C29;
+  font-weight: bold;
+}
+
+.close {
+  font-size: 1.5rem;
+  font-weight: bold;
+  color: #2B2C29;
+  cursor: pointer;
+  line-height: 1;
+}
+
+.close:hover {
+  color: #B5A89A;
+}
+
+.modal-body {
+  padding: 1.5rem;
+}
+
+.modal-footer {
+  padding: 1rem 1.5rem;
+  display: flex;
+  gap: 1rem;
+  justify-content: flex-end;
+  border-top: 1px solid #C7BBB4;
+}
+
+.cancel-btn {
+  background: #B5A89A;
+  color: #2B2C29;
+  border: none;
+  padding: 8px 16px;
+  border-radius: 12px;
+  cursor: pointer;
+  font-size: 0.9rem;
+  font-weight: bold;
+  transition: all 0.2s ease;
+}
+
+.cancel-btn:hover {
+  background: #C7BBB4;
+}
+
+/* Settings section styles - match ToDo and Shopping pages exactly */
+#diySettings .add-toggle {
+  font-size: 1rem;
+  padding: 12px 20px;
+  border-radius: 8px;
+  font-weight: bold;
+  background: #2B2C29; 
+  color: #C7BBB4;
+  border: none;
+  cursor: pointer;
+  transition: all 0.2s ease;
+  min-width: 140px;
+}
+
+#diySettings .add-toggle:hover {
+  background: #B5A89A;
+  color: #2B2C29;
+}
+
+.box {
+  border: 1px solid #C7BBB4;
+  border-radius: 8px;
+  padding: 1rem;
+  margin-top: 1rem;
+  background: #F7F6F3;
+}
+
+.box h4 {
+  margin-top: 0;
+  color: #2B2C29;
+  font-weight: bold;
+}
+
 @media (max-width:600px){html{font-size:14px;}}
+
+@media (max-width: 768px) {
+  .task-row { font-size: 0.9rem; }
+  #taskSection #taskHeader.task-header, #taskSection .task-row {
+    grid-template-columns: minmax(120px, 1fr) 60px 60px 60px 80px;
+    gap: 0.2rem;
+    align-items: stretch;
+  }
+  /* Unhide columns that global CSS may hide */
+  #taskSection .task-row > div:nth-child(3), /* Importance */
+  #taskSection .task-row > div:nth-child(4), /* Urgency */
+  #taskSection .task-row > div:nth-child(5)  /* Actions */
+  { display: block !important; }
+  .task-actions { display: grid; grid-template-columns: repeat(2, 1fr); gap: 2px; align-content: center; }
+  .task-icon-btn { width: 100%; height: 100%; padding: 2px; }
+  .task-icon-btn svg { width: 14px; height: 14px; }
+}
+
+/* Force Actions column to 2x2 grid */
+#taskSection .task-row > div:nth-child(5),
+#taskSection .task-actions{
+  display:grid !important;
+  grid-template-columns: repeat(2, 28px);
+  grid-auto-rows:28px;
+  gap:6px;justify-content:center;align-content:center;
+}
+#taskSection .task-actions .task-icon-btn{
+  width:28px;height:28px;padding:0;border:none;background:none;display:inline-flex;align-items:center;justify-content:center;
+}
+
+/* Preserve Big Tasks row layout */
+#bigTaskSection .task-row{
+  display:grid;
+  grid-template-columns:2fr 1fr 1fr 1fr 0.5fr 0.6fr auto; /* + controls */
+  gap:0.25rem;
+  align-items:center;
+  border:1px solid #ccc;
+  padding:0.25rem;
+  margin-top:0.25rem;
+}
 </style>
 </head>
 <body>
 <header>
-  <h1>DIY Tasks</h1>
-  <div id="nav-placeholder"></div>
+  <div style="padding-left: 2rem;">
+    <h1>DIY Tasks</h1>
+  </div>
 </header>
+<div id="nav-placeholder"></div>
 <script src="nav-loader.js"></script>
 <script src="https://cdn.jsdelivr.net/npm/fullcalendar@5.11.3/main.min.js"></script>
 <script src="https://cdn.jsdelivr.net/npm/@fullcalendar/interaction@5.11.3/main.min.js"></script>
 
 
 <section>
-  <div class="toggle section-header" onclick="toggle('taskSection')">Tasks</div>
+  <div class="toggle section-header" onclick="toggle('taskSection')">
+    Tasks
+    <span class="pin-star" onclick="event.stopPropagation(); togglePin('taskSection')" title="Pin section open">
+      <svg viewBox="0 0 24 24" fill="#2B2C29" stroke="#F7F6F3" stroke-width="1">
+        <polygon points="12,2 15.09,8.26 22,9.27 17,14.14 18.18,21.02 12,17.77 5.82,21.02 7,14.14 2,9.27 8.91,8.26"></polygon>
+      </svg>
+    </span>
+  </div>
   <div id="taskSection" class="hidden" ondragover="allowDrop(event)" ondrop="dropOnRoot(event)">
     <div class="filter-grid">
       <label>Project<select id="filterProject"><option value="all">All</option></select></label>
       <label>Urgent<select id="filterUrgent"><option value="all">All</option><option value="yes">Yes</option><option value="no">No</option></select></label>
-      <button onclick="renderTasks()">Apply</button>
+      <button class="submit-btn" onclick="renderTasks()">Apply</button>
     </div>
+    <div id="taskHeader" class="task-header"><div>Task</div><div>Due</div><div>Importance</div><div>Urgency</div><div>Actions</div></div>
     <div id="taskList"></div>
     <div class="toggle add-toggle" onclick="toggle('addTaskForm')">Add Task</div>
     <div id="addTaskForm" class="hidden form-grid">
@@ -59,7 +386,7 @@ section{padding:1rem;border-bottom:10px solid pink;}
       <label><input type="checkbox" id="taskUrgent"> Urgent</label>
       <label>Info<textarea id="taskInfo"></textarea></label>
       <div style="grid-column:1/-1;text-align:center;">
-        <button onclick="addTask()">Submit</button>
+        <button class="submit-btn" onclick="addTask()">Submit</button>
       </div>
     </div>
   </div>
@@ -67,7 +394,14 @@ section{padding:1rem;border-bottom:10px solid pink;}
 
 
 <section>
-  <div class="toggle section-header" onclick="toggle('bigTaskSection')">Big Tasks</div>
+  <div class="toggle section-header" onclick="toggle('bigTaskSection')">
+    Big Tasks
+    <span class="pin-star" onclick="event.stopPropagation(); togglePin('bigTaskSection')" title="Pin section open">
+      <svg viewBox="0 0 24 24" fill="#2B2C29" stroke="#F7F6F3" stroke-width="1">
+        <polygon points="12,2 15.09,8.26 22,9.27 17,14.14 18.18,21.02 12,17.77 5.82,21.02 7,14.14 2,9.27 8.91,8.26"></polygon>
+      </svg>
+    </span>
+  </div>
   <div id="bigTaskSection" class="hidden">
     <div id="bigTaskList"></div>
     <div class="toggle add-toggle" onclick="toggle('addBigTaskForm')">Add Big Task</div>
@@ -88,7 +422,14 @@ section{padding:1rem;border-bottom:10px solid pink;}
 
 
 <section>
-  <div class="toggle section-header" onclick="toggle('calendarSection')">Calendar</div>
+  <div class="toggle section-header" onclick="toggle('calendarSection')">
+    Calendar
+    <span class="pin-star" onclick="event.stopPropagation(); togglePin('calendarSection')" title="Pin section open">
+      <svg viewBox="0 0 24 24" fill="#2B2C29" stroke="#F7F6F3" stroke-width="1">
+        <polygon points="12,2 15.09,8.26 22,9.27 17,14.14 18.18,21.02 12,17.77 5.82,21.02 7,14.14 2,9.27 8.91,8.26"></polygon>
+      </svg>
+    </span>
+  </div>
   <div id="calendarSection" class="hidden">
     <div class="calendar-container">
       <div id="calendar"></div>
@@ -101,20 +442,14 @@ section{padding:1rem;border-bottom:10px solid pink;}
 </section>
 
 <section>
-  <div class="toggle section-header" onclick="toggle('projSection')">Projects & Types</div>
-  <div id="projSection" class="hidden">
-    <label>Project Name <input type="text" id="diyProjectName"></label>
-    <label>Color <input type="color" id="diyProjectColor" value="#ff0000"></label>
-    <button onclick="addDiyProject()">Add Project</button>
-    <label>New Type <input type="text" id="newType"></label>
-    <button onclick="addType()">Add Type</button>
-    <ul id="diyProjectList"></ul>
-    <ul id="typeList"></ul>
+  <div class="toggle section-header" onclick="toggle('diyShopSection')">
+    DIY Shopping List
+    <span class="pin-star" onclick="event.stopPropagation(); togglePin('diyShopSection')" title="Pin section open">
+      <svg viewBox="0 0 24 24" fill="#2B2C29" stroke="#F7F6F3" stroke-width="1">
+        <polygon points="12,2 15.09,8.26 22,9.27 17,14.14 18.18,21.02 12,17.77 5.82,21.02 7,14.14 2,9.27 8.91,8.26"></polygon>
+      </svg>
+    </span>
   </div>
-</section>
-
-<section>
-  <div class="toggle section-header" onclick="toggle('diyShopSection')">DIY Shopping List</div>
   <div id="diyShopSection" class="hidden">
     <div id="diyShoppingList"></div>
     <div class="toggle add-toggle" onclick="toggle('addDiyShop')">Add Item</div>
@@ -131,6 +466,110 @@ section{padding:1rem;border-bottom:10px solid pink;}
     </div>
   </div>
 </section>
+
+<section>
+  <div class="toggle section-header" onclick="toggle('projSection')">
+    Projects & Types
+    <span class="pin-star" onclick="event.stopPropagation(); togglePin('projSection')" title="Pin section open">
+      <svg viewBox="0 0 24 24" fill="#2B2C29" stroke="#F7F6F3" stroke-width="1">
+        <polygon points="12,2 15.09,8.26 22,9.27 17,14.14 18.18,21.02 12,17.77 5.82,21.02 7,14.14 2,9.27 8.91,8.26"></polygon>
+      </svg>
+    </span>
+  </div>
+  <div id="projSection" class="hidden">
+    <h3 style="margin-top: 2rem;">Add Project</h3>
+    <div class="form-grid">
+      <input type="text" id="diyProjectName" placeholder="Project Name">
+      <input type="color" id="diyProjectColor" value="#ff0000">
+      <button class="submit-btn" onclick="addDiyProject()">Add</button>
+    </div>
+    
+    <h3 style="margin-top: 2rem;">Add Type</h3>
+    <div class="form-grid">
+      <input type="text" id="newType" placeholder="Type Name">
+      <button class="submit-btn" onclick="addType()">Add</button>
+    </div>
+    
+    <h3 style="margin-top: 2rem;">Projects</h3>
+    <div id="diyProjectList"></div>
+    
+    <h3 style="margin-top: 2rem;">Types</h3>
+    <div id="typeList"></div>
+  </div>
+</section>
+
+<section>
+  <div class="toggle section-header" onclick="toggle('diySettings')">
+    Settings
+    <span class="pin-star" onclick="event.stopPropagation(); togglePin('diySettings')" title="Pin section open">
+      <svg viewBox="0 0 24 24" fill="#2B2C29" stroke="#F7F6F3" stroke-width="1">
+        <polygon points="12,2 15.09,8.26 22,9.27 17,14.14 18.18,21.02 12,17.77 5.82,21.02 7,14.14 2,9.27 8.91,8.26"></polygon>
+      </svg>
+    </span>
+  </div>
+  <div id="diySettings" class="hidden">
+    <h3 style="margin-top: 2rem;">Click to view...</h3>
+    <div style="display: flex; gap: 1rem; margin: 1rem 0;">
+      <button class="add-toggle" onclick="toggle('deletedDiyBox')">Deleted DIY Tasks</button>
+      <button class="add-toggle" onclick="toggle('boughtDiyBox')">Bought DIY Items</button>
+    </div>
+    <div style="margin: 1rem 0;">
+      <button class="add-toggle" onclick="toggle('completedDiyBox')">Completed DIY Tasks</button>
+    </div>
+    
+    <div id="deletedDiyBox" class="hidden box">
+      <h4>Deleted DIY Tasks</h4>
+      <div id="deletedDiyList" style="max-height: 400px; overflow-y: auto;"></div>
+    </div>
+    
+    <div id="boughtDiyBox" class="hidden box">
+      <h4>Bought DIY Items</h4>
+      <div id="boughtDiyList" style="max-height: 400px; overflow-y: auto;"></div>
+    </div>
+    
+    <div id="completedDiyBox" class="hidden box">
+      <h4>Completed DIY Tasks</h4>
+      <div id="completedDiyList" style="max-height: 400px; overflow-y: auto;"></div>
+    </div>
+  </div>
+</section>
+
+<div id="editProjectModal" class="modal hidden">
+  <div class="modal-content">
+    <div class="modal-header">
+      <h3>Edit Project</h3>
+      <span class="close" onclick="closeEditDiyProjectModal()">&times;</span>
+    </div>
+    <div class="modal-body">
+      <div class="form-grid">
+        <label>Project Name<input type="text" id="editDiyProjectName"></label>
+        <label>Project Color<input type="color" id="editDiyProjectColor"></label>
+      </div>
+    </div>
+    <div class="modal-footer">
+      <button class="submit-btn" onclick="saveDiyProjectChanges()">Save Changes</button>
+      <button class="cancel-btn" onclick="closeEditDiyProjectModal()">Cancel</button>
+    </div>
+  </div>
+</div>
+
+<div id="editTypeModal" class="modal hidden">
+  <div class="modal-content">
+    <div class="modal-header">
+      <h3>Edit Type</h3>
+      <span class="close" onclick="closeEditTypeModal()">&times;</span>
+    </div>
+    <div class="modal-body">
+      <div class="form-grid">
+        <label>Type Name<input type="text" id="editTypeName"></label>
+      </div>
+    </div>
+    <div class="modal-footer">
+      <button class="submit-btn" onclick="saveTypeChanges()">Save Changes</button>
+      <button class="cancel-btn" onclick="closeEditTypeModal()">Cancel</button>
+    </div>
+  </div>
+</div>
 
 <div id="taskModal" class="modal hidden">
   <div class="modal-content">
@@ -166,6 +605,11 @@ let modalParent=null;
 
 function toggle(id){document.getElementById(id).classList.toggle('hidden');}
 
+function getProjectColor(name){
+  const p=diyProjects.find(pr=>pr.name===name);
+  return p?p.color:'';
+}
+
 async function loadData(){
   try{
     const res=await fetch('/api/diy-data');
@@ -187,6 +631,10 @@ async function loadData(){
     renderBigTasks();
     renderDiyShopping();
     renderCalendarTasks();
+    renderDeletedDiyTasks();
+    renderBoughtDiyItems();
+    renderCompletedDiyTasks();
+    loadPinnedSections();
     initCalendar();
   }catch(e){console.error('load fail',e);}
 }
@@ -206,6 +654,122 @@ async function saveData(){
   }catch(e){console.error('save fail',e);}
 }
 
+// Pin/Star functionality for DIY sections
+function togglePin(sectionId) {
+  const star = document.querySelector(`[onclick*="${sectionId}"] .pin-star`);
+  const section = document.getElementById(sectionId);
+  
+  if (!star || !section) return;
+  
+  const isCurrentlyPinned = star.classList.contains('pinned');
+  
+  if (isCurrentlyPinned) {
+    star.classList.remove('pinned');
+    star.querySelector('svg').setAttribute('fill', '#2B2C29');
+    section.classList.add('hidden');
+    localStorage.removeItem(`pin-${sectionId}`);
+  } else {
+    star.classList.add('pinned');
+    star.querySelector('svg').setAttribute('fill', '#E7E4D6');
+    section.classList.remove('hidden');
+    localStorage.setItem(`pin-${sectionId}`, 'true');
+  }
+}
+
+// Load pinned sections on page load
+function loadPinnedSections() {
+  const sections = ['taskSection', 'bigTaskSection', 'calendarSection', 'diyShopSection', 'projSection', 'diySettings'];
+  
+  sections.forEach(sectionId => {
+    if (localStorage.getItem(`pin-${sectionId}`) === 'true') {
+      const star = document.querySelector(`[onclick*="${sectionId}"] .pin-star`);
+      const section = document.getElementById(sectionId);
+      
+      if (star && section) {
+        star.classList.add('pinned');
+        star.querySelector('svg').setAttribute('fill', '#E7E4D6');
+        section.classList.remove('hidden');
+      }
+    }
+  });
+}
+
+// Render functions for settings sections
+function renderDeletedDiyTasks() {
+  const div = document.getElementById('deletedDiyList');
+  div.innerHTML = '';
+  
+  const deletedTasks = [...diyTasks, ...diyBigTasks].filter(t => t.deleted);
+  
+  if (deletedTasks.length === 0) {
+    div.innerHTML = '<p>No deleted tasks</p>';
+    return;
+  }
+  
+  deletedTasks.forEach(task => {
+    const taskDiv = document.createElement('div');
+    taskDiv.style.padding = '0.5rem';
+    taskDiv.style.border = '1px solid #ddd';
+    taskDiv.style.margin = '0.25rem 0';
+    taskDiv.style.borderRadius = '4px';
+    taskDiv.innerHTML = `
+      <strong>${task.name}</strong><br>
+      <small>Project: ${task.project || 'None'} | Type: ${task.type || 'None'}</small>
+    `;
+    div.appendChild(taskDiv);
+  });
+}
+
+function renderBoughtDiyItems() {
+  const div = document.getElementById('boughtDiyList');
+  div.innerHTML = '';
+  
+  const boughtItems = diyShoppingList.filter(item => item.bought);
+  
+  if (boughtItems.length === 0) {
+    div.innerHTML = '<p>No bought items</p>';
+    return;
+  }
+  
+  boughtItems.forEach(item => {
+    const itemDiv = document.createElement('div');
+    itemDiv.style.padding = '0.5rem';
+    itemDiv.style.border = '1px solid #ddd';
+    itemDiv.style.margin = '0.25rem 0';
+    itemDiv.style.borderRadius = '4px';
+    itemDiv.innerHTML = `
+      <strong>${item.name}</strong><br>
+      <small>Cost: £${item.cost || 'N/A'} | Month: ${item.month || 'N/A'}</small>
+    `;
+    div.appendChild(itemDiv);
+  });
+}
+
+function renderCompletedDiyTasks() {
+  const div = document.getElementById('completedDiyList');
+  div.innerHTML = '';
+  
+  const completedTasks = [...diyTasks, ...diyBigTasks].filter(t => t.completed);
+  
+  if (completedTasks.length === 0) {
+    div.innerHTML = '<p>No completed tasks</p>';
+    return;
+  }
+  
+  completedTasks.forEach(task => {
+    const taskDiv = document.createElement('div');
+    taskDiv.style.padding = '0.5rem';
+    taskDiv.style.border = '1px solid #ddd';
+    taskDiv.style.margin = '0.25rem 0';
+    taskDiv.style.borderRadius = '4px';
+    taskDiv.innerHTML = `
+      <strong>${task.name}</strong><br>
+      <small>Project: ${task.project || 'None'} | Type: ${task.type || 'None'}</small>
+    `;
+    div.appendChild(taskDiv);
+  });
+}
+
 function addDiyProject(){
   const name=document.getElementById('diyProjectName').value.trim();
   const color=document.getElementById('diyProjectColor').value;
@@ -217,20 +781,109 @@ function addDiyProject(){
 }
 
 function renderProjects(){
-  const ul=document.getElementById('diyProjectList');
+  const container = document.getElementById('diyProjectList');
   const sel=document.getElementById('taskProject');
   const sel2=document.getElementById('taskModalProject');
   const bigSel=document.getElementById('bigTaskProject');
   const shopSel=document.getElementById('diyShopProject');
   const filt=document.getElementById('filterProject');
-  ul.innerHTML=''; sel.innerHTML=''; sel2.innerHTML=''; if(bigSel) bigSel.innerHTML=''; if(shopSel) shopSel.innerHTML=''; filt.innerHTML='<option value="all">All</option>';
+  
+  container.innerHTML=''; 
+  sel.innerHTML=''; sel2.innerHTML=''; 
+  if(bigSel) bigSel.innerHTML=''; 
+  if(shopSel) shopSel.innerHTML=''; 
+  filt.innerHTML='<option value="all">All</option>';
+  
+  if (diyProjects.length === 0) {
+    container.textContent = 'No projects';
+    return;
+  }
+  
+  // Create table for projects
+  const table = document.createElement('table');
+  table.className = 'task-table';
+  const head = document.createElement('tr');
+  head.innerHTML = '<th>Name</th><th>Task Status</th><th>Color</th><th>Action</th>';
+  table.appendChild(head);
+  
   diyProjects.forEach(p=>{
-    const li=document.createElement('li'); li.style.color=p.color; li.textContent=p.name; ul.appendChild(li);
+    const tr = document.createElement('tr');
+    
+    // Name column
+    const nameCell = document.createElement('td');
+    nameCell.textContent = p.name;
+    nameCell.style.color = p.color;
+    nameCell.style.fontWeight = '500';
+    
+    // Task status column
+    const statusCell = document.createElement('td');
+    if (hasTasksAllocated(p.name)) {
+      statusCell.textContent = 'Tasks allocated';
+      statusCell.style.color = '#81B29A';
+    } else {
+      statusCell.textContent = 'No tasks';
+      statusCell.style.color = '#B5A89A';
+    }
+    
+    // Color column
+    const colorCell = document.createElement('td');
+    const colorBox = document.createElement('div');
+    colorBox.style.width = '30px';
+    colorBox.style.height = '20px';
+    colorBox.style.backgroundColor = p.color;
+    colorBox.style.borderRadius = '4px';
+    colorBox.style.border = '1px solid #ccc';
+    colorCell.appendChild(colorBox);
+    
+    // Action column
+    const actionCell = document.createElement('td');
+    actionCell.style.display = 'grid';
+    actionCell.style.gridTemplateColumns = '1fr 1fr';
+    actionCell.style.gap = '4px';
+    actionCell.style.justifyItems = 'center';
+    
+    // Edit button
+    const editBtn = document.createElement('button');
+    editBtn.innerHTML = '<svg width="16" height="16" viewBox="0 0 20 20" fill="none" xmlns="http://www.w3.org/2000/svg"><path d="M13.5858 3.58579C14.3668 2.80474 15.6332 2.80474 16.4142 3.58579C17.1953 4.36683 17.1953 5.63316 16.4142 6.41421L15.6213 7.20711L12.7929 4.37868L13.5858 3.58579Z" fill="#B5A89A"/><path d="M11.3787 5.79289L3 14.1716V17H5.82842L14.2071 8.62132L11.3787 5.79289Z" fill="#C7BBB4"/></svg>';
+    editBtn.title = 'Edit Project';
+    editBtn.style.background = 'none';
+    editBtn.style.border = 'none';
+    editBtn.style.cursor = 'pointer';
+    editBtn.style.padding = '4px';
+    editBtn.onclick = () => openEditDiyProjectModal(p.name);
+    actionCell.appendChild(editBtn);
+    
+    // Delete button (only if no tasks allocated)
+    if (!hasTasksAllocated(p.name)) {
+      const deleteBtn = document.createElement('button');
+      deleteBtn.innerHTML = '<svg width="16" height="16" viewBox="0 0 20 20" fill="none" xmlns="http://www.w3.org/2000/svg"><path d="M8.5 2C7.11929 2 6 3.11929 6 4.5H4C3.44772 4.5 3 4.94772 3 5.5C3 6.05228 3.44772 6.5 4 6.5H16C16.5523 6.5 17 6.05228 17 5.5C17 4.94772 16.5523 4.5 16 4.5H14C14 3.11929 12.8807 2 11.5 2H8.5Z" fill="#B5A89A"/><path d="M5 8.5C5 7.94772 5.44772 7.5 6 7.5H14C14.5523 7.5 15 7.94772 15 8.5V16C15 17.1046 14.1046 18 13 18H7C5.89543 18 5 17.1046 5 16V8.5Z" fill="#C7BBB4"/></svg>';
+      deleteBtn.title = 'Delete Project';
+      deleteBtn.style.background = 'none';
+      deleteBtn.style.border = 'none';
+      deleteBtn.style.cursor = 'pointer';
+      deleteBtn.style.padding = '4px';
+      deleteBtn.onclick = () => confirmDeleteDiyProject(p.name);
+      actionCell.appendChild(deleteBtn);
+    } else {
+      // Empty placeholder to maintain grid layout
+      const placeholder = document.createElement('div');
+      actionCell.appendChild(placeholder);
+    }
+    
+    tr.appendChild(nameCell);
+    tr.appendChild(statusCell);
+    tr.appendChild(colorCell);
+    tr.appendChild(actionCell);
+    table.appendChild(tr);
+    
+    // Update selects
     const opt=document.createElement('option'); opt.value=p.name; opt.textContent=p.name; sel.appendChild(opt); sel2.appendChild(opt.cloneNode(true));
     if(bigSel) bigSel.appendChild(opt.cloneNode(true));
     if(shopSel) shopSel.appendChild(opt.cloneNode(true));
     const opt2=opt.cloneNode(true); filt.appendChild(opt2);
   });
+  
+  container.appendChild(table);
 }
 
 function addType(){
@@ -243,20 +896,94 @@ function addType(){
 }
 
 function renderTypes(){
-  const ul=document.getElementById('typeList');
+  const container = document.getElementById('typeList');
   const sel=document.getElementById('taskType');
   const sel2=document.getElementById('taskModalType');
   const bigSel=document.getElementById('bigTaskType');
   const shopSel=document.getElementById('diyShopType');
-  ul.innerHTML=''; sel.innerHTML=''; sel2.innerHTML='';
+  
+  container.innerHTML=''; 
+  sel.innerHTML=''; sel2.innerHTML='';
   if(bigSel) bigSel.innerHTML='';
   if(shopSel) shopSel.innerHTML='';
+  
+  if (diyTypes.length === 0) {
+    container.textContent = 'No types';
+    return;
+  }
+  
+  // Create table for types
+  const table = document.createElement('table');
+  table.className = 'task-table';
+  const head = document.createElement('tr');
+  head.innerHTML = '<th>Name</th><th>Task Status</th><th>Action</th>';
+  table.appendChild(head);
+  
   diyTypes.forEach(t=>{
-    const li=document.createElement('li'); li.textContent=t; ul.appendChild(li);
+    const tr = document.createElement('tr');
+    
+    // Name column
+    const nameCell = document.createElement('td');
+    nameCell.textContent = t;
+    nameCell.style.fontWeight = '500';
+    
+    // Task status column
+    const statusCell = document.createElement('td');
+    if (hasTypesAllocated(t)) {
+      statusCell.textContent = 'Tasks allocated';
+      statusCell.style.color = '#81B29A';
+    } else {
+      statusCell.textContent = 'No tasks';
+      statusCell.style.color = '#B5A89A';
+    }
+    
+    // Action column
+    const actionCell = document.createElement('td');
+    actionCell.style.display = 'grid';
+    actionCell.style.gridTemplateColumns = '1fr 1fr';
+    actionCell.style.gap = '4px';
+    actionCell.style.justifyItems = 'center';
+    
+    // Edit button
+    const editBtn = document.createElement('button');
+    editBtn.innerHTML = '<svg width="16" height="16" viewBox="0 0 20 20" fill="none" xmlns="http://www.w3.org/2000/svg"><path d="M13.5858 3.58579C14.3668 2.80474 15.6332 2.80474 16.4142 3.58579C17.1953 4.36683 17.1953 5.63316 16.4142 6.41421L15.6213 7.20711L12.7929 4.37868L13.5858 3.58579Z" fill="#B5A89A"/><path d="M11.3787 5.79289L3 14.1716V17H5.82842L14.2071 8.62132L11.3787 5.79289Z" fill="#C7BBB4"/></svg>';
+    editBtn.title = 'Edit Type';
+    editBtn.style.background = 'none';
+    editBtn.style.border = 'none';
+    editBtn.style.cursor = 'pointer';
+    editBtn.style.padding = '4px';
+    editBtn.onclick = () => openEditTypeModal(t);
+    actionCell.appendChild(editBtn);
+    
+    // Delete button (only if no tasks allocated)
+    if (!hasTypesAllocated(t)) {
+      const deleteBtn = document.createElement('button');
+      deleteBtn.innerHTML = '<svg width="16" height="16" viewBox="0 0 20 20" fill="none" xmlns="http://www.w3.org/2000/svg"><path d="M8.5 2C7.11929 2 6 3.11929 6 4.5H4C3.44772 4.5 3 4.94772 3 5.5C3 6.05228 3.44772 6.5 4 6.5H16C16.5523 6.5 17 6.05228 17 5.5C17 4.94772 16.5523 4.5 16 4.5H14C14 3.11929 12.8807 2 11.5 2H8.5Z" fill="#B5A89A"/><path d="M5 8.5C5 7.94772 5.44772 7.5 6 7.5H14C14.5523 7.5 15 7.94772 15 8.5V16C15 17.1046 14.1046 18 13 18H7C5.89543 18 5 17.1046 5 16V8.5Z" fill="#C7BBB4"/></svg>';
+      deleteBtn.title = 'Delete Type';
+      deleteBtn.style.background = 'none';
+      deleteBtn.style.border = 'none';
+      deleteBtn.style.cursor = 'pointer';
+      deleteBtn.style.padding = '4px';
+      deleteBtn.onclick = () => confirmDeleteType(t);
+      actionCell.appendChild(deleteBtn);
+    } else {
+      // Empty placeholder to maintain grid layout
+      const placeholder = document.createElement('div');
+      actionCell.appendChild(placeholder);
+    }
+    
+    tr.appendChild(nameCell);
+    tr.appendChild(statusCell);
+    tr.appendChild(actionCell);
+    table.appendChild(tr);
+    
+    // Update selects
     const opt=document.createElement('option'); opt.value=t; opt.textContent=t; sel.appendChild(opt); sel2.appendChild(opt.cloneNode(true));
     if(bigSel) bigSel.appendChild(opt.cloneNode(true));
     if(shopSel) shopSel.appendChild(opt.cloneNode(true));
   });
+  
+  container.appendChild(table);
 }
 
 function addTask(){
@@ -322,14 +1049,14 @@ function isDescendant(rootId,targetId){
 }
 
 function completeTask(id){
-  const info=getTaskInfo(id); if(!info) return; info.task.status='closed'; deleteCalendarEvents(id); saveData(); renderTasks(); renderCalendarTasks();
+  const info=getTaskInfo(id); if(!info) return; info.task.status='closed'; deleteCalendarEvents(id); saveData(); renderTasks(); renderCalendarTasks(); renderCompletedDiyTasks();
 }
 
 function deleteTask(id){
   const info=getTaskInfo(id); if(!info) return;
   if(confirm('Delete task?')){
     if(info.parent){info.parent.subtasks=info.parent.subtasks.filter(t=>t!==info.task);}else{diyTasks=diyTasks.filter(t=>t!==info.task);} 
-    deleteCalendarEvents(id); saveData(); renderTasks(); renderCalendarTasks();
+    deleteCalendarEvents(id); saveData(); renderTasks(); renderCalendarTasks(); renderDeletedDiyTasks();
   }
 }
 
@@ -375,21 +1102,76 @@ function renderTasks(){
   const fProj=document.getElementById('filterProject').value;
   const fUrg=document.getElementById('filterUrgent').value;
   function passes(t){ if(t.status!=='open') return false; if(fProj!=='all'&&t.project!==fProj) return false; if(fUrg==='yes'&&!t.urgent) return false; if(fUrg==='no'&&t.urgent) return false; return true; }
+
   forEachTask((t,depth)=>{
     if(!passes(t)) return;
-    const row=document.createElement('div'); row.className='task-row'; row.style.marginLeft=depth+'rem'; row.draggable=true; row.ondragstart=ev=>startDrag(ev,t.id); row.ondragover=allowDrop; row.ondrop=ev=>dropOnTask(ev,t.id);
-    row.innerHTML=`<div>${t.name}</div><div>${t.project}</div><div>${t.type}</div><div>${t.dueDate||''}</div><div>${t.urgent?'Y':'N'}</div>`;
-    const ctrl=document.createElement('div'); ctrl.className='controls';
-    const infoBtn=document.createElement('button');
-    infoBtn.textContent='Info';
-    infoBtn.onclick=()=>showInfo(t);
-    const comp=document.createElement('button'); comp.textContent='Complete'; comp.onclick=()=>completeTask(t.id);
-    const edit=document.createElement('button'); edit.textContent='Edit'; edit.onclick=()=>editTask(t.id);
-    const sub=document.createElement('button'); sub.textContent='Add Sub'; sub.onclick=()=>addSubtask(t.id);
-    const item=document.createElement('button'); item.textContent='Add Item'; item.onclick=()=>openShoppingForTask(t.id);
-    const del=document.createElement('button'); del.textContent='Delete'; del.onclick=()=>deleteTask(t.id);
-    ctrl.appendChild(infoBtn); ctrl.appendChild(comp); ctrl.appendChild(edit); ctrl.appendChild(sub); ctrl.appendChild(item); ctrl.appendChild(del);
-    row.appendChild(ctrl);
+    const row=document.createElement('div');
+    row.className='task-row';
+    row.style.marginLeft=depth+'rem';
+    row.draggable=true;
+    row.ondragstart=ev=>startDrag(ev,t.id);
+    row.ondragover=allowDrop;
+    row.ondrop=ev=>dropOnTask(ev,t.id);
+
+    // First column: name + project (colored) + type
+    const nameAndProjectDiv=document.createElement('div');
+    nameAndProjectDiv.className='task-name-project';
+    const nameDiv=document.createElement('div');
+    nameDiv.textContent=t.name; nameDiv.className='task-name';
+    const projDiv=document.createElement('div');
+    projDiv.textContent=t.project; projDiv.className='project-name';
+    const color=getProjectColor(t.project);
+    if(color) projDiv.style.color=color;
+    const typeDiv=document.createElement('div');
+    typeDiv.textContent=t.type||''; typeDiv.className='task-type';
+    nameAndProjectDiv.appendChild(nameDiv);
+    nameAndProjectDiv.appendChild(projDiv);
+    nameAndProjectDiv.appendChild(typeDiv);
+
+    const dueDiv=document.createElement('div'); dueDiv.textContent=t.dueDate||'';
+    const impDiv=document.createElement('div'); impDiv.textContent=t.importance||''; // DIY may not have importance
+    const urgDiv=document.createElement('div'); urgDiv.textContent=t.urgent?'Urgent':'Normal';
+
+    // Actions column: Complete, Edit, Add Subtask, Delete (2x2 grid)
+    const actionsCell=document.createElement('div'); actionsCell.className='task-actions';
+
+  // Add to Today (purple plus)
+  const addTodayBtn=document.createElement('button');
+  addTodayBtn.className='task-icon-btn';
+  addTodayBtn.title='Add to Today';
+  addTodayBtn.innerHTML='<svg width="18" height="18" viewBox="0 0 20 20" fill="none" xmlns="http://www.w3.org/2000/svg"><circle cx="10" cy="10" r="8" fill="#B5A89A"/><path d="M10 6v8M6 10h8" stroke="#fff" stroke-width="2" stroke-linecap="round"/></svg>';
+  addTodayBtn.onclick=()=>addDiyTaskToToday(t.id, t.name);
+    const completeBtn=document.createElement('button');
+    completeBtn.className='task-icon-btn complete'; completeBtn.title='Complete Task';
+    completeBtn.innerHTML='<svg width="18" height="18" viewBox="0 0 20 20" fill="none" xmlns="http://www.w3.org/2000/svg"><circle cx="10" cy="10" r="8" fill="#81B29A"/><path d="m6 10 2 2 6-6" stroke="#fff" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"/></svg>';
+    completeBtn.onclick=()=>completeTask(t.id);
+
+    const editBtn=document.createElement('button');
+    editBtn.className='task-icon-btn edit'; editBtn.title='Edit Task';
+    editBtn.innerHTML='<svg width="18" height="18" viewBox="0 0 20 20" fill="none" xmlns="http://www.w3.org/2000/svg"><path d="M13.5858 3.58579C14.3668 2.80474 15.6332 2.80474 16.4142 3.58579C17.1953 4.36683 17.1953 5.63316 16.4142 6.41421L15.6213 7.20711L12.7929 4.37868L13.5858 3.58579Z" fill="#B5A89A"/><path d="M11.3787 5.79289L3 14.1716V17H5.82842L14.2071 8.62132L11.3787 5.79289Z" fill="#C7BBB4"/></svg>';
+    editBtn.onclick=()=>editTask(t.id);
+
+    const subBtn=document.createElement('button');
+    subBtn.className='task-icon-btn add-sub'; subBtn.title='Add Subtask';
+    subBtn.innerHTML='<svg width="18" height="18" viewBox="0 0 20 20" fill="none" xmlns="http://www.w3.org/2000/svg"><circle cx="10" cy="10" r="8" fill="#17a2b8"/><path d="M10 6v8M6 10h8" stroke="#fff" stroke-width="2" stroke-linecap="round"/></svg>';
+    subBtn.onclick=()=>addSubtask(t.id);
+
+    const delBtn=document.createElement('button');
+    delBtn.className='task-icon-btn delete'; delBtn.title='Delete Task';
+    delBtn.innerHTML='<svg width="18" height="18" viewBox="0 0 20 20" fill="none" xmlns="http://www.w3.org/2000/svg"><rect x="6" y="8" width="8" height="8" rx="2" fill="#E07A5F"/><rect x="9" y="11" width="2" height="3" rx="1" fill="#fff"/><rect x="8" y="4" width="4" height="2" rx="1" fill="#2B2C29"/></svg>';
+    delBtn.onclick=()=>deleteTask(t.id);
+
+  actionsCell.appendChild(addTodayBtn);
+  actionsCell.appendChild(completeBtn);
+    actionsCell.appendChild(editBtn);
+    actionsCell.appendChild(subBtn);
+    actionsCell.appendChild(delBtn);
+
+    row.appendChild(nameAndProjectDiv);
+    row.appendChild(dueDiv);
+    row.appendChild(impDiv);
+    row.appendChild(urgDiv);
+    row.appendChild(actionsCell);
     list.appendChild(row);
   });
   renderCalendarTasks();
@@ -423,6 +1205,25 @@ function saveCalendar(){calendarEvents=calendar.getEvents().map(ev=>({id:ev.id,t
 function deleteCalendarEvents(taskId){if(!calendar) return; calendar.getEvents().forEach(ev=>{if(ev.extendedProps.taskId===taskId) ev.remove();}); saveCalendar();}
 function showInfo(t){
   alert(`Name: ${t.name}\nProject: ${t.project}\nType: ${t.type}\nDue: ${t.dueDate||''}\nUrgent: ${t.urgent?'Yes':'No'}\nInfo: ${t.info||''}`);
+}
+
+// Add-to-Today API call for DIY tasks
+async function addDiyTaskToToday(taskId, taskName){
+  try{
+    const res = await fetch('/api/add-to-today',{
+      method:'POST',
+      headers:{'Content-Type':'application/json'},
+      body: JSON.stringify({ taskType: 'diy', taskId, taskName })
+    });
+    if(res.ok){
+      console.log(`Added to Today: ${taskName}`);
+    }else{
+      alert('Failed to add to Today');
+    }
+  }catch(e){
+    console.error('Error adding to Today', e);
+    alert('Error adding to Today');
+  }
 }
 
 function addBigTask(){
@@ -461,11 +1262,11 @@ function renderBigTasks(){
 }
 
 function completeBigTask(id){
-  const t=diyBigTasks.find(x=>x.id===id); if(!t) return; t.status='closed'; saveData(); renderBigTasks();
+  const t=diyBigTasks.find(x=>x.id===id); if(!t) return; t.status='closed'; saveData(); renderBigTasks(); renderCompletedDiyTasks();
 }
 
 function deleteBigTask(id){
-  const idx=diyBigTasks.findIndex(x=>x.id===id); if(idx===-1) return; diyBigTasks.splice(idx,1); saveData(); renderBigTasks();
+  const idx=diyBigTasks.findIndex(x=>x.id===id); if(idx===-1) return; diyBigTasks.splice(idx,1); saveData(); renderBigTasks(); renderDeletedDiyTasks();
 }
 
 function ensureBigTaskPriorities(){
@@ -546,11 +1347,148 @@ function renderDiyShopping(){
 }
 
 function toggleBoughtDiyShop(id){
-  const it=diyShoppingList.find(i=>i.id===id); if(!it) return; it.bought=true; saveData(); renderDiyShopping();
+  const it=diyShoppingList.find(i=>i.id===id); if(!it) return; it.bought=true; saveData(); renderDiyShopping(); renderBoughtDiyItems();
 }
 
 function deleteDiyShopItem(id){
-  const idx=diyShoppingList.findIndex(i=>i.id===id); if(idx===-1) return; diyShoppingList.splice(idx,1); saveData(); renderDiyShopping();
+  const idx=diyShoppingList.findIndex(i=>i.id===id); if(idx===-1) return; diyShoppingList.splice(idx,1); saveData(); renderDiyShopping(); renderBoughtDiyItems();
+}
+
+// Helper functions for task allocation checks
+function hasTasksAllocated(projectName) {
+  return diyTasks.some(t => t.project === projectName) || 
+         diyBigTasks.some(t => t.project === projectName) ||
+         diyShoppingList.some(i => i.project === projectName);
+}
+
+function hasTypesAllocated(typeName) {
+  return diyTasks.some(t => t.type === typeName) || 
+         diyBigTasks.some(t => t.type === typeName) ||
+         diyShoppingList.some(i => i.type === typeName);
+}
+
+// Project modal functions
+let editingDiyProjectName = '';
+
+function openEditDiyProjectModal(name) {
+  const proj = diyProjects.find(p => p.name === name);
+  if (!proj) return;
+  
+  editingDiyProjectName = name;
+  document.getElementById('editDiyProjectName').value = proj.name;
+  document.getElementById('editDiyProjectColor').value = proj.color;
+  
+  document.getElementById('editProjectModal').classList.remove('hidden');
+}
+
+function closeEditDiyProjectModal() {
+  document.getElementById('editProjectModal').classList.add('hidden');
+  editingDiyProjectName = '';
+}
+
+function saveDiyProjectChanges() {
+  const newName = document.getElementById('editDiyProjectName').value.trim();
+  const newColor = document.getElementById('editDiyProjectColor').value;
+  
+  if (!newName) return;
+  
+  // Check if new name conflicts with existing project (unless it's the same project)
+  const existingProj = diyProjects.find(p => p.name === newName && p.name !== editingDiyProjectName);
+  if (existingProj) return;
+  
+  const proj = diyProjects.find(p => p.name === editingDiyProjectName);
+  if (!proj) return;
+  
+  // If name is changing, update all tasks that reference this project
+  if (proj.name !== newName) {
+    diyTasks.forEach(task => {
+      if (task.project === editingDiyProjectName) task.project = newName;
+    });
+    diyBigTasks.forEach(task => {
+      if (task.project === editingDiyProjectName) task.project = newName;
+    });
+    diyShoppingList.forEach(item => {
+      if (item.project === editingDiyProjectName) item.project = newName;
+    });
+  }
+  
+  proj.name = newName;
+  proj.color = newColor;
+  
+  renderProjects();
+  saveData();
+  closeEditDiyProjectModal();
+}
+
+function confirmDeleteDiyProject(name) {
+  if (!confirm(`Are you sure you want to delete the project "${name}"? This action cannot be undone.`)) return;
+  
+  const index = diyProjects.findIndex(p => p.name === name);
+  if (index === -1) return;
+  
+  if (hasTasksAllocated(name)) return;
+  
+  diyProjects.splice(index, 1);
+  renderProjects();
+  saveData();
+}
+
+// Type modal functions
+let editingTypeName = '';
+
+function openEditTypeModal(name) {
+  editingTypeName = name;
+  document.getElementById('editTypeName').value = name;
+  document.getElementById('editTypeModal').classList.remove('hidden');
+}
+
+function closeEditTypeModal() {
+  document.getElementById('editTypeModal').classList.add('hidden');
+  editingTypeName = '';
+}
+
+function saveTypeChanges() {
+  const newName = document.getElementById('editTypeName').value.trim();
+  
+  if (!newName) return;
+  
+  // Check if new name conflicts with existing type (unless it's the same type)
+  if (diyTypes.includes(newName) && newName !== editingTypeName) return;
+  
+  const index = diyTypes.findIndex(t => t === editingTypeName);
+  if (index === -1) return;
+  
+  // If name is changing, update all tasks that reference this type
+  if (editingTypeName !== newName) {
+    diyTasks.forEach(task => {
+      if (task.type === editingTypeName) task.type = newName;
+    });
+    diyBigTasks.forEach(task => {
+      if (task.type === editingTypeName) task.type = newName;
+    });
+    diyShoppingList.forEach(item => {
+      if (item.type === editingTypeName) item.type = newName;
+    });
+  }
+  
+  diyTypes[index] = newName;
+  
+  renderTypes();
+  saveData();
+  closeEditTypeModal();
+}
+
+function confirmDeleteType(name) {
+  if (!confirm(`Are you sure you want to delete the type "${name}"? This action cannot be undone.`)) return;
+  
+  const index = diyTypes.findIndex(t => t === name);
+  if (index === -1) return;
+  
+  if (hasTypesAllocated(name)) return;
+  
+  diyTypes.splice(index, 1);
+  renderTypes();
+  saveData();
 }
 
 loadData();

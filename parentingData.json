@@ -1,0 +1,230 @@
+{
+  "skills": [
+    {
+      "id": 2,
+      "name": "Motor",
+      "color": "#9bb5a5",
+      "closed": false
+    },
+    {
+      "id": 3,
+      "name": "Language",
+      "color": "#f98810",
+      "closed": false
+    },
+    {
+      "id": 4,
+      "name": "Problem Solving",
+      "color": "#104af9",
+      "closed": false
+    },
+    {
+      "id": 5,
+      "name": "Visual",
+      "color": "#f9104a",
+      "closed": false
+    },
+    {
+      "id": 6,
+      "name": "Social",
+      "color": "#fbff00",
+      "closed": false
+    },
+    {
+      "id": 7,
+      "name": "Cause and Effect",
+      "color": "#20ac4a",
+      "closed": false
+    },
+    {
+      "id": 8,
+      "name": "Pattern",
+      "color": "#a320ac",
+      "closed": false
+    },
+    {
+      "id": 9,
+      "name": "Audio",
+      "color": "#4ecbe4",
+      "closed": false
+    }
+  ],
+  "activities": [
+    {
+      "id": "00000002",
+      "name": "Chalk Obstacle",
+      "skillId": 2,
+      "info": "Draw some paths on the floor in chalk like an obstacle where on some they hop, and they follow a path or whatever. And run it with them.",
+      "completedDates": [
+        "2025-08-22",
+        "2025-08-27"
+      ],
+      "status": "open",
+      "dueDate": ""
+    },
+    {
+      "id": "00000003",
+      "name": "Shared Book Reading - Pictures",
+      "skillId": 3,
+      "info": "Have a picture book, and share reading. Name pictures → ask “Where’s ___?” → pause for child to say/point",
+      "completedDates": [],
+      "status": "open",
+      "dueDate": ""
+    },
+    {
+      "id": "00000004",
+      "name": "Point to....",
+      "skillId": 3,
+      "info": "“Point to nose/cat/cup” → add body parts → add 2-step “point then clap”",
+      "completedDates": [],
+      "status": "open",
+      "dueDate": ""
+    },
+    {
+      "id": "00000005",
+      "name": "Name & fetch",
+      "skillId": 3,
+      "info": "“Bring me the ball” → 2 objects → 2-step (“bring ball, then put in box”)",
+      "completedDates": [],
+      "status": "open",
+      "dueDate": ""
+    },
+    {
+      "id": "00000006",
+      "name": "Gesture parade",
+      "skillId": 3,
+      "info": "Model → wait → shape hands to sign → pair with words\n(wave, clap, “more/all done”)",
+      "completedDates": [
+        "2025-08-28"
+      ],
+      "status": "open",
+      "dueDate": ""
+    },
+    {
+      "id": "00000007",
+      "name": "Songs with actions",
+      "skillId": 3,
+      "info": "If youre happy and you know it\nIncy Wincy Spinder\nTwinkle Twinkle Little Star\nWind the bobbin up\nRing and round the rosie",
+      "completedDates": [],
+      "status": "open",
+      "dueDate": ""
+    },
+    {
+      "id": "00000008",
+      "name": "Hide & find (under cup)",
+      "skillId": 4,
+      "info": "Hide under one → shuffle slowly → faster",
+      "completedDates": [
+        "2025-08-27",
+        "2025-08-28"
+      ],
+      "status": "open",
+      "dueDate": ""
+    },
+    {
+      "id": "00000009",
+      "name": "Posting box / shape sorter",
+      "skillId": 4,
+      "info": "One slot → multiple shapes → name shapes as posting",
+      "completedDates": [],
+      "status": "open",
+      "dueDate": ""
+    },
+    {
+      "id": "00000010",
+      "name": "Stack & knock",
+      "skillId": 2,
+      "info": "Build 2–3 high → copy your tower → sort by size/shape",
+      "completedDates": [],
+      "status": "open",
+      "dueDate": ""
+    },
+    {
+      "id": "00000011",
+      "name": "Matching colours",
+      "skillId": 5,
+      "info": "Get a bunch of pens and blocks. Match the colours.",
+      "completedDates": [
+        "2025-08-27"
+      ],
+      "status": "open",
+      "dueDate": ""
+    },
+    {
+      "id": "00000012",
+      "name": "Roll the ball....to",
+      "skillId": 6,
+      "info": "Roll the ball to random people within the room",
+      "completedDates": [],
+      "status": "open",
+      "dueDate": ""
+    },
+    {
+      "id": "00000013",
+      "name": "Container play (fill/dump)",
+      "skillId": 7,
+      "info": "Cups, box, balls\nScoop → pour to another → pour to target line",
+      "completedDates": [],
+      "status": "open",
+      "dueDate": ""
+    },
+    {
+      "id": "00000014",
+      "name": "Treasure basket",
+      "skillId": 5,
+      "info": "Put random stuff in a basket",
+      "completedDates": [],
+      "status": "open",
+      "dueDate": ""
+    },
+    {
+      "id": "00000015",
+      "name": "Tiny helper (wipe/carry)",
+      "skillId": 6,
+      "info": "“Wipe table” → “carry to bin” → 2-step chores",
+      "completedDates": [],
+      "status": "open",
+      "dueDate": ""
+    },
+    {
+      "id": "00000016",
+      "name": "Sound Patterns",
+      "skillId": 9,
+      "info": "Make a pattern of sounds",
+      "completedDates": [],
+      "status": "open",
+      "dueDate": ""
+    },
+    {
+      "id": "00000017",
+      "name": "Music Play",
+      "skillId": 9,
+      "info": "Do music Play",
+      "completedDates": [],
+      "status": "open",
+      "dueDate": ""
+    },
+    {
+      "id": "00000018",
+      "name": "Hide and Seek",
+      "skillId": 4,
+      "info": "",
+      "completedDates": [],
+      "status": "open",
+      "dueDate": ""
+    },
+    {
+      "id": "00000019",
+      "name": "Play dough",
+      "skillId": 5,
+      "info": "Make Play-Doh and have fun with it",
+      "completedDates": [
+        "2025-08-28"
+      ],
+      "status": "open",
+      "dueDate": ""
+    }
+  ],
+  "nextSkillId": 10,
+  "nextActivityId": 20
+}

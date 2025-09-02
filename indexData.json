@@ -33,27 +33,6 @@
   ],
   "weeklyTasks": [
     {
-      "id": "00000001",
-      "name": "Gym",
-      "project": "Self Care",
-      "importance": "Medium",
-      "urgency": "Medium",
-      "days": [
-        "Mon",
-        "Wed",
-        "Fri"
-      ],
-      "completedDates": [],
-      "missedDates": [
-        "2025-07-30",
-        "2025-08-01"
-      ],
-      "status": "open",
-      "startDate": "2025-07-28",
-      "closedDate": "",
-      "dateLastChecked": "2025-08-03"
-    },
-    {
       "id": "00000002",
       "name": "Cut Nails",
       "project": "Self Care",
@@ -62,14 +41,21 @@
       "days": [
         "Sun"
       ],
-      "completedDates": [],
+      "completedDates": [
+        "2025-08-03",
+        "2025-08-10",
+        "2025-08-20",
+        "2025-08-28"
+      ],
       "missedDates": [
-        "2025-08-03"
+        "2025-08-17",
+        "2025-08-24",
+        "2025-08-31"
       ],
       "status": "open",
       "startDate": "2025-07-28",
       "closedDate": "",
-      "dateLastChecked": "2025-08-03"
+      "dateLastChecked": "2025-09-02"
     },
     {
       "id": "00000003",
@@ -80,12 +66,22 @@
       "days": [
         "Mon"
       ],
-      "completedDates": [],
-      "missedDates": [],
+      "completedDates": [
+        "2025-08-03",
+        "2025-08-13",
+        "2025-08-11",
+        "2025-08-25",
+        "2025-09-02",
+        "2025-09-01"
+      ],
+      "missedDates": [
+        "2025-08-04",
+        "2025-08-18"
+      ],
       "status": "open",
       "startDate": "2025-07-28",
       "closedDate": "",
-      "dateLastChecked": "2025-08-03"
+      "dateLastChecked": "2025-09-02"
     },
     {
       "id": "00000004",
@@ -97,15 +93,23 @@
         "Tue"
       ],
       "completedDates": [
-        "2025-07-30"
+        "2025-07-30",
+        "2025-08-10",
+        "2025-08-14",
+        "2025-08-12",
+        "2025-08-29"
       ],
       "missedDates": [
-        "2025-07-29"
+        "2025-07-29",
+        "2025-08-05",
+        "2025-08-19",
+        "2025-08-26",
+        "2025-09-02"
       ],
       "status": "open",
       "startDate": "2025-07-28",
       "closedDate": "",
-      "dateLastChecked": "2025-08-03"
+      "dateLastChecked": "2025-09-02"
     },
     {
       "id": "00000005",
@@ -117,13 +121,21 @@
         "Mon"
       ],
       "completedDates": [
-        "2025-07-28"
+        "2025-07-28",
+        "2025-08-09",
+        "2025-08-16",
+        "2025-09-01"
       ],
-      "missedDates": [],
+      "missedDates": [
+        "2025-08-04",
+        "2025-08-11",
+        "2025-08-18",
+        "2025-08-25"
+      ],
       "status": "open",
       "startDate": "2025-07-28",
       "closedDate": "",
-      "dateLastChecked": "2025-08-03"
+      "dateLastChecked": "2025-09-02"
     },
     {
       "id": "00000006",
@@ -136,13 +148,19 @@
       ],
       "completedDates": [
         "2025-07-28",
-        "2025-08-03"
+        "2025-08-03",
+        "2025-08-10",
+        "2025-08-30"
       ],
-      "missedDates": [],
+      "missedDates": [
+        "2025-08-17",
+        "2025-08-24",
+        "2025-08-31"
+      ],
       "status": "open",
       "startDate": "2025-07-28",
       "closedDate": "",
-      "dateLastChecked": "2025-08-03"
+      "dateLastChecked": "2025-09-02"
     },
     {
       "id": "00000007",
@@ -154,15 +172,19 @@
         "Sun"
       ],
       "completedDates": [
-        "2025-07-28"
+        "2025-07-28",
+        "2025-08-03",
+        "2025-08-10",
+        "2025-08-31"
       ],
       "missedDates": [
-        "2025-08-03"
+        "2025-08-17",
+        "2025-08-24"
       ],
       "status": "open",
       "startDate": "2025-07-28",
       "closedDate": "",
-      "dateLastChecked": "2025-08-03"
+      "dateLastChecked": "2025-09-02"
     },
     {
       "id": "00000008",
@@ -174,13 +196,19 @@
         "Sat"
       ],
       "completedDates": [
-        "2025-08-02"
+        "2025-08-02",
+        "2025-08-09",
+        "2025-08-16",
+        "2025-08-31"
       ],
-      "missedDates": [],
+      "missedDates": [
+        "2025-08-23",
+        "2025-08-30"
+      ],
       "status": "open",
       "startDate": "2025-07-28",
       "closedDate": "",
-      "dateLastChecked": "2025-08-03"
+      "dateLastChecked": "2025-09-02"
     },
     {
       "id": "00000009",
@@ -193,13 +221,19 @@
       ],
       "completedDates": [
         "2025-07-31",
-        "2025-08-03"
+        "2025-08-03",
+        "2025-08-10",
+        "2025-08-18",
+        "2025-08-31"
       ],
-      "missedDates": [],
+      "missedDates": [
+        "2025-08-17",
+        "2025-08-24"
+      ],
       "status": "open",
       "startDate": "2025-07-28",
       "closedDate": "",
-      "dateLastChecked": "2025-08-03"
+      "dateLastChecked": "2025-09-02"
     },
     {
       "id": "00000012",
@@ -214,15 +248,29 @@
       ],
       "completedDates": [
         "2025-07-30",
-        "2025-08-03"
+        "2025-08-03",
+        "2025-08-08",
+        "2025-08-13",
+        "2025-08-19",
+        "2025-08-22",
+        "2025-08-29",
+        "2025-09-01"
       ],
       "missedDates": [
-        "2025-08-01"
+        "2025-08-01",
+        "2025-08-04",
+        "2025-08-06",
+        "2025-08-11",
+        "2025-08-15",
+        "2025-08-18",
+        "2025-08-20",
+        "2025-08-25",
+        "2025-08-27"
       ],
       "status": "open",
       "startDate": "2025-07-28",
       "closedDate": "",
-      "dateLastChecked": "2025-08-03"
+      "dateLastChecked": "2025-09-02"
     },
     {
       "id": "00000013",
@@ -233,14 +281,21 @@
       "days": [
         "Sun"
       ],
-      "completedDates": [],
+      "completedDates": [
+        "2025-08-10",
+        "2025-08-18",
+        "2025-08-17",
+        "2025-09-01"
+      ],
       "missedDates": [
-        "2025-08-03"
+        "2025-08-03",
+        "2025-08-24",
+        "2025-08-31"
       ],
       "status": "open",
       "startDate": "2025-07-28",
       "closedDate": "",
-      "dateLastChecked": "2025-08-03"
+      "dateLastChecked": "2025-09-02"
     },
     {
       "id": "00000035",
@@ -252,13 +307,21 @@
         "Mon"
       ],
       "completedDates": [
-        "2025-07-30"
+        "2025-07-30",
+        "2025-08-11",
+        "2025-08-10",
+        "2025-08-19",
+        "2025-09-01"
       ],
-      "missedDates": [],
+      "missedDates": [
+        "2025-08-04",
+        "2025-08-18",
+        "2025-08-25"
+      ],
       "status": "open",
       "startDate": "2025-07-28",
       "closedDate": "",
-      "dateLastChecked": "2025-08-03"
+      "dateLastChecked": "2025-09-02"
     },
     {
       "id": "00000036",
@@ -277,18 +340,44 @@
       "completedDates": [
         "2025-07-28",
         "2025-07-30",
-        "2025-08-02"
+        "2025-08-02",
+        "2025-08-18",
+        "2025-08-17"
       ],
       "missedDates": [
         "2025-07-29",
         "2025-07-31",
         "2025-08-01",
-        "2025-08-03"
+        "2025-08-03",
+        "2025-08-04",
+        "2025-08-05",
+        "2025-08-06",
+        "2025-08-07",
+        "2025-08-08",
+        "2025-08-10",
+        "2025-08-11",
+        "2025-08-12",
+        "2025-08-13",
+        "2025-08-14",
+        "2025-08-15",
+        "2025-08-19",
+        "2025-08-20",
+        "2025-08-21",
+        "2025-08-22",
+        "2025-08-24",
+        "2025-08-25",
+        "2025-08-26",
+        "2025-08-27",
+        "2025-08-28",
+        "2025-08-29",
+        "2025-08-31",
+        "2025-09-01",
+        "2025-09-02"
       ],
       "status": "open",
       "startDate": "2025-07-28",
       "closedDate": "",
-      "dateLastChecked": "2025-08-03"
+      "dateLastChecked": "2025-09-02"
     },
     {
       "id": "00000037",
@@ -305,15 +394,35 @@
       "completedDates": [
         "2025-07-28",
         "2025-07-30",
-        "2025-08-02"
+        "2025-08-02",
+        "2025-08-11",
+        "2025-08-10",
+        "2025-08-18",
+        "2025-08-20",
+        "2025-08-26",
+        "2025-08-28",
+        "2025-09-01"
       ],
       "missedDates": [
-        "2025-08-01"
+        "2025-08-01",
+        "2025-08-04",
+        "2025-08-06",
+        "2025-08-08",
+        "2025-08-09",
+        "2025-08-13",
+        "2025-08-15",
+        "2025-08-16",
+        "2025-08-22",
+        "2025-08-23",
+        "2025-08-25",
+        "2025-08-27",
+        "2025-08-29",
+        "2025-08-30"
       ],
       "status": "open",
       "startDate": "2025-07-28",
       "closedDate": "",
-      "dateLastChecked": "2025-08-03"
+      "dateLastChecked": "2025-09-02"
     },
     {
       "id": "00000060",
@@ -324,12 +433,20 @@
       "days": [
         "Mon"
       ],
-      "completedDates": [],
-      "missedDates": [],
+      "completedDates": [
+        "2025-08-10",
+        "2025-08-18",
+        "2025-09-01"
+      ],
+      "missedDates": [
+        "2025-08-04",
+        "2025-08-11",
+        "2025-08-25"
+      ],
       "status": "open",
       "startDate": "2025-08-02",
       "closedDate": "",
-      "dateLastChecked": "2025-08-03"
+      "dateLastChecked": "2025-09-02"
     },
     {
       "id": "00000069",
@@ -340,12 +457,46 @@
       "days": [
         "Sun"
       ],
-      "completedDates": [],
-      "missedDates": [],
+      "completedDates": [
+        "2025-08-03",
+        "2025-08-09"
+      ],
+      "missedDates": [
+        "2025-08-10",
+        "2025-08-17",
+        "2025-08-24",
+        "2025-08-31"
+      ],
       "status": "open",
       "startDate": "2025-08-03",
       "closedDate": "",
-      "dateLastChecked": "2025-08-03"
+      "dateLastChecked": "2025-09-02"
+    },
+    {
+      "id": "00000115",
+      "name": "Practice Listening to F",
+      "project": "Family",
+      "importance": "High/Medium",
+      "urgency": "Medium/Low",
+      "days": [
+        "Mon",
+        "Wed",
+        "Fri"
+      ],
+      "completedDates": [
+        "2025-08-20",
+        "2025-08-25"
+      ],
+      "missedDates": [
+        "2025-08-22",
+        "2025-08-27",
+        "2025-08-29",
+        "2025-09-01"
+      ],
+      "status": "open",
+      "startDate": "2025-08-18",
+      "closedDate": "",
+      "dateLastChecked": "2025-09-02"
     }
   ],
   "oneOffTasks": [
@@ -401,10 +552,12 @@
       "urgency": "High/Medium",
       "dueDate": "",
       "startDate": "2025-07-28",
-      "status": "open",
-      "closedDate": "",
+      "status": "closed",
+      "closedDate": "2025-08-17",
       "taskType": "One-off",
-      "completedDates": [],
+      "completedDates": [
+        "2025-08-17"
+      ],
       "missedDates": []
     },
     {
@@ -431,10 +584,13 @@
       "urgency": "High",
       "dueDate": "2025-08-02",
       "startDate": "2025-07-28",
-      "status": "open",
-      "closedDate": "",
+      "status": "closed",
+      "closedDate": "2025-08-20",
       "taskType": "One-off",
-      "completedDates": [],
+      "completedDates": [
+        "2025-08-17",
+        "2025-08-20"
+      ],
       "missedDates": []
     },
     {
@@ -551,10 +707,12 @@
       "urgency": "Medium/Low",
       "dueDate": "",
       "startDate": "2025-07-28",
-      "status": "open",
-      "closedDate": "",
+      "status": "closed",
+      "closedDate": "2025-08-05",
       "taskType": "One-off",
-      "completedDates": [],
+      "completedDates": [
+        "2025-08-05"
+      ],
       "missedDates": []
     },
     {
@@ -565,10 +723,12 @@
       "urgency": "Medium/Low",
       "dueDate": "",
       "startDate": "2025-07-29",
-      "status": "open",
-      "closedDate": "",
+      "status": "closed",
+      "closedDate": "2025-08-19",
       "taskType": "One-off",
-      "completedDates": [],
+      "completedDates": [
+        "2025-08-19"
+      ],
       "missedDates": []
     },
     {
@@ -579,10 +739,12 @@
       "urgency": "High",
       "dueDate": "2025-08-01",
       "startDate": "2025-07-29",
-      "status": "open",
-      "closedDate": "",
+      "status": "closed",
+      "closedDate": "2025-08-05",
       "taskType": "One-off",
-      "completedDates": [],
+      "completedDates": [
+        "2025-08-05"
+      ],
       "missedDates": []
     },
     {
@@ -623,10 +785,12 @@
       "urgency": "Medium",
       "dueDate": "",
       "startDate": "2025-07-30",
-      "status": "open",
-      "closedDate": "",
+      "status": "closed",
+      "closedDate": "2025-08-17",
       "taskType": "One-off",
-      "completedDates": [],
+      "completedDates": [
+        "2025-08-17"
+      ],
       "missedDates": []
     },
     {
@@ -683,10 +847,12 @@
       "urgency": "High/Medium",
       "dueDate": "2025-08-01",
       "startDate": "2025-07-30",
-      "status": "open",
-      "closedDate": "",
+      "status": "closed",
+      "closedDate": "2025-08-18",
       "taskType": "One-off",
-      "completedDates": [],
+      "completedDates": [
+        "2025-08-18"
+      ],
       "missedDates": []
     },
     {
@@ -697,10 +863,12 @@
       "urgency": "High",
       "dueDate": "",
       "startDate": "2025-07-30",
-      "status": "open",
-      "closedDate": "",
+      "status": "closed",
+      "closedDate": "2025-08-17",
       "taskType": "One-off",
-      "completedDates": [],
+      "completedDates": [
+        "2025-08-17"
+      ],
       "missedDates": []
     },
     {
@@ -725,10 +893,12 @@
       "urgency": "High",
       "dueDate": "2025-08-05",
       "startDate": "2025-08-03",
-      "status": "open",
-      "closedDate": "",
+      "status": "closed",
+      "closedDate": "2025-08-18",
       "taskType": "One-off",
-      "completedDates": [],
+      "completedDates": [
+        "2025-08-18"
+      ],
       "missedDates": []
     },
     {
@@ -739,10 +909,12 @@
       "urgency": "High",
       "dueDate": "",
       "startDate": "2025-08-03",
-      "status": "open",
-      "closedDate": "",
+      "status": "closed",
+      "closedDate": "2025-08-05",
       "taskType": "One-off",
-      "completedDates": [],
+      "completedDates": [
+        "2025-08-05"
+      ],
       "missedDates": []
     },
     {
@@ -753,10 +925,12 @@
       "urgency": "High",
       "dueDate": "",
       "startDate": "2025-08-03",
-      "status": "open",
-      "closedDate": "",
+      "status": "closed",
+      "closedDate": "2025-08-05",
       "taskType": "One-off",
-      "completedDates": [],
+      "completedDates": [
+        "2025-08-05"
+      ],
       "missedDates": []
     },
     {
@@ -767,24 +941,12 @@
       "urgency": "High",
       "dueDate": "",
       "startDate": "2025-08-03",
-      "status": "open",
-      "closedDate": "",
+      "status": "closed",
+      "closedDate": "2025-08-05",
       "taskType": "One-off",
-      "completedDates": [],
-      "missedDates": []
-    },
-    {
-      "id": "00000073",
-      "name": "Chase for refund for Kari thing",
-      "project": "Finance",
-      "importance": "High",
-      "urgency": "High",
-      "dueDate": "",
-      "startDate": "2025-08-03",
-      "status": "open",
-      "closedDate": "",
-      "taskType": "One-off",
-      "completedDates": [],
+      "completedDates": [
+        "2025-08-05"
+      ],
       "missedDates": []
     },
     {
@@ -809,10 +971,12 @@
       "urgency": "High",
       "dueDate": "",
       "startDate": "2025-08-03",
-      "status": "open",
-      "closedDate": "",
+      "status": "closed",
+      "closedDate": "2025-08-18",
       "taskType": "One-off",
-      "completedDates": [],
+      "completedDates": [
+        "2025-08-18"
+      ],
       "missedDates": []
     },
     {
@@ -837,6 +1001,243 @@
       "urgency": "High",
       "dueDate": "",
       "startDate": "2025-08-03",
+      "status": "closed",
+      "closedDate": "2025-08-18",
+      "taskType": "One-off",
+      "completedDates": [
+        "2025-08-18"
+      ],
+      "missedDates": []
+    },
+    {
+      "id": "00000081",
+      "name": "Chase chidlcare vouchers",
+      "project": "Finance",
+      "importance": "High",
+      "urgency": "High",
+      "dueDate": "2025-08-15",
+      "startDate": "2025-08-05",
+      "status": "closed",
+      "closedDate": "2025-08-13",
+      "taskType": "One-off",
+      "completedDates": [
+        "2025-08-13"
+      ],
+      "missedDates": []
+    },
+    {
+      "id": "00000082",
+      "name": "Check we haven't been served and don't know",
+      "project": "Family",
+      "importance": "Medium",
+      "urgency": "Medium",
+      "dueDate": "",
+      "startDate": "2025-08-07",
+      "status": "open",
+      "closedDate": "",
+      "taskType": "One-off",
+      "completedDates": [],
+      "missedDates": []
+    },
+    {
+      "id": "00000086",
+      "name": "Look for Kari nursery for 2 years old",
+      "project": "Family",
+      "importance": "Medium",
+      "urgency": "Medium",
+      "dueDate": "",
+      "startDate": "2025-08-08",
+      "status": "open",
+      "closedDate": "",
+      "taskType": "One-off",
+      "completedDates": [],
+      "missedDates": []
+    },
+    {
+      "id": "00000087",
+      "name": "Build my self care and goals part of the website",
+      "project": "Self Care",
+      "importance": "High",
+      "urgency": "High",
+      "dueDate": "2025-08-13",
+      "startDate": "2025-08-10",
+      "status": "open",
+      "closedDate": "",
+      "taskType": "One-off",
+      "completedDates": [],
+      "missedDates": []
+    },
+    {
+      "id": "00000088",
+      "name": "Put the charger adapter on electric to track kwh",
+      "project": "Finance",
+      "importance": "High",
+      "urgency": "High",
+      "dueDate": "",
+      "startDate": "2025-08-10",
+      "status": "closed",
+      "closedDate": "2025-08-18",
+      "taskType": "One-off",
+      "completedDates": [
+        "2025-08-18"
+      ],
+      "missedDates": []
+    },
+    {
+      "id": "00000089",
+      "name": "Create Kari part of the website",
+      "project": "Family",
+      "importance": "High",
+      "urgency": "High",
+      "dueDate": "",
+      "startDate": "2025-08-10",
+      "status": "closed",
+      "closedDate": "2025-08-22",
+      "taskType": "One-off",
+      "completedDates": [
+        "2025-08-22"
+      ],
+      "missedDates": []
+    },
+    {
+      "id": "00000090",
+      "name": "Create Health Tracker Part of Website",
+      "project": "Self Care",
+      "importance": "Medium/Low",
+      "urgency": "Medium/Low",
+      "dueDate": "",
+      "startDate": "2025-08-10",
+      "status": "open",
+      "closedDate": "",
+      "taskType": "One-off",
+      "completedDates": [],
+      "missedDates": []
+    },
+    {
+      "id": "00000107",
+      "name": "Bupa foot auth",
+      "project": "Self Care",
+      "importance": "High",
+      "urgency": "High",
+      "dueDate": "",
+      "startDate": "2025-08-12",
+      "status": "open",
+      "closedDate": "",
+      "taskType": "One-off",
+      "completedDates": [],
+      "missedDates": []
+    },
+    {
+      "id": "00000108",
+      "name": "Call hmrc about kari",
+      "project": "Finance",
+      "importance": "High",
+      "urgency": "High",
+      "dueDate": "",
+      "startDate": "2025-08-12",
+      "status": "closed",
+      "closedDate": "2025-08-18",
+      "taskType": "One-off",
+      "completedDates": [
+        "2025-08-18"
+      ],
+      "missedDates": []
+    },
+    {
+      "id": "00000109",
+      "name": "Childcare code in gov website",
+      "project": "Finance",
+      "importance": "High",
+      "urgency": "High",
+      "dueDate": "",
+      "startDate": "2025-08-13",
+      "status": "closed",
+      "closedDate": "2025-08-20",
+      "taskType": "One-off",
+      "completedDates": [
+        "2025-08-18",
+        "2025-08-20"
+      ],
+      "missedDates": []
+    },
+    {
+      "id": "00000121",
+      "name": "Review if i could do with benefits",
+      "project": "Finance",
+      "importance": "High",
+      "urgency": "High",
+      "dueDate": "",
+      "startDate": "2025-08-22",
+      "status": "open",
+      "closedDate": "",
+      "taskType": "One-off",
+      "completedDates": [],
+      "missedDates": []
+    },
+    {
+      "id": "00000122",
+      "name": "Contact the local planning to find out who has the car areas and responsible for the alleyway ",
+      "project": "Chores",
+      "importance": "High",
+      "urgency": "High",
+      "dueDate": "",
+      "startDate": "2025-08-22",
+      "status": "open",
+      "closedDate": "",
+      "taskType": "One-off",
+      "completedDates": [],
+      "missedDates": []
+    },
+    {
+      "id": "00000126",
+      "name": "Dilesh mama visit end of the year",
+      "project": "Social",
+      "importance": "High",
+      "urgency": "High",
+      "dueDate": "",
+      "startDate": "2025-08-28",
+      "status": "open",
+      "closedDate": "",
+      "taskType": "One-off",
+      "completedDates": [],
+      "missedDates": []
+    },
+    {
+      "id": "00000127",
+      "name": "Think about how to deal with our stuff... Put in practise for arguments through interactive learning and find out for emotional regulation for martial impulsivity",
+      "project": "Self Care",
+      "importance": "High",
+      "urgency": "High",
+      "dueDate": "",
+      "startDate": "2025-08-28",
+      "status": "open",
+      "closedDate": "",
+      "taskType": "One-off",
+      "completedDates": [],
+      "missedDates": []
+    },
+    {
+      "id": "00000133",
+      "name": "How to clean reusable oven mats",
+      "project": "Chores",
+      "importance": "Medium",
+      "urgency": "Medium",
+      "dueDate": "",
+      "startDate": "2025-08-30",
+      "status": "open",
+      "closedDate": "",
+      "taskType": "One-off",
+      "completedDates": [],
+      "missedDates": []
+    },
+    {
+      "id": "00000134",
+      "name": "How to get rust off trays",
+      "project": "Chores",
+      "importance": "Medium",
+      "urgency": "Medium",
+      "dueDate": "",
+      "startDate": "2025-08-30",
       "status": "open",
       "closedDate": "",
       "taskType": "One-off",
@@ -851,7 +1252,7 @@
       "project": "Self Care",
       "importance": "High/Medium",
       "urgency": "High/Medium",
-      "dueDate": "2025-08-06",
+      "dueDate": "2025-09-06",
       "frequency": "daily",
       "interval": 4,
       "from": "today",
@@ -860,11 +1261,14 @@
       "closedDate": "",
       "taskType": "Recurring",
       "completedDates": [
-        "2025-07-29"
+        "2025-07-29",
+        "2025-08-06",
+        "2025-08-14",
+        "2025-08-25"
       ],
       "missedDates": [],
-      "lastCompleted": "2025-08-02",
-      "lastDiff": 4
+      "lastCompleted": "2025-09-02",
+      "lastDiff": 8
     },
     {
       "id": "00000026",
@@ -912,7 +1316,7 @@
       "project": "Chores",
       "importance": "Medium/Low",
       "urgency": "Medium/Low",
-      "dueDate": "2025-08-03",
+      "dueDate": "2025-09-03",
       "frequency": "monthly",
       "interval": 1,
       "from": "intended",
@@ -920,10 +1324,12 @@
       "status": "open",
       "closedDate": "",
       "taskType": "Recurring",
-      "completedDates": [],
+      "completedDates": [
+        "2025-08-03"
+      ],
       "missedDates": [],
-      "lastCompleted": "",
-      "lastDiff": 0
+      "lastCompleted": "2025-08-18",
+      "lastDiff": 15
     },
     {
       "id": "00000034",
@@ -962,26 +1368,173 @@
       "missedDates": [],
       "lastCompleted": "",
       "lastDiff": 0
+    },
+    {
+      "id": "00000139",
+      "name": "Hoover Spider Weds",
+      "project": "Chores",
+      "importance": "Medium",
+      "urgency": "Medium",
+      "dueDate": "2025-09-06",
+      "frequency": "weekly",
+      "interval": 2,
+      "from": "today",
+      "startDate": "2025-09-06",
+      "status": "open",
+      "closedDate": "",
+      "taskType": "Recurring",
+      "completedDates": [],
+      "missedDates": [],
+      "lastCompleted": "",
+      "lastDiff": 0
     }
   ],
-  "stretchTasks": [],
-  "bigTasks": [
+  "stretchTasks": [
     {
-      "id": "00000068",
-      "name": "think about sheela masis bday",
+      "id": "00000120",
+      "name": "gym",
       "project": "Self Care",
+      "importance": "High",
+      "urgency": "High",
+      "completedDates": [
+        "2025-08-21",
+        "2025-08-22"
+      ],
+      "status": "open"
+    },
+    {
+      "id": "00000123",
+      "name": "Find name ",
+      "project": "Family",
+      "importance": "Medium",
+      "urgency": "Medium",
+      "completedDates": [],
+      "status": "open"
+    }
+  ],
+  "bigTasks": [],
+  "deletedTasks": [
+    {
+      "id": "00000001",
+      "name": "Gym",
+      "project": "Self Care",
+      "importance": "Medium",
+      "urgency": "Medium",
+      "days": [
+        "Mon",
+        "Wed",
+        "Fri"
+      ],
+      "completedDates": [],
+      "missedDates": [
+        "2025-07-30",
+        "2025-08-01",
+        "2025-08-04",
+        "2025-08-06",
+        "2025-08-08"
+      ],
+      "status": "open",
+      "startDate": "2025-07-28",
+      "closedDate": "",
+      "dateLastChecked": "2025-08-10"
+    },
+    {
+      "id": "00000094",
+      "name": "Test",
+      "project": "Self Care",
+      "importance": "High",
+      "urgency": "High",
+      "days": [
+        "Tue",
+        "Fri"
+      ],
+      "completedDates": [],
+      "missedDates": [],
+      "status": "open",
+      "startDate": "2025-08-10",
+      "closedDate": "",
+      "dateLastChecked": "2025-08-10"
+    },
+    {
+      "id": "00000095",
+      "name": "Test ",
+      "project": "Self Care",
+      "importance": "High",
+      "urgency": "High",
+      "dueDate": "2025-08-17",
+      "startDate": "2025-08-10",
+      "status": "open",
+      "closedDate": "",
+      "taskType": "One-off",
+      "completedDates": [],
+      "missedDates": []
+    },
+    {
+      "id": "00000106",
+      "name": "Bupa",
+      "project": "Self Care",
+      "importance": "High",
+      "urgency": "High",
+      "dueDate": "",
+      "startDate": "2025-08-12",
+      "status": "open",
+      "closedDate": "",
+      "taskType": "One-off",
+      "completedDates": [],
+      "missedDates": []
+    },
+    {
+      "id": "00000104",
+      "name": "test",
+      "project": "Self Care",
+      "importance": "High",
+      "urgency": "High",
+      "completedDates": [],
+      "status": "open"
+    },
+    {
+      "id": "00000105",
+      "name": "test",
+      "project": "Self Care",
+      "importance": "High",
+      "urgency": "High",
+      "dueDate": "",
+      "startDate": "2025-08-12",
+      "status": "open",
+      "closedDate": "",
+      "taskType": "Big",
+      "completedDates": [],
+      "missedDates": []
+    },
+    {
+      "id": "00000073",
+      "name": "Chase for refund for Kari thing",
+      "project": "Finance",
       "importance": "High",
       "urgency": "High",
       "dueDate": "",
       "startDate": "2025-08-03",
       "status": "open",
       "closedDate": "",
-      "taskType": "Big",
+      "taskType": "One-off",
+      "completedDates": [],
+      "missedDates": []
+    },
+    {
+      "id": "00000132",
+      "name": "Figure out how to get to rust off pans for oven trays",
+      "project": "Self Care",
+      "importance": "Medium",
+      "urgency": "Medium",
+      "dueDate": "",
+      "startDate": "2025-08-30",
+      "status": "open",
+      "closedDate": "",
+      "taskType": "One-off",
       "completedDates": [],
       "missedDates": []
     }
   ],
-  "deletedTasks": [],
   "shoppingList": [
     {
       "id": "00000011",
@@ -1038,18 +1591,105 @@
       "cost": "35",
       "month": "",
       "bought": true
+    },
+    {
+      "id": "00000078",
+      "name": "Tooth finger cleaner ",
+      "project": "Family",
+      "cost": "",
+      "month": "",
+      "bought": false
+    },
+    {
+      "id": "00000118",
+      "name": "Fiacra Daddys Day Gift",
+      "project": "Social",
+      "cost": "15",
+      "month": "2025-08",
+      "bought": false
+    },
+    {
+      "id": "00000119",
+      "name": "Shivani Bday Gift (nails)",
+      "project": "Social",
+      "cost": "15",
+      "month": "2025-08",
+      "bought": true
+    },
+    {
+      "id": "00000128",
+      "name": "Lighter cover for phone and or phone waistholder thing something to keep it on me",
+      "project": "Soul",
+      "cost": "",
+      "month": "",
+      "bought": true
+    },
+    {
+      "id": "00000129",
+      "name": "Another fire guard fire thing",
+      "project": "Family",
+      "cost": "",
+      "month": "",
+      "bought": false
+    },
+    {
+      "id": "00000130",
+      "name": "Stairgates",
+      "project": "Family",
+      "cost": "",
+      "month": "",
+      "bought": false
+    },
+    {
+      "id": "00000131",
+      "name": "Fruit guard",
+      "project": "Chores",
+      "cost": "",
+      "month": "",
+      "bought": true
+    },
+    {
+      "id": "00000135",
+      "name": "Laundry basket kari",
+      "project": "Family",
+      "cost": "",
+      "month": "",
+      "bought": true
+    },
+    {
+      "id": "00000136",
+      "name": "Light bulb for Kari room",
+      "project": "Chores",
+      "cost": "",
+      "month": "",
+      "bought": false
+    },
+    {
+      "id": "00000142",
+      "name": "Shower filter",
+      "project": "Self Care",
+      "cost": "35",
+      "month": "",
+      "bought": false
+    },
+    {
+      "id": "00000143",
+      "name": "Mum Birthday Gift",
+      "project": "Family",
+      "cost": "",
+      "month": "2025-09",
+      "bought": false
+    },
+    {
+      "id": "00000144",
+      "name": "Niamth Bday Gift",
+      "project": "Family",
+      "cost": "",
+      "month": "",
+      "bought": false
     }
   ],
   "longTermList": [
-    {
-      "id": "00000030",
-      "name": "Shower Pressure",
-      "project": "Self Care",
-      "cost": "200",
-      "month": "",
-      "info": "",
-      "bought": false
-    },
     {
       "id": "00000031",
       "name": "Car Charger",
@@ -1057,6 +1697,15 @@
       "cost": "1000",
       "month": "",
       "info": "",
+      "bought": false
+    },
+    {
+      "id": "00000099",
+      "name": "Shower pressure",
+      "project": "Chores",
+      "cost": "150",
+      "month": "2025-12",
+      "info": "See what we can do",
       "bought": false
     }
   ],
@@ -1074,60 +1723,261 @@
     {
       "id": "00000065",
       "name": "Nappy rash for yeast",
+      "bought": true
+    },
+    {
+      "id": "00000117",
+      "name": "Tooth brush for Kari",
+      "bought": true
+    },
+    {
+      "id": "00000138",
+      "name": "Metal masher",
       "bought": false
     },
     {
-      "id": "00000066",
-      "name": "Baby tooth brush",
+      "id": "00000140",
+      "name": "Socks for Kari",
+      "bought": false
+    },
+    {
+      "id": "00000141",
+      "name": "Clothes for Kari",
       "bought": false
     }
   ],
   "todayList": [
     {
-      "type": "recurring",
-      "id": "00000027"
+      "id": 1756370189905,
+      "type": "work",
+      "originalId": "00000048",
+      "name": "Check crawlet",
+      "completed": false,
+      "addedAt": "2025-08-28T08:36:29.905Z"
+    },
+    {
+      "type": "work",
+      "id": "00000020"
+    },
+    {
+      "type": "oneoff",
+      "id": "00000076"
+    },
+    {
+      "type": "oneoff",
+      "id": "00000087"
+    },
+    {
+      "type": "oneoff",
+      "id": "00000090"
+    },
+    {
+      "id": 1756370195697,
+      "type": "work",
+      "originalId": "00000051",
+      "name": "Complete the Data Form",
+      "completed": false,
+      "addedAt": "2025-08-28T08:36:35.697Z"
+    },
+    {
+      "id": 1756370203173,
+      "type": "work",
+      "originalId": "00000072",
+      "name": "Read the chbh oplr part c and operating rules",
+      "completed": false,
+      "addedAt": "2025-08-28T08:36:43.173Z"
+    },
+    {
+      "id": 1756545990787,
+      "type": "dev",
+      "originalId": "00000009",
+      "name": "Posting box / shape sorter",
+      "completed": false,
+      "addedAt": "2025-08-30T09:26:30.787Z"
+    },
+    {
+      "id": 1756721671161,
+      "type": "weekly",
+      "originalId": "00000005",
+      "name": "Laundry",
+      "completed": false,
+      "addedAt": "2025-09-01T10:14:31.162Z"
+    },
+    {
+      "id": 1756721674582,
+      "type": "weekly",
+      "originalId": "00000003",
+      "name": "Tweeze",
+      "completed": false,
+      "addedAt": "2025-09-01T10:14:34.582Z"
+    },
+    {
+      "id": 1756721692153,
+      "type": "weekly",
+      "originalId": "00000036",
+      "name": "Meditation",
+      "completed": false,
+      "addedAt": "2025-09-01T10:14:52.153Z"
+    },
+    {
+      "id": 1756721716169,
+      "type": "oneoff",
+      "originalId": "00000063",
+      "name": "Download calm",
+      "completed": false,
+      "addedAt": "2025-09-01T10:15:16.169Z"
+    },
+    {
+      "type": "work",
+      "id": "00000048"
+    },
+    {
+      "id": 1756721773935,
+      "type": "work",
+      "originalId": "00000049",
+      "name": "Do my essay and thesis",
+      "completed": false,
+      "addedAt": "2025-09-01T10:16:13.935Z"
+    },
+    {
+      "id": 1756722287517,
+      "type": "weekly",
+      "originalId": "00000036",
+      "name": "Meditation",
+      "completed": false,
+      "addedAt": "2025-09-01T10:24:47.517Z"
+    },
+    {
+      "id": 1756722298078,
+      "type": "weekly",
+      "originalId": "00000060",
+      "name": "Check physiatry UK emails",
+      "completed": false,
+      "addedAt": "2025-09-01T10:24:58.078Z"
+    },
+    {
+      "id": 1756723988994,
+      "type": "weekly",
+      "originalId": "00000036",
+      "name": "Meditation",
+      "completed": false,
+      "addedAt": "2025-09-01T10:53:08.994Z"
+    },
+    {
+      "id": 1756724002886,
+      "type": "weekly",
+      "originalId": "00000060",
+      "name": "Check physiatry UK emails",
+      "completed": false,
+      "addedAt": "2025-09-01T10:53:22.886Z"
+    },
+    {
+      "id": 1756724490844,
+      "type": "weekly",
+      "originalId": "00000035",
+      "name": "Positivity Journal",
+      "completed": false,
+      "addedAt": "2025-09-01T11:01:30.844Z"
+    },
+    {
+      "id": 1756724533480,
+      "type": "weekly",
+      "originalId": "00000036",
+      "name": "Meditation",
+      "completed": false,
+      "addedAt": "2025-09-01T11:02:13.480Z"
+    },
+    {
+      "id": 1756724560846,
+      "type": "weekly",
+      "originalId": "00000115",
+      "name": "Practice Listening to F",
+      "completed": false,
+      "addedAt": "2025-09-01T11:02:40.846Z"
+    },
+    {
+      "id": 1756725709172,
+      "type": "weekly",
+      "originalId": "00000037",
+      "name": "Quabble Wellbeing",
+      "completed": false,
+      "addedAt": "2025-09-01T11:21:49.172Z"
+    },
+    {
+      "id": 1756725948595,
+      "type": "weekly",
+      "originalId": "00000005",
+      "name": "Laundry",
+      "completed": false,
+      "addedAt": "2025-09-01T11:25:48.595Z"
+    },
+    {
+      "id": 1756725953522,
+      "type": "weekly",
+      "originalId": "00000115",
+      "name": "Practice Listening to F",
+      "completed": false,
+      "addedAt": "2025-09-01T11:25:53.522Z"
     },
     {
       "type": "weekly",
-      "id": "00000002"
-    },
-    {
-      "type": "weekly",
-      "id": "00000007"
-    },
-    {
-      "type": "oneoff",
-      "id": "00000040"
-    },
-    {
-      "type": "recurring",
-      "id": "00000033"
-    },
-    {
-      "type": "oneoff",
-      "id": "00000038"
-    },
-    {
-      "type": "oneoff",
-      "id": "00000070"
-    },
-    {
-      "type": "oneoff",
-      "id": "00000072"
-    },
-    {
-      "type": "oneoff",
-      "id": "00000071"
+      "id": "00000036"
     },
     {
       "type": "weekly",
       "id": "00000069"
     },
     {
-      "type": "weekly",
-      "id": "00000013"
+      "type": "oneoff",
+      "id": "00000053"
+    },
+    {
+      "type": "oneoff",
+      "id": "00000082"
+    },
+    {
+      "type": "oneoff",
+      "id": "00000134"
+    },
+    {
+      "type": "recurring",
+      "id": "00000058"
+    },
+    {
+      "id": 1756728107495,
+      "type": "work",
+      "originalId": "00000063",
+      "name": "Emails",
+      "completed": false,
+      "addedAt": "2025-09-01T12:01:47.496Z"
     }
   ],
-  "nextId": 78,
-  "todayQuickHistory": []
+  "todayQuickHistory": [
+    {
+      "name": "Practice my MRI Training",
+      "added": "2025-08-28",
+      "done": false
+    },
+    {
+      "name": "Practice my MRI Training",
+      "added": "2025-08-28",
+      "done": true,
+      "completed": "2025-08-30"
+    },
+    {
+      "name": "MRI Practice",
+      "added": "2025-08-28",
+      "done": false
+    }
+  ],
+  "nextId": 145,
+  "deletedShoppingItems": [
+    {
+      "id": "00000137",
+      "name": "Masher",
+      "bought": false,
+      "deletedAt": "2025-08-30T18:10:43.952Z"
+    }
+  ],
+  "archivedShoppingItems": []
 }

@@ -4,63 +4,208 @@
 <meta charset="UTF-8">
 <meta name="viewport" content="width=device-width, initial-scale=1">
 <title>Task Manager</title>
+<link rel="stylesheet" href="styles.css">
 <style>
-body { font-family: 'Segoe UI', Tahoma, sans-serif; margin: 0; padding: 0; }
-header {
-  background: #fff;
-  color: #ff69b4;
-  padding: 1rem;
-  text-align: center;
-  border-bottom: 1px solid #ddd;
+.col-resizer {
+  position: absolute;
+  top: 0;
+  right: -2px;
+  width: 4px;
+  height: 100%;
+  cursor: col-resize;
+  background: #C7BBB4;
+  opacity: 0;
+  transition: opacity 0.2s;
+  z-index: 10;
 }
+
+.task-grid:hover .col-resizer {
+  opacity: 0.6;
+}
+
+.col-resizer:hover {
+  opacity: 1 !important;
+  background: #B5A89A;
+}
+/* Page-specific structural styles (header visual styling handled globally) */
 section {
   padding: 1rem;
-  border-bottom: 10px solid pink;
 }
 .toggle {
   cursor: pointer;
-  background: #f4f4f4;
+  background: #C7BBB4;
   padding: 0.5rem;
   border-radius: 4px;
   margin: 1rem 0;
   text-align: center;
 }
-.add-toggle { background: #eee; font-size: 0.8rem; }
+.add-toggle { 
+  background: #2B2C29; 
+  color: #C7BBB4;
+  font-size: 0.8rem; 
+  padding: 0.5rem;
+  transition: all 0.2s ease;
+}
+.add-toggle:hover {
+  background: #C7BBB4;
+  color: #2B2C29;
+  box-shadow: 0 0 12px 2px #2B2C29;
+}
+
+/* Larger rounded buttons for Settings section */
+#settings .add-toggle {
+  font-size: 1rem;
+  padding: 12px 20px;
+  border-radius: 8px;
+  font-weight: bold;
+}
+
 .section-header {
   font-size: 1.2rem;
   font-weight: bold;
-  background: #cfe2ff;
+  position: relative;
+  /* background removed to inherit from CSS */
 }
+
+.section-header .pin-star {
+  position: absolute;
+  top: 50%;
+  right: 8px;
+  transform: translateY(-50%);
+  cursor: pointer;
+  z-index: 10;
+}
+
+.section-header .pin-star svg {
+  width: 16px;
+  height: 16px;
+}
+
+.section-header .pin-star.pinned svg {
+  fill: #F7F6F3;
+  stroke: #2B2C29;
+  stroke-width: 1;
+}
+
 .subtoggle { font-size: 0.9rem; margin-top: 0.5rem; }
 #deletedBox, #archivedBox {
-  max-height: 150px;
+  max-height: 450px;
   overflow-y: auto;
   border: 1px solid #ccc;
   padding: 0.5rem;
   margin-top: 0.5rem;
 }
-.box {}
 #projects li {
   list-style: none;
   padding: 0.25rem;
   font-size: 0.8rem;
 }
+
+/* Modal Styles */
+.modal {
+  position: fixed;
+  z-index: 1000;
+  left: 0;
+  top: 0;
+  width: 100%;
+  height: 100%;
+  background-color: rgba(43, 44, 41, 0.5);
+}
+
+.modal-content {
+  background-color: #E7E4D6;
+  margin: 10% auto;
+  padding: 0;
+  border-radius: 8px;
+  width: 90%;
+  max-width: 500px;
+  box-shadow: 0 4px 20px rgba(43, 44, 41, 0.3);
+}
+
+.modal-header {
+  background-color: #C7BBB4;
+  padding: 1rem;
+  border-radius: 8px 8px 0 0;
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+}
+
+.modal-header h3 {
+  margin: 0;
+  color: #2B2C29;
+  font-weight: bold;
+}
+
+.close {
+  font-size: 1.5rem;
+  font-weight: bold;
+  color: #2B2C29;
+  cursor: pointer;
+  line-height: 1;
+}
+
+.close:hover {
+  color: #B5A89A;
+}
+
+.modal-body {
+  padding: 1.5rem;
+}
+
+.modal-footer {
+  padding: 1rem 1.5rem;
+  display: flex;
+  gap: 1rem;
+  justify-content: flex-end;
+  border-top: 1px solid #C7BBB4;
+}
+
+.cancel-btn {
+  background: #B5A89A;
+  color: #2B2C29;
+  border: none;
+  padding: 8px 16px;
+  border-radius: 12px;
+  cursor: pointer;
+  font-size: 0.9rem;
+  font-weight: bold;
+  transition: all 0.2s ease;
+}
+
+.cancel-btn:hover {
+  background: #C7BBB4;
+}
+
 .task-grid {
   display: grid;
   grid-template-columns: 2fr repeat(7, 1fr);
-  gap: 0.25rem;
+  width: 100%;
   margin-bottom: 1rem;
-  align-items: stretch;
+  gap: 0;
+  position: relative;
 }
+
 .task-grid div {
-  padding: 0.25rem;
-  border: 1px solid #ccc;
+  padding: 0.18rem 0.2rem;
+  border: none;
   display: flex;
   align-items: center;
   justify-content: center;
+  background: none;
+  min-height: 2rem;
+}
+.task-grid .grid-header {
+  font-weight: bold;
+  font-size: 0.9rem;
+  color: #2B2C29;
 }
 .task-info { display: flex; flex-direction: column; text-align: left; align-items: flex-start; justify-content: flex-start; }
-.task-info div { padding: 0.05rem 0; border:none; }
+.task-info { display: flex; flex-direction: row; align-items: flex-start; justify-content: flex-start; gap: 0.5rem; }
+.task-info .task-details { flex: 1 1 auto; display: flex; flex-direction: column; justify-content: center; min-width: 0; }
+.task-info .task-name { font-size: 0.9rem; font-weight: 500; color: #2B2C29; }
+.task-info .task-meta { font-size: 0.8rem; color: #7D7D7D; }
+.task-info .task-actions { display: flex; flex-direction: column; align-items: center; justify-content: center; gap: 0; }
 .task-meta.small { font-size: 0.6rem; }
 .task-name { font-size: 0.9rem; }
 .task-meta { font-size: 0.7rem; }
@@ -73,41 +218,184 @@ section {
   justify-content: center;
   cursor: pointer;
 }
-.purple { background: #e1bee7; }
+.purple { background: #E8B4A3; }
 .grey { background: #ccc; }
-.green { background: #81c784; color: #fff; }
+.green { background: #81B29A; color: #fff; }
 .tick { font-size: 14px; }
 .controls button { margin-left: 0.25rem; font-size: 0.7rem; }
 .week-controls { margin-bottom: 0.5rem; text-align: center; }
+.week-controls button {
+  background: #C7BBB4;
+  color: #2B2C29;
+  border: none;
+  border-radius: 12px;
+  width: 3.2rem;
+  height: 2.3rem;
+  font-size: 2.1rem;
+  font-weight: bold;
+  margin: 0 0.5rem;
+  box-shadow: 0 1px 2px rgba(44,44,44,0.04);
+  transition: box-shadow 0.18s, background 0.18s, color 0.18s;
+  cursor: pointer;
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  line-height: 1.1;
+}
+.week-controls button:hover {
+  box-shadow: 0 0 12px 2px #2B2C29;
+  background: #B5A89A;
+  color: #E7E4D6;
+}
+.submit-btn {
+  background: #C7BBB4;
+  color: #2B2C29;
+  border: none;
+  border-radius: 12px;
+  padding: 0.7rem 1.5rem;
+  font-size: 1rem;
+  font-weight: bold;
+  box-shadow: 0 1px 2px rgba(44,44,44,0.04);
+  transition: box-shadow 0.18s, background 0.18s, color 0.18s;
+  cursor: pointer;
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+}
+.submit-btn:hover {
+  box-shadow: 0 0 12px 2px #2B2C29;
+  background: #B5A89A;
+  color: #E7E4D6;
+}
 #toast { position: fixed; bottom: 1rem; left: 50%; transform: translateX(-50%); background: #333; color: #fff; padding: 0.5rem 1rem; border-radius: 4px; }
-.task-table { width: 100%; border-collapse: collapse; }
-.task-table th, .task-table td { border: 1px solid #ccc; padding: 0.25rem; text-align: left; }
-.form-grid { display: grid; grid-template-columns: repeat(auto-fill, minmax(200px, 1fr)); gap: 0.5rem; align-items: center; }
-.form-grid label { display: flex; flex-direction: column; font-size: 0.9rem; }
+.task-table {
+  width: 100%;
+  border-collapse: separate;
+  border-spacing: 0;
+  border-radius: 10px;
+  overflow: hidden;
+  box-shadow: 0 2px 8px rgba(44,44,44,0.06);
+}
+.task-table th {
+  background: #C7BBB4;
+  color: #2B2C29;
+  font-weight: 600;
+  padding: 0.5rem 0.75rem;
+  border-bottom: 1px solid #EDEAE3;
+}
+.task-table td {
+  background: #fff;
+  color: #2B2C29;
+  padding: 0.45rem 0.75rem;
+  border-bottom: 1px solid #F7F6F3;
+  transition: background 0.18s;
+}
+.task-table tr:last-child td {
+  border-bottom: none;
+}
+.task-table tr:nth-child(even) td {
+  background: #F7F6F3;
+}
+.task-table tr:hover td {
+  background: #E7E4D6;
+}
+.today-col {
+  background: #C8B8DB !important;
+}
+.form-grid { display: grid; grid-template-columns: repeat(auto-fill, minmax(200px, 1fr)); gap: 1rem; align-items: center; }
+.form-grid label { display: flex; flex-direction: column; font-size: 0.9rem; font-weight: bold; }
 .hidden { display: none !important; }
-.form-grid input, .form-grid select { width: 100%; font-size: 1rem; padding: 0.4rem; }
+.form-grid input, .form-grid select { width: 100%; font-size: 1rem; padding: 0.4rem; margin-top: 0.3rem; box-sizing: border-box; font-weight: normal; }
+.form-grid select[multiple] { 
+  min-height: 120px; 
+  background: white; 
+  border: 1px solid #C7BBB4;
+  border-radius: 6px;
+}
 #projectName { width: 200px; font-size: 1.1rem; }
-@media (max-width: 600px) {
-  html { font-size: 14px; }
+@media (max-width: 600px) { 
+  html { font-size: 14px; } 
+  body {
+    margin: 0;
+    padding: 0;
+    width: 100vw;
+    overflow-x: hidden;
+  }
+  .task-info .task-name,
+  .task-info .task-meta {
+    text-align: center;
+  }
+  .task-info .task-details {
+    align-items: center;
+  }
+  /* Fix navigation height and header consistency */
+  header {
+    padding: 2rem 0 !important;
+    width: 100vw;
+    margin: 0;
+  }
+  .main-nav {
+    padding: 0.5rem 0;
+    min-height: auto;
+    width: 100vw;
+    margin: 0;
+  }
+  /* Fix mobile width overflow - reduce container and surface padding */
+  .container {
+    padding: 0 0.5rem;
+    width: 100%;
+    max-width: 100vw;
+  }
+  .surface {
+    padding: 0.5rem;
+    margin: 0;
+    width: 100%;
+    box-sizing: border-box;
+  }
+  /* Make all sections same width */
+  section, .task-table, .task-grid, .form-grid {
+    width: 100%;
+    max-width: 100%;
+    box-sizing: border-box;
+  }
+  .task-table {
+    font-size: 0.8rem;
+  }
+  .task-table th,
+  .task-table td {
+    padding: 0.3rem 0.5rem;
+    vertical-align: middle;
+    height: auto;
+    min-height: 60px;
+  }
 }
 </style>
 </head>
 <body>
   <header>
-    <h1>Task Manager</h1>
-    <div id="nav-placeholder"></div>
+    <div style="padding-left: 2rem;">
+      <h1>Task Manager</h1>
+    </div>
   </header>
-<script src="nav-loader.js"></script>
+  <div id="nav-placeholder"></div>
+  <script src="nav-loader.js"></script>
 
   <div id="toast" class="hidden"></div>
 
   <section>
-    <div class="toggle section-header" onclick="toggle('weeklySection')">Weekly Tasks</div>
-    <div id="weeklySection">
+    <div class="toggle section-header" onclick="toggle('weeklySection')">
+      Weekly Tasks
+      <span class="pin-star" onclick="event.stopPropagation(); togglePin('weeklySection')" title="Pin section open">
+        <svg viewBox="0 0 24 24" fill="#2B2C29" stroke="#F7F6F3" stroke-width="1">
+          <polygon points="12,2 15.09,8.26 22,9.27 17,14.14 18.18,21.02 12,17.77 5.82,21.02 7,14.14 2,9.27 8.91,8.26"></polygon>
+        </svg>
+      </span>
+    </div>
+    <div id="weeklySection" class="hidden">
     <div class="week-controls">
-      <button onclick="changeWeek(-1)">&#8592;</button>
-      <span id="weekLabel"></span>
-      <button onclick="changeWeek(1)">&#8594;</button>
+  <button onclick="changeWeek(-1)">&#8592;</button>
+  <span id="weekLabel" style="font-weight:bold;color:#2B2C29;"></span>
+  <button onclick="changeWeek(1)">&#8594;</button>
     </div>
     <div id="weeklyGrid" class="task-grid">
       <div>Task</div>
@@ -147,15 +435,22 @@ section {
         <option value="Sun">Sun</option>
       </select></label>
       <div style="grid-column:1/-1;text-align:center;">
-        <button onclick="addWeeklyTask()">Submit</button>
+        <button class="submit-btn" onclick="addWeeklyTask()">Submit</button>
       </div>
     </div>
     </div><!-- end weeklySection -->
   </section>
 
   <section>
-    <div class="toggle section-header" onclick="toggle('oneOffSection')">One-Off Tasks</div>
-    <div id="oneOffSection">
+    <div class="toggle section-header" onclick="toggle('oneOffSection')">
+      One-Off Tasks
+      <span class="pin-star" onclick="event.stopPropagation(); togglePin('oneOffSection')" title="Pin section open">
+        <svg viewBox="0 0 24 24" fill="#2B2C29" stroke="#F7F6F3" stroke-width="1">
+          <polygon points="12,2 15.09,8.26 22,9.27 17,14.14 18.18,21.02 12,17.77 5.82,21.02 7,14.14 2,9.27 8.91,8.26"></polygon>
+        </svg>
+      </span>
+    </div>
+    <div id="oneOffSection" class="hidden">
     <div id="oneOffList"></div>
     <div class="toggle add-toggle" onclick="toggle('addOneOff')">Add One-Off Task</div>
     <div id="addOneOff" class="hidden subtoggle form-grid">
@@ -177,15 +472,22 @@ section {
       </select></label>
       <label>Due Date<input type="date" id="oneOffDue"></label>
       <div style="grid-column:1/-1;text-align:center;">
-        <button onclick="addOneOffTask()">Submit</button>
+        <button class="submit-btn" onclick="addOneOffTask()">Submit</button>
       </div>
     </div>
     </div><!-- end oneOffSection -->
   </section>
 
   <section>
-    <div class="toggle section-header" onclick="toggle('recurringSection')">Recurring Tasks</div>
-    <div id="recurringSection">
+    <div class="toggle section-header" onclick="toggle('recurringSection')">
+      Recurring Tasks
+      <span class="pin-star" onclick="event.stopPropagation(); togglePin('recurringSection')" title="Pin section open">
+        <svg viewBox="0 0 24 24" fill="#2B2C29" stroke="#F7F6F3" stroke-width="1">
+          <polygon points="12,2 15.09,8.26 22,9.27 17,14.14 18.18,21.02 12,17.77 5.82,21.02 7,14.14 2,9.27 8.91,8.26"></polygon>
+        </svg>
+      </span>
+    </div>
+    <div id="recurringSection" class="hidden">
     <div id="recurringList"></div>
     <div class="toggle add-toggle" onclick="toggle('addRecurring')">Add Recurring Task</div>
     <div id="addRecurring" class="hidden subtoggle form-grid">
@@ -218,15 +520,22 @@ section {
         <option value="today">Today's date</option>
       </select></label>
       <div style="grid-column:1/-1;text-align:center;">
-        <button onclick="addRecurringTask()">Submit</button>
+        <button class="submit-btn" onclick="addRecurringTask()">Submit</button>
       </div>
     </div>
     </div><!-- end recurringSection -->
   </section>
 
   <section>
-    <div class="toggle section-header" onclick="toggle('stretchSection')">Stretch Tasks</div>
-    <div id="stretchSection">
+    <div class="toggle section-header" onclick="toggle('stretchSection')">
+      Stretch Tasks
+      <span class="pin-star" onclick="event.stopPropagation(); togglePin('stretchSection')" title="Pin section open">
+        <svg viewBox="0 0 24 24" fill="#2B2C29" stroke="#F7F6F3" stroke-width="1">
+          <polygon points="12,2 15.09,8.26 22,9.27 17,14.14 18.18,21.02 12,17.77 5.82,21.02 7,14.14 2,9.27 8.91,8.26"></polygon>
+        </svg>
+      </span>
+    </div>
+    <div id="stretchSection" class="hidden">
     <div id="stretchList"></div>
     <div class="toggle add-toggle" onclick="toggle('addStretch')">Add Stretch Task</div>
     <div id="addStretch" class="hidden subtoggle form-grid">
@@ -247,63 +556,138 @@ section {
         <option>Low</option>
       </select></label>
       <div style="grid-column:1/-1;text-align:center;">
-        <button onclick="addStretchTask()">Submit</button>
+        <button class="submit-btn" onclick="addStretchTask()">Submit</button>
       </div>
     </div>
     </div><!-- end stretchSection -->
   </section>
 
   <section>
-    <div class="toggle section-header" onclick="toggle('bigSection')">Big Tasks &amp; Goals</div>
-    <div id="bigSection">
-    <div id="bigList"></div>
-    <div class="toggle add-toggle" onclick="toggle('addBig')">Add Big Task</div>
-    <div id="addBig" class="hidden subtoggle form-grid">
-      <label>Name<input type="text" id="bigName"></label>
-      <label>Project<select id="bigProject"></select></label>
-      <label>Importance<select id="bigImportance">
-        <option>High</option>
-        <option>High/Medium</option>
-        <option>Medium</option>
-        <option>Medium/Low</option>
-        <option>Low</option>
-      </select></label>
-      <label>Urgency<select id="bigUrgency">
-        <option>High</option>
-        <option>High/Medium</option>
-        <option>Medium</option>
-        <option>Medium/Low</option>
-        <option>Low</option>
-      </select></label>
-      <label>Due Date<input type="date" id="bigDue"></label>
-      <div style="grid-column:1/-1;text-align:center;">
-        <button onclick="addBigTask()">Submit</button>
+    <div class="toggle section-header" onclick="toggle('bigSection')">
+      Big Tasks
+      <span class="pin-star" onclick="event.stopPropagation(); togglePin('bigSection')" title="Pin section open">
+        <svg viewBox="0 0 24 24" fill="#2B2C29" stroke="#F7F6F3" stroke-width="1">
+          <polygon points="12,2 15.09,8.26 22,9.27 17,14.14 18.18,21.02 12,17.77 5.82,21.02 7,14.14 2,9.27 8.91,8.26"></polygon>
+        </svg>
+      </span>
+    </div>
+    <div id="bigSection" class="hidden">
+      <div id="bigList"></div>
+      <div class="toggle add-toggle" onclick="toggle('addBig')">Add Big Task</div>
+      <div id="addBig" class="hidden subtoggle form-grid">
+        <label>Name<input type="text" id="bigName"></label>
+        <label>Project<select id="bigProject"></select></label>
+        <label>Importance<select id="bigImportance">
+          <option>High</option>
+          <option>High/Medium</option>
+          <option>Medium</option>
+          <option>Medium/Low</option>
+          <option>Low</option>
+        </select></label>
+        <label>Urgency<select id="bigUrgency">
+          <option>High</option>
+          <option>High/Medium</option>
+          <option>Medium</option>
+          <option>Medium/Low</option>
+          <option>Low</option>
+        </select></label>
+        <label>Due Date<input type="date" id="bigDue"></label>
+        <div style="grid-column:1/-1;text-align:center;">
+          <button class="submit-btn" onclick="addBigTask()">Submit</button>
+        </div>
       </div>
     </div>
-    </div><!-- end bigSection -->
   </section>
 
   <section>
-    <div class="toggle section-header" onclick="toggle('settings')">Settings</div>
+    <div class="toggle section-header" onclick="toggle('settings')">
+      Settings
+      <span class="pin-star" onclick="event.stopPropagation(); togglePin('settings')" title="Pin section open">
+        <svg viewBox="0 0 24 24" fill="#2B2C29" stroke="#F7F6F3" stroke-width="1">
+          <polygon points="12,2 15.09,8.26 22,9.27 17,14.14 18.18,21.02 12,17.77 5.82,21.02 7,14.14 2,9.27 8.91,8.26"></polygon>
+        </svg>
+      </span>
+    </div>
       <div id="settings" class="hidden">
         <h3>Add Project</h3>
         <input type="text" id="projectName" placeholder="Project name">
         <input type="color" id="projectColor" value="#ff0000">
-        <button onclick="addProject()">Add</button>
-        <ul id="projects"></ul>
-        <button onclick="toggle('deletedBox')">Deleted Tasks</button>
-        <div id="deletedBox" class="hidden box">
-          <ul id="deletedList"></ul>
+        <button class="submit-btn" onclick="addProject()">Add</button>
+        
+        <h3 style="margin-top: 2rem;">Projects</h3>
+        <div id="projects"></div>
+        
+        <h3 style="margin-top: 2rem;">Click to view...</h3>
+        <div style="display: flex; gap: 1rem; margin: 1rem 0;">
+          <button class="add-toggle" onclick="toggle('deletedBox')">Deleted Tasks</button>
+          <button class="add-toggle" onclick="toggle('archivedBox')">Archived Tasks</button>
         </div>
-        <button onclick="toggle('archivedBox')">Archived Tasks</button>
+        
+        <div id="deletedBox" class="hidden box">
+          <h4>Deleted Tasks</h4>
+          <div id="deletedList"></div>
+        </div>
+        
         <div id="archivedBox" class="hidden box">
-          <ul id="archivedList"></ul>
+          <h4>Archived Tasks</h4>
+          <div id="archivedList"></div>
         </div>
       </div>
   </section>
 
+  <!-- Edit Project Modal -->
+  <div id="editProjectModal" class="modal hidden">
+    <div class="modal-content">
+      <div class="modal-header">
+        <h3>Edit Project</h3>
+        <span class="close" onclick="closeEditProjectModal()">&times;</span>
+      </div>
+      <div class="modal-body">
+        <div class="form-grid">
+          <label>Project Name<input type="text" id="editProjectName"></label>
+          <label>Project Color<input type="color" id="editProjectColor"></label>
+          <label>Status<select id="editProjectStatus">
+            <option value="false">Active</option>
+            <option value="true">Archived</option>
+          </select></label>
+        </div>
+      </div>
+      <div class="modal-footer">
+        <button class="submit-btn" onclick="saveProjectChanges()">Save Changes</button>
+        <button class="cancel-btn" onclick="closeEditProjectModal()">Cancel</button>
+      </div>
+    </div>
+  </div>
+
 
   <script>
+// Timer fallback: ensure timer helpers exist even if time-tracker.js isn't ready yet
+(function(){
+  try{
+    if(typeof window.createTimerButton!=="function"){
+      window.createTimerButton=function(source,name){
+        const btn=document.createElement('button');
+        btn.innerHTML='<svg width="18" height="18" viewBox="0 0 20 20" fill="none" xmlns="http://www.w3.org/2000/svg"><circle cx="10" cy="10" r="8" stroke="#2B2C29" stroke-width="2" fill="#C7BBB4"/><path d="M10 5v5l3 3" stroke="#2B2C29" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"/></svg>';
+        btn.title='Start timer';
+        btn.style.background='none';
+        btn.style.border='none';
+        btn.style.cursor='pointer';
+        btn.addEventListener('click',()=>{
+          if(typeof window.startTask==='function') window.startTask(source,name);
+          else console.warn('[time-tracker] startTask not ready yet');
+        });
+        return btn;
+      };
+    }
+    if(typeof window.startTask!=="function"){
+      window.startTask=function(){ console.warn('[time-tracker] startTask not ready yet'); };
+    }
+    if(typeof window.stopTask!=="function"){
+      window.stopTask=function(){ console.warn('[time-tracker] stopTask not ready yet'); };
+    }
+  }catch(e){ /* no-op */ }
+})();
+
 let projects = []; // {name, color, closed:false}
 let weeklyTasks = [];
 let oneOffTasks = [];
@@ -317,25 +701,251 @@ let generalList = [];
 let todayList = [];
 let nextId = 1;
 let currentWeekStart = startOfWeek(new Date());
+let pinnedSections = []; // Array to store pinned section IDs
+
+// Audit trail system for tracking stretch and big task changes
+let auditTrail = [];
+let saveInProgress = false;
+let pendingSave = false;
+let saveTimeout = null;
+let fileMonitoringInterval = null;
+let lastFileHash = null;
+// Prevent saves before data is successfully loaded from server
+let dataLoadedFlag = false;
+let lastLoadedAt = null;
+
+function logAuditEvent(action, taskType, taskData, additionalInfo = '') {
+  const timestamp = new Date().toISOString();
+  const event = {
+    timestamp,
+    action, // 'create', 'update', 'delete', 'status_change', 'load', 'save'
+    taskType, // 'stretch' or 'big'
+    taskData: taskData ? JSON.parse(JSON.stringify(taskData)) : null, // Deep clone
+    additionalInfo,
+    stackTrace: new Error().stack,
+    stretchCount: stretchTasks.length,
+    bigCount: bigTasks.length
+  };
+  
+  auditTrail.push(event);
+  
+  // Keep only last 100 events to prevent memory issues
+  if (auditTrail.length > 100) {
+    auditTrail.shift();
+  }
+  
+  console.log(`[AUDIT] ${timestamp} - ${action.toUpperCase()} ${taskType} task:`, taskData ? `${taskData.name} (ID: ${taskData.id})` : 'N/A', additionalInfo);
+}
+
+// Function to view audit trail in console
+function viewAuditTrail(filterType = null) {
+  console.log('=== AUDIT TRAIL ===');
+  const filtered = filterType ? auditTrail.filter(e => e.taskType === filterType) : auditTrail;
+  filtered.forEach((event, index) => {
+    console.log(`${index + 1}. [${event.timestamp}] ${event.action.toUpperCase()} ${event.taskType} - ${event.taskData ? event.taskData.name : 'N/A'} - ${event.additionalInfo}`);
+    console.log(`   Counts: Stretch=${event.stretchCount}, Big=${event.bigCount}`);
+  });
+  console.log(`Total events: ${filtered.length}`);
+  return filtered;
+}
+
+// Function to export audit trail
+function exportAuditTrail() {
+  console.log('Full audit trail data:', auditTrail);
+  return auditTrail;
+}
+
+// File monitoring system to track server-side data changes
+async function checkFileChanges() {
+  try {
+    const res = await fetch('/api/index-data');
+    if (!res.ok) return;
+    
+    const data = await res.text(); // Get raw text for hashing
+    const currentHash = await hashString(data);
+    
+    if (lastFileHash === null) {
+      lastFileHash = currentHash;
+      logAuditEvent('file_monitor_start', 'both', null, `File monitoring started, initial hash: ${currentHash.substring(0, 8)}`);
+      return;
+    }
+    
+    if (currentHash !== lastFileHash) {
+      const obj = JSON.parse(data);
+      const stretchCount = obj.stretchTasks ? obj.stretchTasks.length : 0;
+      const bigCount = obj.bigTasks ? obj.bigTasks.length : 0;
+      
+      console.log(`📁 FILE CHANGED! Hash: ${lastFileHash.substring(0, 8)} → ${currentHash.substring(0, 8)}`);
+      console.log(`📊 Server data now has: Stretch=${stretchCount}, Big=${bigCount}`);
+      
+      logAuditEvent('file_changed', 'both', null, 
+        `File hash changed: ${lastFileHash.substring(0, 8)} → ${currentHash.substring(0, 8)}, Stretch: ${stretchCount}, Big: ${bigCount}`);
+      
+      // Check if this differs from our local data
+      if (stretchCount !== stretchTasks.length || bigCount !== bigTasks.length) {
+        console.warn(`⚠️ SERVER-CLIENT MISMATCH! Server: S=${stretchCount}, B=${bigCount} | Client: S=${stretchTasks.length}, B=${bigTasks.length}`);
+        logAuditEvent('data_mismatch', 'both', null, 
+          `Server has S=${stretchCount}, B=${bigCount} but client has S=${stretchTasks.length}, B=${bigTasks.length}`);
+      }
+      
+      lastFileHash = currentHash;
+    }
+  } catch (e) {
+    console.error('File monitoring error:', e);
+  }
+}
+
+// Simple hash function for comparing file contents
+async function hashString(str) {
+  // Use SubtleCrypto when available (HTTPS/secure context); otherwise fallback to FNV-1a
+  try {
+    if (window.crypto && crypto.subtle && typeof crypto.subtle.digest === 'function') {
+      const encoder = new TextEncoder();
+      const data = encoder.encode(str);
+      const hashBuffer = await crypto.subtle.digest('SHA-256', data);
+      const hashArray = Array.from(new Uint8Array(hashBuffer));
+      return hashArray.map(b => b.toString(16).padStart(2, '0')).join('');
+    }
+  } catch (e) {
+    // Fall through to FNV-1a on any error
+  }
+  // FNV-1a 32-bit hash fallback
+  let h = 0x811c9dc5;
+  for (let i = 0; i < str.length; i++) {
+    h ^= str.charCodeAt(i);
+    // 32-bit FNV prime: 16777619
+    h = (h + ((h << 1) + (h << 4) + (h << 7) + (h << 8) + (h << 24))) >>> 0;
+  }
+  // Return as 8-hex chars to mimic short digest string behavior
+  return ('00000000' + h.toString(16)).slice(-8);
+}
+
+function startFileMonitoring() {
+  if (fileMonitoringInterval) return; // Already running
+  
+  console.log('📁 Starting file monitoring...');
+  checkFileChanges(); // Initial check
+  
+  fileMonitoringInterval = setInterval(() => {
+    checkFileChanges();
+  }, 5000); // Check every 5 seconds
+}
+
+function stopFileMonitoring() {
+  if (fileMonitoringInterval) {
+    clearInterval(fileMonitoringInterval);
+    fileMonitoringInterval = null;
+    console.log('📁 File monitoring stopped');
+  }
+}
 
 async function saveData() {
+  // Skip save if data not yet loaded (prevents wiping server with empty arrays on transient load failures)
+  if (!dataLoadedFlag) {
+    console.warn('⏭️ saveData skipped: data not yet loaded');
+    return;
+  }
+  // Debounce rapid save calls - if called again within 500ms, reset the timer
+  if (saveTimeout) {
+    clearTimeout(saveTimeout);
+  }
+  
+  saveTimeout = setTimeout(async () => {
+    await performSave();
+    saveTimeout = null;
+  }, 500);
+}
+
+async function performSave() {
+  // Prevent concurrent saves
+  if (saveInProgress) {
+    console.log('⚠️ Save already in progress, marking pending save');
+    pendingSave = true;
+    return;
+  }
+  
+  saveInProgress = true;
   const data = { projects, weeklyTasks, oneOffTasks, recurringTasks, stretchTasks, bigTasks, deletedTasks, shoppingList, longTermList, generalList, todayList, nextId };
+  
+  // Detailed debugging before save
+  console.log('🔍 SAVEDATA DEBUG START:', new Date().toISOString());
+  console.log('  - About to save stretch tasks:', stretchTasks.length);
+  console.log('  - About to save big tasks:', bigTasks.length);
+  console.log('  - Stretch tasks content:', stretchTasks.map(t => `${t.id}:${t.name}`));
+  console.log('  - Big tasks content:', bigTasks.map(t => `${t.id}:${t.name}`));
+  console.log('  - Call stack:', new Error().stack);
+  
+  // Audit trail logging before save
+  logAuditEvent('save', 'stretch', null, `About to save ${stretchTasks.length} stretch tasks`);
+  logAuditEvent('save', 'big', null, `About to save ${bigTasks.length} big tasks`);
+  
+  // Debug logging to track stretch and big tasks
+  console.log('Saving data - stretch tasks count:', stretchTasks.length);
+  console.log('Saving data - big tasks count:', bigTasks.length);
+  if (stretchTasks.length > 0) {
+    console.log('Stretch tasks being saved:', stretchTasks.map(t => ({id: t.id, name: t.name, status: t.status})));
+  }
+  if (bigTasks.length > 0) {
+    console.log('Big tasks being saved:', bigTasks.map(t => ({id: t.id, name: t.name, status: t.status})));
+  }
+  
   try {
+    const saveStartTime = new Date().toISOString();
     await fetch('/api/index-data', {
       method: 'POST',
       headers: { 'Content-Type': 'application/json' },
       body: JSON.stringify(data)
     });
+    const saveEndTime = new Date().toISOString();
+    console.log(`✅ Save completed successfully at ${saveEndTime}`);
+    
+    logAuditEvent('save_completed', 'both', null, 
+      `Save operation completed: Start=${saveStartTime}, End=${saveEndTime}, Stretch=${stretchTasks.length}, Big=${bigTasks.length}`);
+    
+    // Trigger immediate file check after save to detect changes
+    setTimeout(checkFileChanges, 1000);
+    
   } catch (e) {
-    console.error('Failed to save data', e);
+    console.error('❌ Failed to save data', e);
+    logAuditEvent('save_failed', 'both', null, `Save failed: ${e.message}`);
+  } finally {
+    saveInProgress = false;
+    
+    // If there was a pending save, trigger it now
+    if (pendingSave) {
+      pendingSave = false;
+      console.log('🔄 Triggering pending save');
+      setTimeout(saveData, 100); // Small delay to prevent immediate re-entry
+    }
   }
+}
+
+// Function for immediate saves (bypasses debouncing) - use for critical operations
+async function saveDataImmediate() {
+  // Cancel any pending debounced save
+  if (saveTimeout) {
+    clearTimeout(saveTimeout);
+    saveTimeout = null;
+  }
+  
+  await performSave();
 }
 
 async function loadData() {
   try {
+    console.log('🔄 LOADDATA DEBUG START:', new Date().toISOString());
     const res = await fetch('/api/index-data');
     if (!res.ok) return;
     const obj = await res.json();
+    
+    console.log('  - Raw data received from server:');
+    console.log('  - obj.stretchTasks length:', obj.stretchTasks ? obj.stretchTasks.length : 'UNDEFINED');
+    console.log('  - obj.bigTasks length:', obj.bigTasks ? obj.bigTasks.length : 'UNDEFINED');
+    console.log('  - obj.stretchTasks content:', obj.stretchTasks || 'UNDEFINED');
+    console.log('  - obj.bigTasks content:', obj.bigTasks || 'UNDEFINED');
+    console.log('  - obj.stretchTasks JSON:', JSON.stringify(obj.stretchTasks));
+    console.log('  - obj.bigTasks JSON:', JSON.stringify(obj.bigTasks));
+    
     projects = obj.projects || [];
     weeklyTasks = obj.weeklyTasks || [];
     oneOffTasks = obj.oneOffTasks || [];
@@ -348,6 +958,27 @@ async function loadData() {
     generalList = obj.generalList || [];
     todayList = obj.todayList || [];
     nextId = obj.nextId || 1;
+    
+    console.log('  - After assignment:');
+    console.log('  - stretchTasks length:', stretchTasks.length);
+    console.log('  - bigTasks length:', bigTasks.length);
+    
+    // Audit trail logging after load
+    logAuditEvent('load', 'stretch', null, `Loaded ${stretchTasks.length} stretch tasks from server`);
+    logAuditEvent('load', 'big', null, `Loaded ${bigTasks.length} big tasks from server`);
+    
+    // Debug logging to track stretch and big tasks
+    console.log('Loaded data - stretch tasks count:', stretchTasks.length);
+    console.log('Loaded data - big tasks count:', bigTasks.length);
+    if (stretchTasks.length > 0) {
+      console.log('Stretch tasks loaded:', stretchTasks.map(t => ({id: t.id, name: t.name, status: t.status})));
+    }
+    if (bigTasks.length > 0) {
+      console.log('Big tasks loaded:', bigTasks.map(t => ({id: t.id, name: t.name, status: t.status})));
+    }
+  // Mark load as successful
+  dataLoadedFlag = true;
+  lastLoadedAt = Date.now();
   } catch (e) {
     console.error('Failed to load data', e);
   }
@@ -373,6 +1004,46 @@ function formatUK(date) {
   const d = new Date(date);
   if (isNaN(d)) return date || '';
   return d.toLocaleDateString('en-GB', { day: '2-digit', month: 'long', year: '2-digit' });
+}
+
+// UK-time helpers for weekly grid
+function getUKDayIndex(date = new Date()) {
+  try {
+    const dayShort = new Intl.DateTimeFormat('en-GB', { weekday: 'short', timeZone: 'Europe/London' }).format(date);
+    const map = { Mon: 0, Tue: 1, Wed: 2, Thu: 3, Fri: 4, Sat: 5, Sun: 6 };
+    if (map.hasOwnProperty(dayShort)) return map[dayShort];
+  } catch (_) {}
+  // Fallback: convert JS getDay() to Mon=0..Sun=6
+  const gd = new Date(date).getDay();
+  return gd === 0 ? 6 : gd - 1;
+}
+function getUKDayName(date = new Date()) {
+  try {
+    return new Intl.DateTimeFormat('en-GB', { weekday: 'short', timeZone: 'Europe/London' }).format(date);
+  } catch (_) {
+    const idx = getUKDayIndex(date);
+    return ['Mon','Tue','Wed','Thu','Fri','Sat','Sun'][idx];
+  }
+}
+function isViewingCurrentUKWeek(weekStartDate) {
+  // Treat current week as Monday-start; compare against startOfWeek(today)
+  const todayStart = startOfWeek(new Date());
+  return formatISO(weekStartDate) === formatISO(todayStart);
+}
+function getWeekISO(start) {
+  const out = [];
+  for (let i = 0; i < 7; i++) {
+    const d = new Date(start);
+    d.setDate(start.getDate() + i);
+    out.push(formatISO(d));
+  }
+  return out;
+}
+
+function countLastMonth(dates) {
+  const cutoff = new Date();
+  cutoff.setMonth(cutoff.getMonth() - 1);
+  return dates.filter(d => new Date(d) >= cutoff).length;
 }
 function showMessage(msg) {
   const toast = document.getElementById("toast");
@@ -416,6 +1087,51 @@ function toggle(id) {
   el.classList.toggle('hidden');
 }
 
+function togglePin(sectionId) {
+  const index = pinnedSections.indexOf(sectionId);
+  const starElement = document.querySelector(`[onclick*="togglePin('${sectionId}')"]`);
+  
+  if (index === -1) {
+    // Pin the section
+    pinnedSections.push(sectionId);
+    starElement.classList.add('pinned');
+    starElement.title = 'Unpin section';
+  } else {
+    // Unpin the section
+    pinnedSections.splice(index, 1);
+    starElement.classList.remove('pinned');
+    starElement.title = 'Pin section open';
+  }
+  
+  // Save pinned sections to localStorage
+  localStorage.setItem('pinnedSections', JSON.stringify(pinnedSections));
+}
+
+function loadPinnedSections() {
+  const saved = localStorage.getItem('pinnedSections');
+  if (saved) {
+    pinnedSections = JSON.parse(saved);
+    
+    // Apply pinned state on page load
+    pinnedSections.forEach(sectionId => {
+      const element = document.getElementById(sectionId);
+      const starElement = document.querySelector(`[onclick*="togglePin('${sectionId}')"]`);
+      
+      if (element && starElement) {
+        element.classList.remove('hidden');
+        starElement.classList.add('pinned');
+        starElement.title = 'Unpin section';
+      }
+    });
+  } else {
+    // First load or cleared storage: show main sections by default
+    ['weeklySection','oneOffSection','recurringSection','stretchSection','bigSection'].forEach(id => {
+      const el = document.getElementById(id);
+      if (el) el.classList.remove('hidden');
+    });
+  }
+}
+
 function addProject() {
   const name = document.getElementById('projectName').value;
   const color = document.getElementById('projectColor').value;
@@ -429,32 +1145,117 @@ function addProject() {
 }
 
 function renderProjects() {
-  const ul = document.getElementById('projects');
-  ul.innerHTML = '';
+  const container = document.getElementById('projects');
+  container.innerHTML = '';
+  
+  // Create table for projects grid
+  const table = document.createElement('table');
+  table.className = 'task-table';
+  const head = document.createElement('tr');
+  head.innerHTML = '<th>Name</th><th>Task Status</th><th>Color</th><th>Action</th>';
+  table.appendChild(head);
+  
+  // Update project selects
   const selects = [
     document.getElementById('weeklyProject'),
     document.getElementById('oneOffProject'),
     document.getElementById('recurringProject'),
-    document.getElementById('stretchProject'),
-    document.getElementById('bigProject')
+  document.getElementById('stretchProject'),
+  document.getElementById('bigProject')
   ];
   selects.forEach(sel => sel.innerHTML = '');
+  
   projects.forEach(p => {
-    const li = document.createElement("li");
-    li.style.color = p.color;
+    const tr = document.createElement('tr');
+    
+    // Name column
+    const nameCell = document.createElement('td');
+    nameCell.textContent = p.name;
+    nameCell.style.color = p.color;
+    nameCell.style.fontWeight = '500';
+    
+    // Task status column
+    const statusCell = document.createElement('td');
     if (p.closed) {
-      li.textContent = p.name + " (closed)";
+      statusCell.textContent = 'Closed';
+      statusCell.style.color = '#999';
     } else if (hasOpenTasks(p.name)) {
-      li.textContent = p.name + " - tasks currently allocated";
+      statusCell.textContent = 'Tasks allocated';
+      statusCell.style.color = '#81B29A';
     } else {
-      li.textContent = p.name + " - no open tasks allocated";
-      const btn = document.createElement("button");
-      btn.textContent = "Close";
-      btn.onclick = () => closeProject(p.name);
-      li.appendChild(document.createTextNode(" "));
-      li.appendChild(btn);
+      statusCell.textContent = 'No tasks';
+      statusCell.style.color = '#B5A89A';
     }
-    ul.appendChild(li);
+    
+    // Color column
+    const colorCell = document.createElement('td');
+    const colorBox = document.createElement('div');
+    colorBox.style.width = '30px';
+    colorBox.style.height = '20px';
+    colorBox.style.backgroundColor = p.color;
+    colorBox.style.borderRadius = '4px';
+    colorBox.style.border = '1px solid #ccc';
+    colorCell.appendChild(colorBox);
+    
+    // Action column
+    const actionCell = document.createElement('td');
+    actionCell.style.display = 'grid';
+    actionCell.style.gridTemplateColumns = '1fr 1fr 1fr';
+    actionCell.style.gap = '4px';
+    actionCell.style.justifyItems = 'center';
+    
+    // Edit button
+    const editBtn = document.createElement('button');
+    editBtn.innerHTML = '<svg width="16" height="16" viewBox="0 0 20 20" fill="none" xmlns="http://www.w3.org/2000/svg"><path d="M13.5858 3.58579C14.3668 2.80474 15.6332 2.80474 16.4142 3.58579C17.1953 4.36683 17.1953 5.63316 16.4142 6.41421L15.6213 7.20711L12.7929 4.37868L13.5858 3.58579Z" fill="#B5A89A"/><path d="M11.3787 5.79289L3 14.1716V17H5.82842L14.2071 8.62132L11.3787 5.79289Z" fill="#C7BBB4"/></svg>';
+    editBtn.title = 'Edit Project';
+    editBtn.style.background = 'none';
+    editBtn.style.border = 'none';
+    editBtn.style.cursor = 'pointer';
+    editBtn.style.padding = '4px';
+    editBtn.onclick = () => openEditProjectModal(p.name);
+    actionCell.appendChild(editBtn);
+    
+    // Archive/Close button
+    if (!p.closed && !hasOpenTasks(p.name)) {
+      const archiveBtn = document.createElement('button');
+      archiveBtn.innerHTML = '<svg width="16" height="16" viewBox="0 0 20 20" fill="none" xmlns="http://www.w3.org/2000/svg"><rect x="3" y="4" width="14" height="3" rx="2" fill="#B5A89A"/><rect x="5" y="8" width="10" height="8" rx="2" fill="#C7BBB4"/><rect x="8" y="11" width="4" height="2" rx="1" fill="#2B2C29"/></svg>';
+      archiveBtn.title = 'Archive Project';
+      archiveBtn.style.background = 'none';
+      archiveBtn.style.border = 'none';
+      archiveBtn.style.cursor = 'pointer';
+      archiveBtn.style.padding = '4px';
+      archiveBtn.onclick = () => closeProject(p.name);
+      actionCell.appendChild(archiveBtn);
+    } else {
+      // Empty placeholder to maintain grid layout
+      const placeholder = document.createElement('div');
+      actionCell.appendChild(placeholder);
+    }
+    
+    // Delete button (only if no tasks allocated)
+    if (!hasOpenTasks(p.name)) {
+      const deleteBtn = document.createElement('button');
+      deleteBtn.innerHTML = '<svg width="16" height="16" viewBox="0 0 20 20" fill="none" xmlns="http://www.w3.org/2000/svg"><path d="M8.5 2C7.11929 2 6 3.11929 6 4.5H4C3.44772 4.5 3 4.94772 3 5.5C3 6.05228 3.44772 6.5 4 6.5H16C16.5523 6.5 17 6.05228 17 5.5C17 4.94772 16.5523 4.5 16 4.5H14C14 3.11929 12.8807 2 11.5 2H8.5Z" fill="#B5A89A"/><path d="M5 8.5C5 7.94772 5.44772 7.5 6 7.5H14C14.5523 7.5 15 7.94772 15 8.5V16C15 17.1046 14.1046 18 13 18H7C5.89543 18 5 17.1046 5 16V8.5Z" fill="#C7BBB4"/></svg>';
+      deleteBtn.title = 'Delete Project';
+      deleteBtn.style.background = 'none';
+      deleteBtn.style.border = 'none';
+      deleteBtn.style.cursor = 'pointer';
+      deleteBtn.style.padding = '4px';
+      deleteBtn.onclick = () => confirmDeleteProject(p.name);
+      actionCell.appendChild(deleteBtn);
+    } else {
+      // Empty placeholder to maintain grid layout
+      const placeholder = document.createElement('div');
+      actionCell.appendChild(placeholder);
+    }
+    
+    tr.appendChild(nameCell);
+    tr.appendChild(statusCell);
+    tr.appendChild(colorCell);
+    tr.appendChild(actionCell);
+    table.appendChild(tr);
+    
+    // Update project selects
     selects.forEach(sel => {
       if (!p.closed) {
         const opt = document.createElement("option");
@@ -464,6 +1265,8 @@ function renderProjects() {
       }
     });
   });
+  
+  container.appendChild(table);
 }
 
 function hasOpenTasks(projectName) {
@@ -480,6 +1283,104 @@ function closeProject(name) {
   proj.closed = true;
   renderProjects();
   saveData();
+}
+
+function confirmDeleteProject(name) {
+  if (!confirm(`Are you sure you want to delete the project "${name}"? This action cannot be undone.`)) return;
+  deleteProject(name);
+}
+
+function deleteProject(name) {
+  if (!confirm(`Are you sure you want to delete the project "${name}"? This cannot be undone.`)) return;
+  const index = projects.findIndex(p => p.name === name);
+  if (index === -1) return;
+  if (hasOpenTasks(name)) {
+    alert("Cannot delete project with active tasks. Please complete or move all tasks first.");
+    return;
+  }
+  projects.splice(index, 1);
+  renderProjects();
+  saveData();
+  showMessage("Project deleted");
+}
+
+let editingProjectName = '';
+
+function openEditProjectModal(name) {
+  const proj = projects.find(p => p.name === name);
+  if (!proj) return;
+  
+  editingProjectName = name;
+  document.getElementById('editProjectName').value = proj.name;
+  document.getElementById('editProjectColor').value = proj.color;
+  document.getElementById('editProjectStatus').value = proj.closed.toString();
+  
+  document.getElementById('editProjectModal').classList.remove('hidden');
+}
+
+function closeEditProjectModal() {
+  document.getElementById('editProjectModal').classList.add('hidden');
+  editingProjectName = '';
+}
+
+function saveProjectChanges() {
+  const newName = document.getElementById('editProjectName').value.trim();
+  const newColor = document.getElementById('editProjectColor').value;
+  const newClosed = document.getElementById('editProjectStatus').value === 'true';
+  
+  if (!newName) {
+    alert("Project name cannot be empty");
+    return;
+  }
+  
+  // Check if new name conflicts with existing project (unless it's the same project)
+  const existingProj = projects.find(p => p.name === newName && p.name !== editingProjectName);
+  if (existingProj) {
+    alert("A project with this name already exists");
+    return;
+  }
+  
+  const proj = projects.find(p => p.name === editingProjectName);
+  if (!proj) return;
+  
+  // If name is changing, update all tasks that reference this project
+  if (proj.name !== newName) {
+    updateTasksProjectName(proj.name, newName);
+  }
+  
+  proj.name = newName;
+  proj.color = newColor;
+  proj.closed = newClosed;
+  
+  renderProjects();
+  saveData();
+  closeEditProjectModal();
+  showMessage("Project updated");
+}
+
+function updateTasksProjectName(oldName, newName) {
+  const taskLists = [weeklyTasks, oneOffTasks, recurringTasks, stretchTasks, bigTasks];
+  taskLists.forEach(list => {
+    list.forEach(task => {
+      if (task.project === oldName) {
+        task.project = newName;
+      }
+    });
+  });
+  
+  // Update shopping list items
+  shoppingList.forEach(item => {
+    if (item.project === oldName) {
+      item.project = newName;
+    }
+  });
+  
+  // Update long term list items
+  longTermList.forEach(item => {
+    if (item.project === oldName) {
+      item.project = newName;
+    }
+  });
 }
 
 function addWeeklyTask() {
@@ -518,14 +1419,53 @@ function addWeeklyTask() {
 function renderWeekly() {
   updateWeekLabel();
   const grid = document.getElementById('weeklyGrid');
-  grid.innerHTML = '<div>Task</div><div>Mon</div><div>Tue</div><div>Wed</div><div>Thu</div><div>Fri</div><div>Sat</div><div>Sun</div>';
-  const openTasks = weeklyTasks.filter(t => t.status === 'open');
+  
+  // Create header with resizers
+  const headers = ['Task', 'Mon', 'Tue', 'Wed', 'Thu', 'Fri', 'Sat', 'Sun'];
+  grid.innerHTML = '';
+  
+  const viewingCurrentWeek = isViewingCurrentUKWeek(currentWeekStart);
+  const todayIdxUK = getUKDayIndex(new Date()); // 0-6 (Mon..Sun)
+  const dayNames = ['Mon','Tue','Wed','Thu','Fri','Sat','Sun'];
+  const todayNameUK = dayNames[todayIdxUK];
+
+  headers.forEach((headerText, index) => {
+    const header = document.createElement('div');
+    header.className = 'grid-header';
+    header.textContent = headerText;
+    if (viewingCurrentWeek && headerText === todayNameUK) header.classList.add('today-col');
+    grid.appendChild(header);
+  });
+  
+  let openTasks = weeklyTasks.filter(t => t.status === 'open');
   if (openTasks.length === 0) {
     const row = document.createElement('div');
     row.textContent = 'No weekly tasks';
     row.style.gridColumn = '1 / -1';
     grid.appendChild(row);
     return;
+  }
+  const weekISO = getWeekISO(currentWeekStart);
+  if (viewingCurrentWeek) {
+    const hasMissedEarlierThisWeek = (task) => {
+      for (let i = 0; i < todayIdxUK; i++) {
+        const day = dayNames[i];
+        if (task.days && task.days.includes(day)) {
+          const iso = weekISO[i];
+          if (!task.completedDates.includes(iso)) return true;
+        }
+      }
+      return false;
+    };
+    openTasks = openTasks.slice().sort((a, b) => {
+      const aDueToday = a.days && a.days.includes(todayNameUK);
+      const bDueToday = b.days && b.days.includes(todayNameUK);
+      if (aDueToday !== bDueToday) return aDueToday ? -1 : 1;
+      const aMiss = hasMissedEarlierThisWeek(a);
+      const bMiss = hasMissedEarlierThisWeek(b);
+      if (aMiss !== bMiss) return aMiss ? -1 : 1;
+      return (a.name || '').localeCompare(b.name || '');
+    });
   }
   openTasks.forEach(task => {
     updateMissed(task);
@@ -542,50 +1482,126 @@ function renderWeekly() {
         (completed ? 'green tick' : due ? 'purple' : 'grey');
       circle.innerHTML = completed ? '&#10004;' : '';
       circle.onclick = () => toggleComplete(task.id, iso, due);
+      if (viewingCurrentWeek && idx === todayIdxUK) cell.classList.add('today-col');
       cell.appendChild(circle);
       grid.appendChild(cell);
     });
   });
+  
+  // Add column resizers
+  addColumnResizers(grid);
+}
+
+function addColumnResizers(grid) {
+  // Add resizers to the header cells (first 7 columns, not the last one)
+  const headers = grid.querySelectorAll('.grid-header');
+  
+  for (let i = 0; i < headers.length - 1; i++) {
+    const header = headers[i];
+    header.style.position = 'relative';
+    
+    const resizer = document.createElement('div');
+    resizer.className = 'col-resizer';
+    resizer.dataset.column = i;
+    
+    let isResizing = false;
+    let startX = 0;
+    let startWidth = 0;
+    
+    resizer.addEventListener('mousedown', (e) => {
+      isResizing = true;
+      startX = e.clientX;
+      startWidth = header.offsetWidth;
+      document.addEventListener('mousemove', handleMouseMove);
+      document.addEventListener('mouseup', handleMouseUp);
+      e.preventDefault();
+    });
+    
+    function handleMouseMove(e) {
+      if (!isResizing) return;
+      
+      const diff = e.clientX - startX;
+      const newWidth = Math.max(50, startWidth + diff); // Minimum width of 50px
+      
+      // Update the grid template columns
+      const currentColumns = grid.style.gridTemplateColumns || '2fr repeat(7, 1fr)';
+      const columns = currentColumns.split(' ');
+      
+      if (i === 0) {
+        // First column (Task column)
+        columns[0] = `${newWidth}px`;
+      } else {
+        // Day columns
+        columns[i + 1] = `${newWidth}px`;
+      }
+      
+      grid.style.gridTemplateColumns = columns.join(' ');
+    }
+    
+    function handleMouseUp() {
+      isResizing = false;
+      document.removeEventListener('mousemove', handleMouseMove);
+      document.removeEventListener('mouseup', handleMouseUp);
+    }
+    
+    header.appendChild(resizer);
+  }
 }
 
 function taskCell(task) {
   const cell = document.createElement('div');
   cell.className = 'task-info';
-  const proj = projects.find(p => p.name === task.project);
-  const color = proj ? proj.color : '#000';
-
+  // Left: name/project
+  const detailsDiv = document.createElement('div');
+  detailsDiv.className = 'task-details';
   const nameDiv = document.createElement('div');
   nameDiv.className = 'task-name';
   nameDiv.textContent = task.name;
-
-  if ((task.project || '').toLowerCase().includes('self care')) {
-    nameDiv.style.fontWeight = 'bold';
-  }
-
+  const timerBtn=createTimerButton('todo', task.name);
+  timerBtn.style.marginLeft='0.25rem';
+  nameDiv.appendChild(timerBtn);
   const projectDiv = document.createElement('div');
   projectDiv.className = 'task-meta';
-  projectDiv.style.color = color;
   projectDiv.textContent = task.project;
-
-  const metaDiv = document.createElement('div');
-  metaDiv.className = 'task-meta small';
-  metaDiv.textContent = `Importance: ${task.importance} | Urgency: ${task.urgency}`;
-
-  const controls = document.createElement('div');
-  controls.className = 'controls';
-  const closeBtn = document.createElement('button');
-  closeBtn.textContent = 'Archive';
-  closeBtn.onclick = () => closeTask(task.id);
-  const delBtn = document.createElement('button');
-  delBtn.textContent = 'Delete';
-  delBtn.onclick = () => deleteTask(task.id);
-  controls.appendChild(closeBtn);
-  controls.appendChild(delBtn);
-
-  cell.appendChild(nameDiv);
-  cell.appendChild(projectDiv);
-  cell.appendChild(metaDiv);
-  cell.appendChild(controls);
+  // Apply project color
+  const proj = projects.find(p => p.name === task.project);
+  if (proj) {
+    projectDiv.style.color = proj.color;
+  }
+  detailsDiv.appendChild(nameDiv);
+  detailsDiv.appendChild(projectDiv);
+  // Right: icons
+  const actionsDiv = document.createElement('div');
+  actionsDiv.className = 'task-actions';
+  // Add to Today button
+  const addTodayBtn = document.createElement('button');
+  addTodayBtn.innerHTML = '<svg width="30" height="30" viewBox="0 0 20 20" fill="none" xmlns="http://www.w3.org/2000/svg"><circle cx="10" cy="10" r="8" fill="#B5A89A"/><path d="M10 6v8M6 10h8" stroke="#fff" stroke-width="2" stroke-linecap="round"/></svg>';
+  addTodayBtn.title = 'Add to Today';
+  addTodayBtn.style.background = 'none';
+  addTodayBtn.style.border = 'none';
+  addTodayBtn.style.cursor = 'pointer';
+  addTodayBtn.onclick = () => addTaskToToday('weekly', task.id, task.name);
+  // Archive icon
+  const archiveBtn = document.createElement('button');
+  archiveBtn.innerHTML = '<svg width="30" height="30" viewBox="0 0 20 20" fill="none" xmlns="http://www.w3.org/2000/svg"><rect x="3" y="4" width="14" height="3" rx="2" fill="#B5A89A"/><rect x="5" y="8" width="10" height="8" rx="2" fill="#C7BBB4"/><rect x="8" y="11" width="4" height="2" rx="1" fill="#2B2C29"/></svg>';
+  archiveBtn.title = 'Archive';
+  archiveBtn.style.background = 'none';
+  archiveBtn.style.border = 'none';
+  archiveBtn.style.cursor = 'pointer';
+  archiveBtn.onclick = () => closeTask(task.id);
+  // Delete icon
+  const deleteBtn = document.createElement('button');
+  deleteBtn.innerHTML = '<svg width="30" height="30" viewBox="0 0 20 20" fill="none" xmlns="http://www.w3.org/2000/svg"><rect x="6" y="8" width="8" height="8" rx="2" fill="#E07A5F"/><rect x="9" y="11" width="2" height="3" rx="1" fill="#fff"/><rect x="8" y="4" width="4" height="2" rx="1" fill="#2B2C29"/></svg>';
+  deleteBtn.title = 'Delete';
+  deleteBtn.style.background = 'none';
+  deleteBtn.style.border = 'none';
+  deleteBtn.style.cursor = 'pointer';
+  deleteBtn.onclick = () => confirmDeleteTask(task.id, task.name);
+  actionsDiv.appendChild(addTodayBtn);
+  actionsDiv.appendChild(archiveBtn);
+  actionsDiv.appendChild(deleteBtn);
+  cell.appendChild(detailsDiv);
+  cell.appendChild(actionsDiv);
   return cell;
 }
 
@@ -619,6 +1635,11 @@ function closeTask(id) {
   }
 }
 
+function confirmDeleteTask(id, taskName) {
+  if (!confirm(`Are you sure you want to delete the task "${taskName}"? This action cannot be undone.`)) return;
+  deleteTask(id);
+}
+
 function deleteTask(id) {
   const idx = weeklyTasks.findIndex(t => t.id === id);
   if (idx === -1) return;
@@ -629,6 +1650,26 @@ function deleteTask(id) {
     renderWeekly();
     renderDeleted();
     renderArchived();
+  }
+}
+
+async function addTaskToToday(taskType, taskId, taskName) {
+  // Add task to today list via API
+  try {
+    const response = await fetch('/api/add-to-today', {
+      method: 'POST',
+      headers: { 'Content-Type': 'application/json' },
+      body: JSON.stringify({ taskType, taskId, taskName })
+    });
+    
+    if (response.ok) {
+      alert(`"${taskName}" added to Today list!`);
+    } else {
+      alert('Failed to add task to Today list');
+    }
+  } catch (error) {
+    console.error('Error adding task to Today:', error);
+    alert('Error adding task to Today list');
   }
 }
 
@@ -669,27 +1710,95 @@ function renderOneOff() {
   const table = document.createElement('table');
   table.className = 'task-table';
   const head = document.createElement('tr');
-  head.innerHTML = '<th>Task</th><th>Project</th><th>Due</th><th></th>';
+  head.innerHTML = '<th>Task</th><th>Due</th><th>Action</th>';
   table.appendChild(head);
   open.forEach(t => {
     const tr = document.createElement('tr');
     const proj = projects.find(p => p.name === t.project);
     const color = proj ? proj.color : '#000';
-    tr.innerHTML = `<td>${t.name}</td><td style="color:${color}">${t.project}</td><td>${t.dueDate?formatUK(t.dueDate):''}</td>`;
-    const td = document.createElement('td');
+    
+    // Task cell with project underneath
+    const taskCell = document.createElement('td');
+    const taskName = document.createElement('div');
+    taskName.textContent = t.name;
+    taskName.style.fontWeight = '500';
+    const projectName = document.createElement('div');
+    projectName.textContent = t.project;
+    projectName.style.color = color;
+    projectName.style.fontSize = '0.8rem';
+    projectName.style.marginTop = '0.2rem';
+    taskCell.appendChild(taskName);
+    taskCell.appendChild(projectName);
+    
+    tr.appendChild(taskCell);
+    tr.innerHTML += `<td>${t.dueDate?formatUK(t.dueDate):''}</td>`;
+    
+  const td = document.createElement('td');
+  td.style.display = 'grid';
+  td.style.gridTemplateColumns = 'repeat(3, 1fr)';
+  td.style.gap = '0.2rem';
+  td.style.padding = '0.5rem';
+  td.style.alignItems = 'center';
+  td.style.justifyItems = 'center';
+  td.style.height = 'auto';
+  td.style.minHeight = '60px';
+  td.style.minWidth = '180px';
+
+  // Add to Today button (purple +)
+  const addTodayBtn = document.createElement('button');
+  addTodayBtn.innerHTML = '<svg width="18" height="18" viewBox="0 0 20 20" fill="none" xmlns="http://www.w3.org/2000/svg"><circle cx="10" cy="10" r="8" fill="#B5A89A"/><path d="M10 6v8M6 10h8" stroke="#fff" stroke-width="2" stroke-linecap="round"/></svg>';
+  addTodayBtn.title = 'Add to Today';
+  addTodayBtn.style.background = 'none';
+  addTodayBtn.style.border = 'none';
+  addTodayBtn.style.cursor = 'pointer';
+  addTodayBtn.style.padding = '2px';
+  addTodayBtn.onclick = () => addTaskToToday('oneoff', t.id, t.name);
+  const timerBtn=createTimerButton('todo', t.name);
+  timerBtn.style.padding='2px';
+    
+    // Complete button with tick icon
     const comp = document.createElement('button');
-    comp.textContent = 'Complete';
+    comp.innerHTML = '<svg width="18" height="18" viewBox="0 0 20 20" fill="none" xmlns="http://www.w3.org/2000/svg"><circle cx="10" cy="10" r="8" fill="#81B29A"/><path d="m6 10 2 2 6-6" stroke="#fff" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"/></svg>';
+    comp.title = 'Complete';
+    comp.style.background = 'none';
+    comp.style.border = 'none';
+    comp.style.cursor = 'pointer';
+    comp.style.padding = '2px';
     comp.onclick = () => completeOneOff(t.id);
+    
+    // Edit Due button with calendar icon
     const edit = document.createElement('button');
-    edit.textContent = 'Edit Due';
+    edit.innerHTML = '<svg width="18" height="18" viewBox="0 0 20 20" fill="none" xmlns="http://www.w3.org/2000/svg"><rect x="3" y="4" width="14" height="12" rx="2" fill="#B5A89A"/><path d="m6 2v4m8-4v4" stroke="#2B2C29" stroke-width="2" stroke-linecap="round"/><path d="M3 8h14" stroke="#2B2C29" stroke-width="2"/><circle cx="8" cy="12" r="1" fill="#2B2C29"/><circle cx="12" cy="12" r="1" fill="#2B2C29"/></svg>';
+    edit.title = 'Edit Due Date';
+    edit.style.background = 'none';
+    edit.style.border = 'none';
+    edit.style.cursor = 'pointer';
+    edit.style.padding = '2px';
     edit.onclick = () => editOneOffDue(t.id);
+    
+    // Archive button
     const closeB = document.createElement('button');
-    closeB.textContent = 'Archive';
+    closeB.innerHTML = '<svg width="18" height="18" viewBox="0 0 20 20" fill="none" xmlns="http://www.w3.org/2000/svg"><rect x="3" y="4" width="14" height="3" rx="2" fill="#B5A89A"/><rect x="5" y="8" width="10" height="8" rx="2" fill="#C7BBB4"/><rect x="8" y="11" width="4" height="2" rx="1" fill="#2B2C29"/></svg>';
+    closeB.title = 'Archive';
+    closeB.style.background = 'none';
+    closeB.style.border = 'none';
+    closeB.style.cursor = 'pointer';
+    closeB.style.padding = '2px';
     closeB.onclick = () => closeOneOff(t.id);
+    
+    // Delete button
     const del = document.createElement('button');
-    del.textContent = 'Delete';
-    del.onclick = () => deleteOneOff(t.id);
-    td.appendChild(comp);
+    del.innerHTML = '<svg width="18" height="18" viewBox="0 0 20 20" fill="none" xmlns="http://www.w3.org/2000/svg"><rect x="6" y="8" width="8" height="8" rx="2" fill="#E07A5F"/><rect x="9" y="11" width="2" height="3" rx="1" fill="#fff"/><rect x="8" y="4" width="4" height="2" rx="1" fill="#2B2C29"/></svg>';
+    del.title = 'Delete';
+    del.style.background = 'none';
+    del.style.border = 'none';
+    del.style.cursor = 'pointer';
+    del.style.padding = '2px';
+    del.onclick = () => confirmDeleteOneOff(t.id, t.name);
+    
+  td.appendChild(addTodayBtn);
+  td.appendChild(timerBtn);
+  td.appendChild(comp);
     td.appendChild(edit);
     td.appendChild(closeB);
     td.appendChild(del);
@@ -720,6 +1829,11 @@ function closeOneOff(id) {
     renderOneOff();
     renderArchived();
   }
+}
+
+function confirmDeleteOneOff(id, taskName) {
+  if (!confirm(`Are you sure you want to delete "${taskName}"? This action cannot be undone.`)) return;
+  deleteOneOff(id);
 }
 
 function deleteOneOff(id) {
@@ -762,9 +1876,15 @@ function addStretchTask() {
   };
   nextId++;
   stretchTasks.push(task);
+  
+  // Audit trail logging
+  logAuditEvent('create', 'stretch', task, `Created new stretch task via form`);
+  
+  console.log('Added stretch task:', {id: task.id, name: task.name, status: task.status});
+  console.log('Current stretch tasks count:', stretchTasks.length);
   document.getElementById('stretchName').value = '';
   showMessage("Task added");
-  saveData();
+  saveDataImmediate(); // Use immediate save for task creation
   renderStretch();
 }
 
@@ -776,22 +1896,104 @@ function renderStretch() {
   const table = document.createElement('table');
   table.className = 'task-table';
   const head = document.createElement('tr');
-  head.innerHTML = '<th>Task</th><th>Project</th><th>Last Done</th><th></th>';
+  head.innerHTML = '<th>Task</th><th>Last Done</th><th>How Frequently</th><th style="min-width:200px;">Action</th>';
   table.appendChild(head);
   open.forEach(t => {
     const tr = document.createElement('tr');
     const proj = projects.find(p => p.name === t.project);
     const color = proj ? proj.color : '#000';
     const last = t.completedDates.length ? formatUK(t.completedDates[t.completedDates.length-1]) : '';
-    tr.innerHTML = `<td>${t.name}</td><td style="color:${color}">${t.project}</td><td>${last}</td>`;
-    const td = document.createElement('td');
+    const freq = countLastMonth(t.completedDates);
+    
+    // Task cell with project underneath
+    const taskCell = document.createElement('td');
+    const taskName = document.createElement('div');
+    taskName.textContent = t.name;
+    taskName.style.fontWeight = '500';
+    const projectName = document.createElement('div');
+    projectName.textContent = t.project;
+    projectName.style.color = color;
+    projectName.style.fontSize = '0.8rem';
+    projectName.style.marginTop = '0.2rem';
+    taskCell.appendChild(taskName);
+    taskCell.appendChild(projectName);
+    
+    tr.appendChild(taskCell);
+    const lastTd = document.createElement('td');
+    lastTd.textContent = last;
+    tr.appendChild(lastTd);
+    const freqTd = document.createElement('td');
+    freqTd.textContent = freq;
+    tr.appendChild(freqTd);
+    
+  const td = document.createElement('td');
+  td.style.display = 'grid';
+  td.style.gridTemplateColumns = 'repeat(3, 1fr)';
+  td.style.gap = '0.2rem';
+  td.style.padding = '0.5rem';
+  td.style.alignItems = 'center';
+  td.style.justifyItems = 'center';
+  td.style.height = 'auto';
+  td.style.minHeight = '60px';
+  td.style.minWidth = '200px';
+
+  // Add to Today button (purple +)
+  const addTodayBtn = document.createElement('button');
+  addTodayBtn.innerHTML = '<svg width="18" height="18" viewBox="0 0 20 20" fill="none" xmlns="http://www.w3.org/2000/svg"><circle cx="10" cy="10" r="8" fill="#B5A89A"/><path d="M10 6v8M6 10h8" stroke="#fff" stroke-width="2" stroke-linecap="round"/></svg>';
+  addTodayBtn.title = 'Add to Today';
+  addTodayBtn.style.background = 'none';
+  addTodayBtn.style.border = 'none';
+  addTodayBtn.style.cursor = 'pointer';
+  addTodayBtn.style.padding = '2px';
+  addTodayBtn.onclick = () => addTaskToToday('stretch', t.id, t.name);
+  const timerBtn=createTimerButton('todo', t.name);
+  timerBtn.style.padding='2px';
+    
+    // Log button with tick icon (same as complete)
     const log = document.createElement('button');
-    log.textContent = 'Log';
+    log.innerHTML = '<svg width="18" height="18" viewBox="0 0 20 20" fill="none" xmlns="http://www.w3.org/2000/svg"><circle cx="10" cy="10" r="8" fill="#81B29A"/><path d="m6 10 2 2 6-6" stroke="#fff" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"/></svg>';
+    log.title = 'Log Completion';
+    log.style.background = 'none';
+    log.style.border = 'none';
+    log.style.cursor = 'pointer';
+    log.style.padding = '2px';
     log.onclick = () => logStretch(t.id);
+    
+    // Edit Due button with calendar icon
+    const edit = document.createElement('button');
+    edit.innerHTML = '<svg width="18" height="18" viewBox="0 0 20 20" fill="none" xmlns="http://www.w3.org/2000/svg"><rect x="3" y="4" width="14" height="12" rx="2" fill="#B5A89A"/><path d="m6 2v4m8-4v4" stroke="#2B2C29" stroke-width="2" stroke-linecap="round"/><path d="M3 8h14" stroke="#2B2C29" stroke-width="2"/><circle cx="8" cy="12" r="1" fill="#2B2C29"/><circle cx="12" cy="12" r="1" fill="#2B2C29"/></svg>';
+    edit.title = 'Edit Due Date';
+    edit.style.background = 'none';
+    edit.style.border = 'none';
+    edit.style.cursor = 'pointer';
+    edit.style.padding = '2px';
+    edit.onclick = () => editStretchDue(t.id);
+    
+    // Archive button
+    const archive = document.createElement('button');
+    archive.innerHTML = '<svg width="18" height="18" viewBox="0 0 20 20" fill="none" xmlns="http://www.w3.org/2000/svg"><rect x="3" y="4" width="14" height="3" rx="2" fill="#B5A89A"/><rect x="5" y="8" width="10" height="8" rx="2" fill="#C7BBB4"/><rect x="8" y="11" width="4" height="2" rx="1" fill="#2B2C29"/></svg>';
+    archive.title = 'Archive';
+    archive.style.background = 'none';
+    archive.style.border = 'none';
+    archive.style.cursor = 'pointer';
+    archive.style.padding = '2px';
+    archive.onclick = () => confirmArchiveStretch(t.id, t.name);
+    
+    // Delete button
     const del = document.createElement('button');
-    del.textContent = 'Delete';
-    del.onclick = () => deleteStretch(t.id);
-    td.appendChild(log);
+    del.innerHTML = '<svg width="18" height="18" viewBox="0 0 20 20" fill="none" xmlns="http://www.w3.org/2000/svg"><rect x="6" y="8" width="8" height="8" rx="2" fill="#E07A5F"/><rect x="9" y="11" width="2" height="3" rx="1" fill="#fff"/><rect x="8" y="4" width="4" height="2" rx="1" fill="#2B2C29"/></svg>';
+    del.title = 'Delete';
+    del.style.background = 'none';
+    del.style.border = 'none';
+    del.style.cursor = 'pointer';
+    del.style.padding = '2px';
+    del.onclick = () => confirmDeleteStretch(t.id, t.name);
+    
+  td.appendChild(addTodayBtn);
+  td.appendChild(timerBtn);
+  td.appendChild(log);
+    td.appendChild(edit);
+    td.appendChild(archive);
     td.appendChild(del);
     tr.appendChild(td);
     table.appendChild(tr);
@@ -807,16 +2009,57 @@ function logStretch(id) {
   renderStretch();
 }
 
+function confirmDeleteStretch(id, taskName) {
+  if (!confirm(`Are you sure you want to delete the stretch goal "${taskName}"? This action cannot be undone.`)) return;
+  deleteStretch(id);
+}
+
 function deleteStretch(id) {
   const idx = stretchTasks.findIndex(t => t.id === id);
   if (idx === -1) return;
   if (confirm('Delete this task permanently?')) {
+    const taskToDelete = stretchTasks[idx];
+    
+    // Audit trail logging
+    logAuditEvent('delete', 'stretch', taskToDelete, `Task deleted permanently and moved to deleted tasks`);
+    
     deletedTasks.push(stretchTasks[idx]);
     stretchTasks.splice(idx, 1);
     saveData();
     renderStretch();
     renderDeleted();
   }
+}
+
+function editStretchDue(id) {
+  const task = stretchTasks.find(t => t.id === id);
+  if (!task) return;
+  const newDue = prompt('Enter new due date (YYYY-MM-DD):', task.dueDate || '');
+  if (newDue !== null) {
+    task.dueDate = newDue;
+    saveData();
+    renderStretch();
+  }
+}
+
+function confirmArchiveStretch(id, taskName) {
+  if (!confirm(`Are you sure you want to archive the stretch goal "${taskName}"?`)) return;
+  archiveStretch(id);
+}
+
+function archiveStretch(id) {
+  const task = stretchTasks.find(t => t.id === id);
+  if (!task) return;
+  
+  const oldStatus = task.status;
+  task.status = 'closed';
+  task.closedDate = formatISO(new Date());
+  
+  // Audit trail logging
+  logAuditEvent('status_change', 'stretch', task, `Status changed from ${oldStatus} to closed via archive`);
+  
+  saveData();
+  renderStretch();
 }
 
 function addBigTask() {
@@ -841,10 +2084,16 @@ function addBigTask() {
   };
   nextId++;
   bigTasks.push(task);
+  
+  // Audit trail logging
+  logAuditEvent('create', 'big', task, `Created new big task via form`);
+  
+  console.log('Added big task:', {id: task.id, name: task.name, status: task.status});
+  console.log('Current big tasks count:', bigTasks.length);
   document.getElementById('bigName').value = '';
   document.getElementById('bigDue').value = '';
   showMessage("Task added");
-  saveData();
+  saveDataImmediate(); // Use immediate save for task creation
   renderBig();
 }
 
@@ -856,27 +2105,95 @@ function renderBig() {
   const table = document.createElement('table');
   table.className = 'task-table';
   const head = document.createElement('tr');
-  head.innerHTML = '<th>Task</th><th>Project</th><th>Due</th><th></th>';
+  head.innerHTML = '<th>Task</th><th>Due</th><th style="min-width:200px;">Action</th>';
   table.appendChild(head);
   open.forEach(t => {
     const tr = document.createElement('tr');
     const proj = projects.find(p => p.name === t.project);
     const color = proj ? proj.color : '#000';
-    tr.innerHTML = `<td>${t.name}</td><td style="color:${color}">${t.project}</td><td>${t.dueDate?formatUK(t.dueDate):''}</td>`;
-    const td = document.createElement('td');
+    
+    // Task cell with project underneath
+    const taskCell = document.createElement('td');
+    const taskName = document.createElement('div');
+    taskName.textContent = t.name;
+    taskName.style.fontWeight = '500';
+    const projectName = document.createElement('div');
+    projectName.textContent = t.project;
+    projectName.style.color = color;
+    projectName.style.fontSize = '0.8rem';
+    projectName.style.marginTop = '0.2rem';
+    taskCell.appendChild(taskName);
+    taskCell.appendChild(projectName);
+    
+    tr.appendChild(taskCell);
+    tr.innerHTML += `<td>${t.dueDate?formatUK(t.dueDate):''}</td>`;
+    
+  const td = document.createElement('td');
+  td.style.display = 'grid';
+  td.style.gridTemplateColumns = 'repeat(3, 1fr)';
+  td.style.gap = '0.2rem';
+  td.style.padding = '0.5rem';
+  td.style.alignItems = 'center';
+  td.style.justifyItems = 'center';
+  td.style.height = 'auto';
+  td.style.minHeight = '60px';
+  td.style.minWidth = '200px';
+
+  // Add to Today button (purple +)
+  const addTodayBtn = document.createElement('button');
+  addTodayBtn.innerHTML = '<svg width="18" height="18" viewBox="0 0 20 20" fill="none" xmlns="http://www.w3.org/2000/svg"><circle cx="10" cy="10" r="8" fill="#B5A89A"/><path d="M10 6v8M6 10h8" stroke="#fff" stroke-width="2" stroke-linecap="round"/></svg>';
+  addTodayBtn.title = 'Add to Today';
+  addTodayBtn.style.background = 'none';
+  addTodayBtn.style.border = 'none';
+  addTodayBtn.style.cursor = 'pointer';
+  addTodayBtn.style.padding = '2px';
+  addTodayBtn.onclick = () => addTaskToToday('big', t.id, t.name);
+  const timerBtn=createTimerButton('todo', t.name);
+  timerBtn.style.padding='2px';
+    
+  // Complete button with tick icon
     const comp = document.createElement('button');
-    comp.textContent = 'Complete';
+    comp.innerHTML = '<svg width="18" height="18" viewBox="0 0 20 20" fill="none" xmlns="http://www.w3.org/2000/svg"><circle cx="10" cy="10" r="8" fill="#81B29A"/><path d="m6 10 2 2 6-6" stroke="#fff" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"/></svg>';
+    comp.title = 'Complete';
+    comp.style.background = 'none';
+    comp.style.border = 'none';
+    comp.style.cursor = 'pointer';
+    comp.style.padding = '2px';
     comp.onclick = () => completeBig(t.id);
+    
+    // Edit Due button with calendar icon
     const edit = document.createElement('button');
-    edit.textContent = 'Edit Due';
+    edit.innerHTML = '<svg width="18" height="18" viewBox="0 0 20 20" fill="none" xmlns="http://www.w3.org/2000/svg"><rect x="3" y="4" width="14" height="12" rx="2" fill="#B5A89A"/><path d="m6 2v4m8-4v4" stroke="#2B2C29" stroke-width="2" stroke-linecap="round"/><path d="M3 8h14" stroke="#2B2C29" stroke-width="2"/><circle cx="8" cy="12" r="1" fill="#2B2C29"/><circle cx="12" cy="12" r="1" fill="#2B2C29"/></svg>';
+    edit.title = 'Edit Due Date';
+    edit.style.background = 'none';
+    edit.style.border = 'none';
+    edit.style.cursor = 'pointer';
+    edit.style.padding = '2px';
     edit.onclick = () => editBigDue(t.id);
+    
+    // Archive button
     const closeB = document.createElement('button');
-    closeB.textContent = 'Archive';
+    closeB.innerHTML = '<svg width="18" height="18" viewBox="0 0 20 20" fill="none" xmlns="http://www.w3.org/2000/svg"><rect x="3" y="4" width="14" height="3" rx="2" fill="#B5A89A"/><rect x="5" y="8" width="10" height="8" rx="2" fill="#C7BBB4"/><rect x="8" y="11" width="4" height="2" rx="1" fill="#2B2C29"/></svg>';
+    closeB.title = 'Archive';
+    closeB.style.background = 'none';
+    closeB.style.border = 'none';
+    closeB.style.cursor = 'pointer';
+    closeB.style.padding = '2px';
     closeB.onclick = () => closeBig(t.id);
+    
+    // Delete button
     const del = document.createElement('button');
-    del.textContent = 'Delete';
-    del.onclick = () => deleteBig(t.id);
-    td.appendChild(comp);
+    del.innerHTML = '<svg width="18" height="18" viewBox="0 0 20 20" fill="none" xmlns="http://www.w3.org/2000/svg"><rect x="6" y="8" width="8" height="8" rx="2" fill="#E07A5F"/><rect x="9" y="11" width="2" height="3" rx="1" fill="#fff"/><rect x="8" y="4" width="4" height="2" rx="1" fill="#2B2C29"/></svg>';
+    del.title = 'Delete';
+    del.style.background = 'none';
+    del.style.border = 'none';
+    del.style.cursor = 'pointer';
+    del.style.padding = '2px';
+    del.onclick = () => confirmDeleteBig(t.id, t.name);
+    
+  td.appendChild(addTodayBtn);
+  td.appendChild(timerBtn);
+  td.appendChild(comp);
     td.appendChild(edit);
     td.appendChild(closeB);
     td.appendChild(del);
@@ -889,9 +2206,15 @@ function renderBig() {
 function completeBig(id) {
   const task = bigTasks.find(t => t.id === id);
   if (!task) return;
+  
+  const oldStatus = task.status;
   task.completedDates.push(formatISO(new Date()));
   task.status = 'closed';
   task.closedDate = formatISO(new Date());
+  
+  // Audit trail logging
+  logAuditEvent('status_change', 'big', task, `Status changed from ${oldStatus} to closed via complete`);
+  
   saveData();
   renderBig();
   renderArchived();
@@ -901,18 +2224,33 @@ function closeBig(id) {
   const task = bigTasks.find(t => t.id === id);
   if (!task) return;
   if (confirm('You are about to close this task. Continue?')) {
+    const oldStatus = task.status;
     task.status = 'closed';
     task.closedDate = formatISO(new Date());
+    
+    // Audit trail logging
+    logAuditEvent('status_change', 'big', task, `Status changed from ${oldStatus} to closed via close`);
+    
     saveData();
     renderBig();
     renderArchived();
   }
 }
 
+function confirmDeleteBig(id, taskName) {
+  if (!confirm(`Are you sure you want to delete the big goal "${taskName}"? This action cannot be undone.`)) return;
+  deleteBig(id);
+}
+
 function deleteBig(id) {
   const idx = bigTasks.findIndex(t => t.id === id);
   if (idx === -1) return;
   if (confirm('Delete this task permanently?')) {
+    const taskToDelete = bigTasks[idx];
+    
+    // Audit trail logging
+    logAuditEvent('delete', 'big', taskToDelete, `Task deleted permanently and moved to deleted tasks`);
+    
     deletedTasks.push(bigTasks[idx]);
     bigTasks.splice(idx, 1);
     saveData();
@@ -991,27 +2329,101 @@ function renderRecurring() {
   const table = document.createElement('table');
   table.className = 'task-table';
   const head = document.createElement('tr');
-  head.innerHTML = '<th>Task</th><th>Project</th><th>Next Due</th><th>Last Done</th><th>Over/Under</th><th></th>';
+  head.innerHTML = '<th>Task</th><th>Next Due</th><th>Last Done</th><th>Over/<br>Under</th><th style="min-width:200px;">Action</th>';
   table.appendChild(head);
   open.forEach(t => {
     const tr = document.createElement('tr');
     const proj = projects.find(p => p.name === t.project);
     const color = proj ? proj.color : '#000';
-    tr.innerHTML = `<td>${t.name}</td><td style="color:${color}">${t.project}</td><td>${formatUK(t.dueDate)}</td><td>${t.lastCompleted ? formatUK(t.lastCompleted) : ''}</td><td>${t.lastDiff}</td>`;
-    const td = document.createElement('td');
+    
+    // Task cell with project underneath
+    const taskCell = document.createElement('td');
+    const taskName = document.createElement('div');
+    taskName.textContent = t.name;
+    taskName.style.fontWeight = '500';
+    const projectName = document.createElement('div');
+    projectName.textContent = t.project;
+    projectName.style.color = color;
+    projectName.style.fontSize = '0.8rem';
+    projectName.style.marginTop = '0.2rem';
+    taskCell.appendChild(taskName);
+    taskCell.appendChild(projectName);
+    
+    // Calculate current over/under days
+    const today = new Date();
+    const dueDate = new Date(t.dueDate);
+    const currentDiff = Math.floor((today - dueDate) / (1000*60*60*24));
+    const diffDisplay = currentDiff > 0 ? `+${currentDiff}` : currentDiff.toString();
+    
+    tr.appendChild(taskCell);
+    tr.innerHTML += `<td>${formatUK(t.dueDate)}</td><td>${t.lastCompleted ? formatUK(t.lastCompleted) : ''}</td><td>${diffDisplay}</td>`;
+    
+  const td = document.createElement('td');
+  td.style.display = 'grid';
+  td.style.gridTemplateColumns = 'repeat(3, 1fr)';
+  td.style.gap = '0.2rem';
+  td.style.padding = '0.5rem';
+  td.style.alignItems = 'center';
+  td.style.justifyItems = 'center';
+  td.style.height = 'auto';
+  td.style.minHeight = '60px';
+  td.style.minWidth = '200px';
+
+  // Add to Today button (purple +)
+  const addTodayBtn = document.createElement('button');
+  addTodayBtn.innerHTML = '<svg width="18" height="18" viewBox="0 0 20 20" fill="none" xmlns="http://www.w3.org/2000/svg"><circle cx="10" cy="10" r="8" fill="#B5A89A"/><path d="M10 6v8M6 10h8" stroke="#fff" stroke-width="2" stroke-linecap="round"/></svg>';
+  addTodayBtn.title = 'Add to Today';
+  addTodayBtn.style.background = 'none';
+  addTodayBtn.style.border = 'none';
+  addTodayBtn.style.cursor = 'pointer';
+  addTodayBtn.style.padding = '2px';
+  addTodayBtn.onclick = () => addTaskToToday('recurring', t.id, t.name);
+  const timerBtn=createTimerButton('todo', t.name);
+  timerBtn.style.padding='2px';
+    
+    // Complete button with tick icon
     const comp = document.createElement('button');
-    comp.textContent = 'Complete';
+    comp.innerHTML = '<svg width="18" height="18" viewBox="0 0 20 20" fill="none" xmlns="http://www.w3.org/2000/svg"><circle cx="10" cy="10" r="8" fill="#81B29A"/><path d="m6 10 2 2 6-6" stroke="#fff" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"/></svg>';
+    comp.title = 'Complete';
+    comp.style.background = 'none';
+    comp.style.border = 'none';
+    comp.style.cursor = 'pointer';
+    comp.style.padding = '2px';
     comp.onclick = () => completeRecurring(t.id);
+    
+    // Skip button with skip icon
     const skip = document.createElement('button');
-    skip.textContent = 'Skip';
+    skip.innerHTML = '<svg width="18" height="18" viewBox="0 0 20 20" fill="none" xmlns="http://www.w3.org/2000/svg"><circle cx="10" cy="10" r="8" fill="#B5A89A"/><path d="m6 8 8 4-8 4V8z" fill="#fff"/><path d="m14 6v8" stroke="#fff" stroke-width="2" stroke-linecap="round"/></svg>';
+    skip.title = 'Skip';
+    skip.style.background = 'none';
+    skip.style.border = 'none';
+    skip.style.cursor = 'pointer';
+    skip.style.padding = '2px';
     skip.onclick = () => skipRecurring(t.id);
+    
+    // Archive button
     const closeB = document.createElement('button');
-    closeB.textContent = 'Archive';
+    closeB.innerHTML = '<svg width="18" height="18" viewBox="0 0 20 20" fill="none" xmlns="http://www.w3.org/2000/svg"><rect x="3" y="4" width="14" height="3" rx="2" fill="#B5A89A"/><rect x="5" y="8" width="10" height="8" rx="2" fill="#C7BBB4"/><rect x="8" y="11" width="4" height="2" rx="1" fill="#2B2C29"/></svg>';
+    closeB.title = 'Archive';
+    closeB.style.background = 'none';
+    closeB.style.border = 'none';
+    closeB.style.cursor = 'pointer';
+    closeB.style.padding = '2px';
     closeB.onclick = () => closeRecurring(t.id);
+    
+    // Delete button
     const del = document.createElement('button');
-    del.textContent = 'Delete';
-    del.onclick = () => deleteRecurring(t.id);
-    td.appendChild(comp);
+    del.innerHTML = '<svg width="18" height="18" viewBox="0 0 20 20" fill="none" xmlns="http://www.w3.org/2000/svg"><rect x="6" y="8" width="8" height="8" rx="2" fill="#E07A5F"/><rect x="9" y="11" width="2" height="3" rx="1" fill="#fff"/><rect x="8" y="4" width="4" height="2" rx="1" fill="#2B2C29"/></svg>';
+    del.title = 'Delete';
+    del.style.background = 'none';
+    del.style.border = 'none';
+    del.style.cursor = 'pointer';
+    del.style.padding = '2px';
+    del.onclick = () => confirmDeleteRecurring(t.id, t.name);
+    
+  td.appendChild(addTodayBtn);
+  td.appendChild(timerBtn);
+  td.appendChild(comp);
     td.appendChild(skip);
     td.appendChild(closeB);
     td.appendChild(del);
@@ -1058,6 +2470,11 @@ function closeRecurring(id) {
   }
 }
 
+function confirmDeleteRecurring(id, taskName) {
+  if (!confirm(`Are you sure you want to delete the recurring task "${taskName}"? This action cannot be undone.`)) return;
+  deleteRecurring(id);
+}
+
 function deleteRecurring(id) {
   const idx = recurringTasks.findIndex(t => t.id === id);
   if (idx === -1) return;
@@ -1072,31 +2489,122 @@ function deleteRecurring(id) {
 }
 
 function renderDeleted() {
-  const list = document.getElementById('deletedList');
-  if (!list) return;
-  list.innerHTML = '';
+  const container = document.getElementById('deletedList');
+  if (!container) return;
+  container.innerHTML = '';
+  
+  if (deletedTasks.length === 0) {
+    container.textContent = 'No deleted tasks';
+    return;
+  }
+  
+  // Create table for deleted tasks grid
+  const table = document.createElement('table');
+  table.className = 'task-table';
+  const head = document.createElement('tr');
+  head.innerHTML = '<th>Name</th><th>Type</th><th>Date Deleted</th>';
+  table.appendChild(head);
+  
   deletedTasks.forEach(t => {
-    const li = document.createElement('li');
-    li.textContent = `${t.name} (${t.project})`;
-    list.appendChild(li);
+    const tr = document.createElement('tr');
+    
+    // Name column with project
+    const nameCell = document.createElement('td');
+    const taskName = document.createElement('div');
+    taskName.textContent = t.name;
+    taskName.style.fontWeight = '500';
+    const projectName = document.createElement('div');
+    projectName.textContent = t.project;
+    const proj = projects.find(p => p.name === t.project);
+    projectName.style.color = proj ? proj.color : '#000';
+    projectName.style.fontSize = '0.8rem';
+    projectName.style.marginTop = '0.2rem';
+    nameCell.appendChild(taskName);
+    nameCell.appendChild(projectName);
+    
+    // Type column
+    const typeCell = document.createElement('td');
+    typeCell.textContent = getTaskType(t);
+    
+    // Date deleted column
+    const dateCell = document.createElement('td');
+    dateCell.textContent = t.deletedDate ? formatUK(t.deletedDate) : 'Unknown';
+    
+    tr.appendChild(nameCell);
+    tr.appendChild(typeCell);
+    tr.appendChild(dateCell);
+    table.appendChild(tr);
   });
+  
+  container.appendChild(table);
 }
 
 function renderArchived() {
-  const list = document.getElementById('archivedList');
-  if (!list) return;
-  list.innerHTML = '';
-  const closed = [...weeklyTasks, ...oneOffTasks, ...recurringTasks, ...bigTasks].filter(t => t.status === 'closed');
+  const container = document.getElementById('archivedList');
+  if (!container) return;
+  container.innerHTML = '';
+  
+  const closed = [...weeklyTasks, ...oneOffTasks, ...recurringTasks, ...stretchTasks, ...bigTasks].filter(t => t.status === 'closed');
+  
+  if (closed.length === 0) {
+    container.textContent = 'No archived tasks';
+    return;
+  }
+  
+  // Create table for archived tasks grid
+  const table = document.createElement('table');
+  table.className = 'task-table';
+  const head = document.createElement('tr');
+  head.innerHTML = '<th>Name</th><th>Type</th><th>Date Closed</th>';
+  table.appendChild(head);
+  
   closed.forEach(t => {
-    const li = document.createElement('li');
-    li.textContent = `${t.name} (${t.project})`;
-    list.appendChild(li);
+    const tr = document.createElement('tr');
+    
+    // Name column with project
+    const nameCell = document.createElement('td');
+    const taskName = document.createElement('div');
+    taskName.textContent = t.name;
+    taskName.style.fontWeight = '500';
+    const projectName = document.createElement('div');
+    projectName.textContent = t.project;
+    const proj = projects.find(p => p.name === t.project);
+    projectName.style.color = proj ? proj.color : '#000';
+    projectName.style.fontSize = '0.8rem';
+    projectName.style.marginTop = '0.2rem';
+    nameCell.appendChild(taskName);
+    nameCell.appendChild(projectName);
+    
+    // Type column
+    const typeCell = document.createElement('td');
+    typeCell.textContent = getTaskType(t);
+    
+    // Date closed column
+    const dateCell = document.createElement('td');
+    dateCell.textContent = t.closedDate ? formatUK(t.closedDate) : 'Unknown';
+    
+    tr.appendChild(nameCell);
+    tr.appendChild(typeCell);
+    tr.appendChild(dateCell);
+    table.appendChild(tr);
   });
+  
+  container.appendChild(table);
+}
+
+function getTaskType(task) {
+  if (weeklyTasks.some(t => t.id === task.id)) return 'Weekly';
+  if (oneOffTasks.some(t => t.id === task.id)) return 'One-Off';
+  if (recurringTasks.some(t => t.id === task.id)) return 'Recurring';
+  if (stretchTasks.some(t => t.id === task.id)) return 'Stretch';
+  if (bigTasks.some(t => t.id === task.id)) return 'Big Task';
+  return 'Unknown';
 }
 
 async function init() {
   await loadData();
   weeklyTasks.filter(t => t.status === 'open').forEach(updateMissed);
+  // Only save if data was loaded
   await saveData();
   renderProjects();
   renderWeekly();
@@ -1106,8 +2614,224 @@ async function init() {
   renderRecurring();
   renderDeleted();
   renderArchived();
+  loadPinnedSections(); // Load pinned section preferences
 }
+
+// Column resizing functionality
+function initColumnResizers() {
+  let isResizing = false;
+  let startX, startWidth, nextStartWidth;
+  let currentHeader, nextHeader;
+
+  document.addEventListener('mousedown', function(e) {
+    if (e.target.classList.contains('col-resizer')) {
+      isResizing = true;
+      startX = e.clientX;
+      
+      currentHeader = e.target.parentElement;
+      nextHeader = currentHeader.nextElementSibling;
+      
+      if (currentHeader && nextHeader) {
+        startWidth = parseInt(document.defaultView.getComputedStyle(currentHeader).width, 10);
+        nextStartWidth = parseInt(document.defaultView.getComputedStyle(nextHeader).width, 10);
+      }
+      
+      document.body.style.cursor = 'col-resize';
+      e.preventDefault();
+    }
+  });
+
+  document.addEventListener('mousemove', function(e) {
+    if (!isResizing) return;
+    
+    if (currentHeader && nextHeader) {
+      const diff = e.clientX - startX;
+      const newCurrentWidth = startWidth + diff;
+      const newNextWidth = nextStartWidth - diff;
+      
+      if (newCurrentWidth > 50 && newNextWidth > 50) {
+        currentHeader.style.width = newCurrentWidth + 'px';
+        nextHeader.style.width = newNextWidth + 'px';
+      }
+    }
+  });
+
+  document.addEventListener('mouseup', function() {
+    if (isResizing) {
+      isResizing = false;
+      currentHeader = null;
+      nextHeader = null;
+      document.body.style.cursor = '';
+    }
+  });
+}
+
+// Debug function to check current task status - call this in browser console
+function debugTasks() {
+  console.log('=== TASK DEBUG INFO ===');
+  console.log('Stretch Tasks:', stretchTasks.length);
+  stretchTasks.forEach((t, i) => {
+    console.log(`  ${i+1}. ${t.name} (ID: ${t.id}, Status: ${t.status})`);
+  });
+  console.log('Big Tasks:', bigTasks.length);
+  bigTasks.forEach((t, i) => {
+    console.log(`  ${i+1}. ${t.name} (ID: ${t.id}, Status: ${t.status})`);
+  });
+  console.log('Next ID:', nextId);
+  
+  // Show audit trail summary
+  console.log('\n=== RECENT AUDIT EVENTS ===');
+  const recent = auditTrail.slice(-10); // Last 10 events
+  recent.forEach((event, i) => {
+    console.log(`${i+1}. [${event.timestamp}] ${event.action.toUpperCase()} ${event.taskType} - ${event.taskData ? event.taskData.name : 'N/A'}`);
+  });
+  
+  // Show task counts over time
+  const countEvents = auditTrail.filter(e => e.action === 'save' || e.action === 'load');
+  console.log('\n=== TASK COUNT HISTORY ===');
+  countEvents.slice(-5).forEach((event, i) => {
+    console.log(`${i+1}. [${event.timestamp}] ${event.action.toUpperCase()} - Stretch: ${event.stretchCount}, Big: ${event.bigCount}`);
+  });
+  
+  // Check what would be displayed
+  const openStretch = stretchTasks.filter(t => t.status === 'open');
+  const openBig = bigTasks.filter(t => t.status === 'open');
+  console.log('Open Stretch Tasks that should display:', openStretch.length);
+  console.log('Open Big Tasks that should display:', openBig.length);
+  
+  return { stretchTasks, bigTasks, openStretch, openBig, auditTrail };
+}
+
+// Make it available globally
+window.debugTasks = debugTasks;
+
+// Task monitoring system to detect unexpected disappearances
+let lastStretchCount = 0;
+let lastBigCount = 0;
+let monitoringInterval;
+let taskSnapshot = [];
+
+function takeTaskSnapshot() {
+  return {
+    timestamp: new Date().toISOString(),
+    stretchTasks: stretchTasks.map(t => ({id: t.id, name: t.name, status: t.status})),
+    bigTasks: bigTasks.map(t => ({id: t.id, name: t.name, status: t.status})),
+    stretchCount: stretchTasks.length,
+    bigCount: bigTasks.length,
+    location: window.location.href,
+    userAgent: navigator.userAgent.substring(0, 100)
+  };
+}
+
+function startTaskMonitoring() {
+  lastStretchCount = stretchTasks.length;
+  lastBigCount = bigTasks.length;
+  taskSnapshot = [takeTaskSnapshot()];
+  
+  // Monitor every 3 seconds for changes
+  monitoringInterval = setInterval(() => {
+    const currentStretchCount = stretchTasks.length;
+    const currentBigCount = bigTasks.length;
+    
+    // Take snapshot if counts changed
+    if (currentStretchCount !== lastStretchCount || currentBigCount !== lastBigCount) {
+      const snapshot = takeTaskSnapshot();
+      taskSnapshot.push(snapshot);
+      
+      // Keep only last 20 snapshots
+      if (taskSnapshot.length > 20) {
+        taskSnapshot.shift();
+      }
+    }
+    
+    // Check for unexpected decreases (not from normal delete/archive operations)
+    if (currentStretchCount < lastStretchCount) {
+      console.error(`🚨 CRITICAL: Stretch tasks decreased from ${lastStretchCount} to ${currentStretchCount}!`);
+      console.error('📸 Recent snapshots:', taskSnapshot.slice(-5));
+      logAuditEvent('monitor_alert', 'stretch', null, `CRITICAL: Unexpected decrease detected: ${lastStretchCount} → ${currentStretchCount}`);
+      
+      // Try to identify what caused the loss
+      const recentEvents = auditTrail.slice(-10);
+      console.error('🔍 Recent audit events:', recentEvents);
+    }
+    
+    if (currentBigCount < lastBigCount) {
+      console.error(`🚨 CRITICAL: Big tasks decreased from ${lastBigCount} to ${currentBigCount}!`);
+      console.error('📸 Recent snapshots:', taskSnapshot.slice(-5));
+      logAuditEvent('monitor_alert', 'big', null, `CRITICAL: Unexpected decrease detected: ${lastBigCount} → ${currentBigCount}`);
+      
+      // Try to identify what caused the loss
+      const recentEvents = auditTrail.slice(-10);
+      console.error('🔍 Recent audit events:', recentEvents);
+    }
+    
+    lastStretchCount = currentStretchCount;
+    lastBigCount = currentBigCount;
+  }, 3000); // Check every 3 seconds
+}
+
+// Function to view task snapshots
+function viewTaskSnapshots() {
+  console.log('=== TASK SNAPSHOTS ===');
+  taskSnapshot.forEach((snapshot, i) => {
+    console.log(`${i + 1}. [${snapshot.timestamp}] Stretch: ${snapshot.stretchCount}, Big: ${snapshot.bigCount}`);
+    if (snapshot.stretchTasks.length > 0) {
+      console.log('   Stretch:', snapshot.stretchTasks.map(t => `${t.id}:${t.name}`));
+    }
+    if (snapshot.bigTasks.length > 0) {
+      console.log('   Big:', snapshot.bigTasks.map(t => `${t.id}:${t.name}`));
+    }
+  });
+  return taskSnapshot;
+}
+
+function stopTaskMonitoring() {
+  if (monitoringInterval) {
+    clearInterval(monitoringInterval);
+    monitoringInterval = null;
+  }
+}
+
+// Start monitoring after initialization
+setTimeout(() => {
+  startTaskMonitoring();
+  startFileMonitoring();
+  console.log('🔍 Task monitoring started - will alert if stretch/big tasks disappear unexpectedly');
+  console.log('📁 File monitoring started - tracking server data file changes');
+}, 2000);
+
+// Monitor page visibility changes
+document.addEventListener('visibilitychange', () => {
+  const snapshot = takeTaskSnapshot();
+  logAuditEvent('visibility_change', 'both', null, `Page ${document.hidden ? 'hidden' : 'visible'} - Stretch: ${snapshot.stretchCount}, Big: ${snapshot.bigCount}`);
+  console.log(`👁️ Page visibility changed: ${document.hidden ? 'HIDDEN' : 'VISIBLE'}`);
+  console.log(`   Current tasks - Stretch: ${snapshot.stretchCount}, Big: ${snapshot.bigCount}`);
+});
+
+// Monitor beforeunload (page closing/refreshing)
+window.addEventListener('beforeunload', () => {
+  const snapshot = takeTaskSnapshot();
+  logAuditEvent('page_unload', 'both', null, `Page unloading - Stretch: ${snapshot.stretchCount}, Big: ${snapshot.bigCount}`);
+  console.log(`🚪 Page unloading with Stretch: ${snapshot.stretchCount}, Big: ${snapshot.bigCount}`);
+});
+
+// Monitor focus/blur events
+window.addEventListener('focus', () => {
+  const snapshot = takeTaskSnapshot();
+  logAuditEvent('window_focus', 'both', null, `Window focused - Stretch: ${snapshot.stretchCount}, Big: ${snapshot.bigCount}`);
+  console.log(`🎯 Window focused - Stretch: ${snapshot.stretchCount}, Big: ${snapshot.bigCount}`);
+});
+
+window.addEventListener('blur', () => {
+  const snapshot = takeTaskSnapshot();
+  logAuditEvent('window_blur', 'both', null, `Window blurred - Stretch: ${snapshot.stretchCount}, Big: ${snapshot.bigCount}`);
+  console.log(`😴 Window blurred - Stretch: ${snapshot.stretchCount}, Big: ${snapshot.bigCount}`);
+});
+
 init();
+initColumnResizers();
 </script>
+  </div>
+  </div>
 </body>
 </html>

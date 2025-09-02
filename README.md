@@ -24,3 +24,18 @@ Features include:
 - Project list displays whether open tasks are allocated and only offers the close button when none are open.
 - Toast notifications appear when projects or tasks are added or modified.
 - Data is persisted in `data.json` by default or in MongoDB when `MONGO_URI` is provided.
+
+## Desktop App (Electron)
+A desktop version now lives in `desktop-app/`.
+
+Run it:
+
+```powershell
+cd desktop-app
+npm install
+npm start
+```
+
+It launches the existing `server.js` so both the web browser and the desktop window share the same JSON data files. Close the desktop app and the server stops (unless you started it separately). To change the port, set `PORT` before starting.
+
+If you later want a separate data directory for the desktop version, we can add an environment variable (e.g. `DATA_DIR`) and modify `server.js` to read/write there.

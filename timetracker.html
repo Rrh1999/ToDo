@@ -1,0 +1,103 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>Time Tracker</title>
+<link rel="stylesheet" href="styles.css">
+<style>
+  @media (max-width:600px){ html { font-size:14px; } }
+</style>
+</head>
+<body>
+<header>
+  <h1>Time Tracker</h1>
+</header>
+<div id="nav-placeholder"></div>
+<script src="nav-loader.js"></script>
+
+<section>
+  <h2>Weekly Calendar</h2>
+  <div style="text-align:center;margin-bottom:0.5rem;">
+    <button onclick="changeWeek(-1)">&#8592;</button>
+    <span id="weekLabel"></span>
+    <button onclick="changeWeek(1)">&#8594;</button>
+  </div>
+  <table id="calendarTable" class="task-table"></table>
+</section>
+
+<section>
+  <h2>Task Log</h2>
+  <div id="timeTable"></div>
+</section>
+
+<script>
+let calendarStart=startOfWeek(new Date());
+
+function startOfWeek(d){
+  const date=new Date(d);
+  const day=date.getDay();
+  const diff=date.getDate()-day+(day===0?-6:1);
+  date.setDate(diff); date.setHours(0,0,0,0);
+  return date;
+}
+
+function changeWeek(offset){
+  calendarStart.setDate(calendarStart.getDate()+offset*7);
+  renderCalendar();
+}
+
+function renderCalendar(){
+  const tasks=window.getAllTrackedTasks?window.getAllTrackedTasks():[];
+  const table=document.getElementById('calendarTable');
+  table.innerHTML='';
+  const days=['Mon','Tue','Wed','Thu','Fri','Sat','Sun'];
+  const head=document.createElement('tr');
+  head.innerHTML='<th>Time</th>'+days.map(d=>`<th>${d}</th>`).join('');
+  table.appendChild(head);
+  for(let h=0;h<24;h++){
+    const row=document.createElement('tr');
+    row.innerHTML=`<td>${h}:00</td>`+days.map(()=>'<td></td>').join('');
+    table.appendChild(row);
+  }
+  const weekEnd=new Date(calendarStart); weekEnd.setDate(weekEnd.getDate()+7);
+  tasks.forEach(t=>{
+    const s=new Date(t.start);
+    if(s>=calendarStart && s<weekEnd){
+      const dayIdx=(s.getDay()+6)%7;
+      const hour=s.getHours();
+      const row=table.rows[hour+1];
+      if(row){
+        const cell=row.cells[dayIdx+1];
+        const div=document.createElement('div');
+        div.textContent=t.name;
+        div.style.background='#C7BBB4';
+        div.style.margin='2px';
+        cell.appendChild(div);
+      }
+    }
+  });
+  const startLabel=new Date(calendarStart);
+  const endLabel=new Date(calendarStart); endLabel.setDate(endLabel.getDate()+6);
+  document.getElementById('weekLabel').textContent=`${startLabel.toLocaleDateString()} - ${endLabel.toLocaleDateString()}`;
+}
+
+function renderTrackerTable(){
+  const tasks=window.getAllTrackedTasks?window.getAllTrackedTasks():[];
+  const container=document.getElementById('timeTable');
+  if(!tasks.length){ container.innerHTML='<p>No tracked tasks.</p>'; return; }
+  const table=document.createElement('table');
+  table.className='task-table';
+  table.innerHTML='<tr><th>Task</th><th>Source</th><th>Start</th><th>End</th></tr>';
+  tasks.forEach(t=>{
+    table.innerHTML+=`<tr><td>${t.name}</td><td>${t.source}</td><td>${t.start}</td><td>${t.end||''}</td></tr>`;
+  });
+  container.innerHTML='';
+  container.appendChild(table);
+}
+
+renderCalendar();
+renderTrackerTable();
+</script>
+</body>
+</html>

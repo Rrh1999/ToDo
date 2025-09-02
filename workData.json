@@ -71,7 +71,7 @@
           "frequency": null,
           "interval": null,
           "from": null,
-          "status": "open",
+          "status": "closed",
           "subtasks": [],
           "name": "Chase for Data",
           "project": "Meta-Analysis CD & Impulsivity",
@@ -87,7 +87,7 @@
           "frequency": null,
           "interval": null,
           "from": null,
-          "status": "open",
+          "status": "closed",
           "subtasks": [],
           "name": "Check if any emails didnt go through",
           "project": "Meta-Analysis CD & Impulsivity",
@@ -151,7 +151,7 @@
           "frequency": null,
           "interval": null,
           "from": null,
-          "status": "open",
+          "status": "closed",
           "subtasks": [],
           "name": "Save emails Relating to data",
           "project": "Meta-Analysis CD & Impulsivity",
@@ -177,22 +177,6 @@
       "from": null,
       "status": "open",
       "subtasks": [
-        {
-          "id": "00000049",
-          "parent": "00000039",
-          "recurring": false,
-          "frequency": null,
-          "interval": null,
-          "from": null,
-          "status": "open",
-          "subtasks": [],
-          "name": "Do my essay and thesis",
-          "project": "PhD Admin",
-          "dueDate": "2025-08-01",
-          "importance": "Medium",
-          "urgency": "Medium",
-          "notes": ""
-        },
         {
           "id": "00000051",
           "parent": "00000039",
@@ -224,6 +208,22 @@
           "importance": "Medium",
           "urgency": "Medium",
           "notes": ""
+        },
+        {
+          "id": "00000049",
+          "parent": "00000039",
+          "recurring": false,
+          "frequency": null,
+          "interval": null,
+          "from": null,
+          "status": "open",
+          "subtasks": [],
+          "name": "Do my essay and thesis",
+          "project": "PhD Admin",
+          "dueDate": "2025-08-01",
+          "importance": "Medium",
+          "urgency": "Medium",
+          "notes": ""
         }
       ],
       "notes": ""
@@ -241,7 +241,24 @@
       "interval": null,
       "from": null,
       "status": "open",
-      "subtasks": [],
+      "subtasks": [
+        {
+          "id": "00000042",
+          "parent": "00000040",
+          "name": "Complete the mandatory training",
+          "project": "PhD Admin",
+          "dueDate": "2025-08-02",
+          "importance": "High",
+          "urgency": "High",
+          "recurring": false,
+          "frequency": null,
+          "interval": null,
+          "from": null,
+          "status": "closed",
+          "subtasks": [],
+          "notes": ""
+        }
+      ],
       "notes": ""
     },
     {
@@ -257,22 +274,6 @@
       "interval": null,
       "from": null,
       "status": "closed",
-      "subtasks": [],
-      "notes": ""
-    },
-    {
-      "id": "00000042",
-      "parent": null,
-      "name": "Complete the mandatory training",
-      "project": "PhD Admin",
-      "dueDate": "2025-08-02",
-      "importance": "High",
-      "urgency": "High",
-      "recurring": false,
-      "frequency": null,
-      "interval": null,
-      "from": null,
-      "status": "open",
       "subtasks": [],
       "notes": ""
     },
@@ -305,6 +306,134 @@
       "interval": null,
       "from": null,
       "status": "closed",
+      "subtasks": [],
+      "notes": ""
+    },
+    {
+      "id": "00000061",
+      "parent": null,
+      "name": "Check Data",
+      "project": "Maltreatment",
+      "dueDate": "2025-08-01",
+      "importance": "High",
+      "urgency": "High",
+      "recurring": false,
+      "frequency": null,
+      "interval": null,
+      "from": null,
+      "status": "closed",
+      "subtasks": [],
+      "notes": ""
+    },
+    {
+      "id": "00000062",
+      "parent": null,
+      "name": "Contact for ADHD support",
+      "project": "PhD Admin",
+      "dueDate": "2025-08-21",
+      "importance": "High",
+      "urgency": "High",
+      "recurring": false,
+      "frequency": null,
+      "interval": null,
+      "from": null,
+      "status": "closed",
+      "subtasks": [],
+      "notes": ""
+    },
+    {
+      "id": "00000068",
+      "parent": null,
+      "name": "Send everyone the video of the talk",
+      "project": "Maltreatment",
+      "dueDate": "",
+      "importance": "High",
+      "urgency": "High",
+      "recurring": false,
+      "frequency": null,
+      "interval": null,
+      "from": null,
+      "status": "closed",
+      "subtasks": [],
+      "notes": ""
+    },
+    {
+      "id": "00000069",
+      "parent": null,
+      "name": "Contact disability support services",
+      "project": "PhD Admin",
+      "dueDate": "",
+      "importance": "High",
+      "urgency": "High",
+      "recurring": false,
+      "frequency": null,
+      "interval": null,
+      "from": null,
+      "status": "closed",
+      "subtasks": [],
+      "notes": ""
+    },
+    {
+      "id": "00000070",
+      "parent": null,
+      "name": "Plan the calender Month",
+      "project": "PhD Admin",
+      "dueDate": "",
+      "importance": "High",
+      "urgency": "High",
+      "recurring": false,
+      "frequency": null,
+      "interval": null,
+      "from": null,
+      "status": "closed",
+      "subtasks": [],
+      "notes": ""
+    },
+    {
+      "id": "00000071",
+      "parent": null,
+      "name": "Daniel book the scan after 1  get volunteer",
+      "project": "PD & MRS",
+      "dueDate": "",
+      "importance": "High",
+      "urgency": "High",
+      "recurring": false,
+      "frequency": null,
+      "interval": null,
+      "from": null,
+      "status": "open",
+      "subtasks": [],
+      "notes": ""
+    },
+    {
+      "id": "00000072",
+      "parent": null,
+      "name": "Read the chbh oplr part c and operating rules",
+      "project": "MRI Training",
+      "dueDate": "",
+      "importance": "High",
+      "urgency": "High",
+      "recurring": false,
+      "frequency": null,
+      "interval": null,
+      "from": null,
+      "status": "open",
+      "subtasks": [],
+      "notes": ""
+    },
+    {
+      "id": "00000073",
+      "parent": null,
+      "name": "Embedd a way to review papers and save stuff",
+      "project": "PhD Admin",
+      "dueDate": "",
+      "importance": "High",
+      "urgency": "High",
+      "recurring": false,
+      "frequency": null,
+      "interval": null,
+      "from": null,
+      "status": "open",
       "subtasks": [],
       "notes": ""
     },
@@ -423,6 +552,54 @@
       "notes": ""
     },
     {
+      "id": "00000064",
+      "parent": null,
+      "name": "Arrange the scanning training",
+      "project": "MRI Training",
+      "dueDate": "2025-08-25",
+      "importance": "High/Medium",
+      "urgency": "High/Medium",
+      "recurring": true,
+      "frequency": "weekly",
+      "interval": 1,
+      "from": "intended",
+      "status": "open",
+      "subtasks": [],
+      "notes": ""
+    },
+    {
+      "id": "00000065",
+      "parent": null,
+      "name": "Do a rough planner for the goal posts for when stephane comes back",
+      "project": "PhD Admin",
+      "dueDate": "2025-08-25",
+      "importance": "High/Medium",
+      "urgency": "High/Medium",
+      "recurring": false,
+      "frequency": null,
+      "interval": null,
+      "from": null,
+      "status": "open",
+      "subtasks": [],
+      "notes": ""
+    },
+    {
+      "id": "00000066",
+      "parent": null,
+      "name": "Summarise Ruth Convo",
+      "project": "Maltreatment",
+      "dueDate": "2025-08-18",
+      "importance": "High/Medium",
+      "urgency": "High/Medium",
+      "recurring": false,
+      "frequency": null,
+      "interval": null,
+      "from": null,
+      "status": "closed",
+      "subtasks": [],
+      "notes": ""
+    },
+    {
       "id": "00000019",
       "parent": null,
       "name": "Write Up",
@@ -476,7 +653,7 @@
       "parent": null,
       "name": "Check in on Jules",
       "project": "Meta-Analysis CD & Impulsivity",
-      "dueDate": "2025-07-29",
+      "dueDate": "2025-08-05",
       "importance": "High",
       "urgency": "Medium",
       "recurring": true,
@@ -515,7 +692,7 @@
       "frequency": null,
       "interval": null,
       "from": null,
-      "status": "open",
+      "status": "closed",
       "subtasks": [],
       "notes": ""
     },
@@ -531,7 +708,7 @@
       "frequency": null,
       "interval": null,
       "from": null,
-      "status": "open",
+      "status": "closed",
       "subtasks": [],
       "notes": ""
     },
@@ -638,7 +815,7 @@
       "frequency": null,
       "interval": null,
       "from": null,
-      "status": "open",
+      "status": "closed",
       "subtasks": [],
       "name": "- Torodov see how many % subset they did, and jules do that",
       "project": "Meta-Analysis CD & Impulsivity",
@@ -654,7 +831,7 @@
       "frequency": null,
       "interval": null,
       "from": null,
-      "status": "open",
+      "status": "closed",
       "subtasks": [],
       "name": "- let noemi and ellie if they have any q's on impulsivity",
       "project": "PD & MRS",
@@ -670,7 +847,7 @@
       "frequency": null,
       "interval": null,
       "from": null,
-      "status": "open",
+      "status": "closed",
       "subtasks": [],
       "name": "- out of office reply,",
       "project": "PhD Admin",
@@ -678,6 +855,38 @@
       "importance": "Medium",
       "urgency": "Medium",
       "notes": "from meeting 12"
+    },
+    {
+      "id": "00000063",
+      "parent": null,
+      "name": "Emails",
+      "project": "PhD Admin",
+      "dueDate": "NaN-NaN-NaN",
+      "importance": "Medium",
+      "urgency": "Medium",
+      "recurring": true,
+      "frequency": "daily",
+      "interval": 2,
+      "from": "intended",
+      "status": "open",
+      "subtasks": [],
+      "notes": ""
+    },
+    {
+      "id": "00000067",
+      "parent": null,
+      "name": "Go through the rest of the data",
+      "project": "Maltreatment",
+      "dueDate": "2025-09-28",
+      "importance": "Medium",
+      "urgency": "Medium",
+      "recurring": false,
+      "frequency": null,
+      "interval": null,
+      "from": null,
+      "status": "open",
+      "subtasks": [],
+      "notes": ""
     },
     {
       "id": "00000033",
@@ -806,25 +1015,9 @@
       "status": "open",
       "subtasks": [],
       "notes": ""
-    },
-    {
-      "id": "00000061",
-      "parent": null,
-      "name": "Check Data",
-      "project": "Maltreatment",
-      "dueDate": "2025-08-01",
-      "importance": "High",
-      "urgency": "High",
-      "recurring": false,
-      "frequency": null,
-      "interval": null,
-      "from": null,
-      "status": "open",
-      "subtasks": [],
-      "notes": ""
     }
   ],
-  "workNextId": 62,
+  "workNextId": 74,
   "maxSubDepth": 7,
   "calendarEvents": [
     {
@@ -868,9 +1061,93 @@
       "start": "2025-07-29",
       "end": "",
       "taskId": "00000046"
+    },
+    {
+      "id": "124",
+      "title": "Introduction Write Up",
+      "start": "2025-08-21",
+      "end": "",
+      "taskId": "00000020"
+    },
+    {
+      "id": "125",
+      "title": "Introduction Write Up",
+      "start": "2025-08-22",
+      "end": "",
+      "taskId": "00000020"
+    },
+    {
+      "id": "126",
+      "title": "Introduction Write Up",
+      "start": "2025-08-23",
+      "end": "",
+      "taskId": "00000020"
+    },
+    {
+      "id": "127",
+      "title": "Introduction Write Up",
+      "start": "2025-08-25",
+      "end": "",
+      "taskId": "00000020"
+    },
+    {
+      "id": "128",
+      "title": "Introduction Write Up",
+      "start": "2025-08-26",
+      "end": "",
+      "taskId": "00000020"
+    },
+    {
+      "id": "129",
+      "title": "Methods Write up",
+      "start": "2025-08-27",
+      "end": "",
+      "taskId": "00000021"
+    },
+    {
+      "id": "130",
+      "title": "Methods Write up",
+      "start": "2025-08-28",
+      "end": "",
+      "taskId": "00000021"
+    },
+    {
+      "id": "131",
+      "title": "Introduction Write Up",
+      "start": "2025-08-29",
+      "end": "",
+      "taskId": "00000020"
+    },
+    {
+      "id": "132",
+      "title": "Introduction Write Up",
+      "start": "2025-08-30",
+      "end": "",
+      "taskId": "00000020"
+    },
+    {
+      "id": "133",
+      "title": "Shorten the introduction",
+      "start": "2025-09-01",
+      "end": "",
+      "taskId": "00000010"
+    },
+    {
+      "id": "134",
+      "title": "Shorten the introduction",
+      "start": "2025-09-02",
+      "end": "",
+      "taskId": "00000010"
+    },
+    {
+      "id": "135",
+      "title": "Shorten the introduction",
+      "start": "2025-09-03",
+      "end": "",
+      "taskId": "00000010"
     }
   ],
-  "calendarNextId": 124,
+  "calendarNextId": 136,
   "meetings": [
     {
       "id": "12",
@@ -893,7 +1170,29 @@
       "outcomes": "",
       "attachments": [],
       "followupOf": null
+    },
+    {
+      "id": "14",
+      "title": "Main Supervision",
+      "project": "",
+      "date": "2025-08-29",
+      "attendees": "Rita & Stephane",
+      "content": "Training:\n•\tMRI – with Nina next week\n\nPart time:\n•\tPaperwork (just check)\n•\tAction - Send reasonable adjustment plan to send AIM (send it them)\nComplete and send to stephane -> PhD. \n\nGSR3:\n•\tEmailed to let know you are away\n•\tI have done draft 1, need to refine\n\nAnnual Progress Review:\n•\tEmailed lei\n•\tGot a response \n•\tFeel like I am happy to do it, if we can just have a date to aim for\n \nWill think who because they will be final viva <- a) look at the list of faculty and make suggestion, assistant prof and prof. \nGSR3 -> Do that and send it over to hm and john -> and send it off. Don’t spend too much time. Not essay type, bullet types. \nGSR2 -> double check it\n\nMeta Analysis:\n•\tContacted all the people, except those who I am unsure of if lifetime and we don’t need to chase for data (ask jules to double check when he is back)\no\tAsk Jules to check these and then check those papers. \no\tChase graham Fairchild -> chase when hes back in first or second week of september\n•\tI checked what Jessica did for her meta analysis… it was like 40 papers, Jules have done a 1000… he just needs to go through his conflicts to check them\n•\tI did email Noemi and Ellie to see if Q’s on impulsivity\n•\tWriting intro and methods – draft 1 dine\n\n-\tFor quality assessment see if someone else is available\n\nThere Admin:\n",
+      "outcomes": "-\tGant chart next supervision\n-\tSend stephane part time paper (with reasonable adjustement plan)\n-\tEmail the person back about the annual review and say we are looking to organise now\n-\tSend the person the GSR3 (make bullet points and also make priority)\n-\tLook at who will be your Viva Supervisor through the website, make suggestions and we will go through it\n-\tDouble GSR2 today!\n",
+      "attachments": [],
+      "followupOf": "12"
+    },
+    {
+      "id": "17",
+      "title": "Main Supervision",
+      "project": "",
+      "date": "",
+      "attendees": "Rita &amp; Stephane",
+      "content": "-\tGant chart next supervision\n-\tSend stephane part time paper (with reasonable adjustement plan)&nbsp;<div>-\tEmail the person back about the annual review and say we are looking to organise now<div>&nbsp;-\tSend the person the GSR3 (make bullet points and also make priority)&nbsp;</div><div>-\tLook at who will be your Viva Supervisor through the website, make suggestions and we will go through it\n-\tDouble GSR2 today!\n</div></div>",
+      "outcomes": "",
+      "attachments": [],
+      "followupOf": "14"
     }
   ],
-  "meetingNextId": 14
+  "meetingNextId": 18
 }

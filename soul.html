@@ -1,0 +1,422 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>Soul</title>
+<link rel="stylesheet" href="styles.css">
+<style>
+section { padding:1rem; }
+.hidden { display:none !important; }
+.form-grid { display:grid; grid-template-columns:repeat(auto-fill,minmax(200px,1fr)); gap:1rem; align-items:center; }
+.form-grid label { display:flex; flex-direction:column; font-size:0.9rem; font-weight:bold; }
+.form-grid input, .form-grid select, .form-grid textarea { width:100%; font-size:1rem; padding:0.4rem; margin-top:0.3rem; box-sizing:border-box; font-weight:normal; }
+.item-grid { display:flex; flex-wrap:wrap; gap:1rem; margin-top:1rem; }
+.meditation-item, .journal-item, .motto-item { padding:1rem; border-radius:var(--radius-sm); position:relative; min-width:150px; min-height:100px; box-shadow:0 1px 2px rgba(0,0,0,0.1); background:var(--color-surface); cursor:pointer; }
+.meditation-item .info-btn, .journal-item .info-btn, .motto-item .info-btn { position:absolute; bottom:4px; right:4px; background:none; border:none; cursor:pointer; color:var(--color-text); }
+.meditation-item .play-btn { position:absolute; top:4px; right:4px; background:none; border:none; cursor:pointer; }
+.filter-grid { display:grid; grid-template-columns: repeat(auto-fill,minmax(150px,1fr)); gap:0.5rem; margin:1rem 0; }
+.modal { position:fixed; z-index:1000; left:0; top:0; width:100%; height:100%; background:rgba(43,44,41,0.5); display:flex; align-items:center; justify-content:center; }
+.modal-content { background: var(--color-surface); border-radius:8px; padding:1rem; width:90%; max-width:500px; }
+.modal-header { display:flex; justify-content:space-between; align-items:center; margin-bottom:1rem; }
+.modal-body { margin-bottom:1rem; }
+.audio-controls { display:flex; align-items:center; gap:0.5rem; margin-top:0.5rem; }
+.audio-controls button { background:#2B2C29; color:#fff; border:none; padding:0.3rem 0.6rem; border-radius:4px; cursor:pointer; }
+.audio-controls input[type=range]{ flex:1; }
+</style>
+</head>
+<body>
+<header>
+  <h1>Soul</h1>
+</header>
+<div id="nav-placeholder"></div>
+<script src="nav-loader.js"></script>
+<script>
+// Timer fallback to avoid early undefined errors
+(function(){
+  try{
+    if(typeof window.createTimerButton!=="function"){
+      window.createTimerButton=function(source,name){
+        const btn=document.createElement('button');
+        btn.innerHTML='<svg width="18" height="18" viewBox="0 0 20 20" fill="none" xmlns="http://www.w3.org/2000/svg"><circle cx="10" cy="10" r="8" stroke="#2B2C29" stroke-width="2" fill="#C7BBB4"/><path d="M10 5v5l3 3" stroke="#2B2C29" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"/></svg>';
+        btn.title='Start timer';
+        btn.style.background='none';
+        btn.style.border='none';
+        btn.style.cursor='pointer';
+        btn.addEventListener('click',()=>{
+          if(typeof window.startTask==='function') window.startTask(source,name);
+          else console.warn('[time-tracker] startTask not ready yet');
+        });
+        return btn;
+      };
+    }
+    if(typeof window.startTask!=="function"){ window.startTask=function(){ console.warn('[time-tracker] startTask not ready yet'); }; }
+    if(typeof window.stopTask!=="function"){ window.stopTask=function(){ console.warn('[time-tracker] stopTask not ready yet'); }; }
+  }catch(e){}
+})();
+</script>
+
+<!-- Meditation Section -->
+<section>
+  <div class="toggle section-header" onclick="toggle('meditationSection')">
+    Meditation
+    <span class="pin-star" onclick="event.stopPropagation(); togglePin('meditationSection')" title="Pin section open">
+      <svg viewBox="0 0 20 20" fill="none" stroke="#2B2C29" stroke-width="1.5"><polygon points="10,2 12.5,7.5 18,8 14,12 15,18 10,15 5,18 6,12 2,8 7.5,7.5"/></svg>
+    </span>
+  </div>
+  <div id="meditationSection" class="hidden">
+    <div class="toggle add-toggle" onclick="toggle('addMeditationForm')">Add Meditation</div>
+    <div id="addMeditationForm" class="hidden subtoggle form-grid">
+      <label>Name<input type="text" id="meditationName"></label>
+      <label>Description<textarea id="meditationDesc"></textarea></label>
+      <label>Colour<input type="color" id="meditationColor" value="#81B29A"></label>
+      <label>Audio<input type="file" id="meditationAudio" accept="audio/*"></label>
+      <div style="grid-column:1/-1;text-align:center;">
+        <button class="submit-btn" onclick="addMeditation()">Submit</button>
+      </div>
+    </div>
+    <div id="meditationList" class="item-grid"></div>
+  </div>
+</section>
+
+<!-- Journal Section -->
+<section>
+  <div class="toggle section-header" onclick="toggle('journalSection')">
+    Journal
+    <span class="pin-star" onclick="event.stopPropagation(); togglePin('journalSection')" title="Pin section open">
+      <svg viewBox="0 0 20 20" fill="none" stroke="#2B2C29" stroke-width="1.5"><polygon points="10,2 12.5,7.5 18,8 14,12 15,18 10,15 5,18 6,12 2,8 7.5,7.5"/></svg>
+    </span>
+  </div>
+  <div id="journalSection" class="hidden">
+    <div id="addJournalForm" class="form-grid">
+      <label>Title<input type="text" id="journalTitle"></label>
+      <label>Date<input type="date" id="journalDate"></label>
+      <label>Type<select id="journalTypeSelect"></select></label>
+      <label>Text<textarea id="journalText"></textarea></label>
+      <label>Media<input type="file" id="journalMedia" accept="image/*,video/*,audio/*" multiple></label>
+      <div style="grid-column:1/-1;text-align:center;">
+        <button class="submit-btn" onclick="addJournal()">Submit</button>
+      </div>
+    </div>
+    <div class="filter-grid">
+      <label>Name<input type="text" id="filterJournalName"></label>
+      <label>Start Date<input type="date" id="filterJournalStart"></label>
+      <label>End Date<input type="date" id="filterJournalEnd"></label>
+      <label>Type<select id="filterJournalType"></select></label>
+      <div style="grid-column:1/-1;text-align:right;"><button class="filter-apply-btn" onclick="renderJournals()">Apply Filters</button></div>
+    </div>
+    <div class="toggle add-toggle" onclick="toggle('addJournalTypeForm')">Add Journal Entry Type</div>
+    <div id="addJournalTypeForm" class="hidden subtoggle form-grid">
+      <label>Name<input type="text" id="journalTypeName"></label>
+      <label>Colour<input type="color" id="journalTypeColor" value="#81B29A"></label>
+      <div style="grid-column:1/-1;text-align:center;">
+        <button class="submit-btn" onclick="addJournalType()">Add Type</button>
+      </div>
+    </div>
+    <div id="journalList" class="item-grid"></div>
+  </div>
+</section>
+
+<!-- Mottos/Affirmations Section -->
+<section>
+  <div class="toggle section-header" onclick="toggle('mottoSection')">
+    Motto's/Affirmations
+    <span class="pin-star" onclick="event.stopPropagation(); togglePin('mottoSection')" title="Pin section open">
+      <svg viewBox="0 0 20 20" fill="none" stroke="#2B2C29" stroke-width="1.5"><polygon points="10,2 12.5,7.5 18,8 14,12 15,18 10,15 5,18 6,12 2,8 7.5,7.5"/></svg>
+    </span>
+  </div>
+  <div id="mottoSection" class="hidden">
+    <div class="toggle add-toggle" onclick="toggle('addMottoForm')">Add Motto/Affirmation</div>
+    <div id="addMottoForm" class="hidden subtoggle form-grid">
+      <label>Name<input type="text" id="mottoName"></label>
+      <label>Text<textarea id="mottoText"></textarea></label>
+      <div style="grid-column:1/-1;text-align:center;">
+        <button class="submit-btn" onclick="addMotto()">Submit</button>
+      </div>
+    </div>
+    <div id="mottoList" class="item-grid"></div>
+  </div>
+</section>
+
+<div id="modalContainer" class="hidden"></div>
+
+<script>
+let pinnedSections = [];
+let meditations = [];
+let nextMeditationId = 1;
+let journalTypes = [];
+let nextJournalTypeId = 1;
+let journals = [];
+let nextJournalId = 1;
+let mottos = [];
+let nextMottoId = 1;
+
+function toggle(id){ const el=document.getElementById(id); if(el) el.classList.toggle('hidden'); }
+
+function togglePin(sectionId){
+  const index = pinnedSections.indexOf(sectionId);
+  const star = document.querySelector(`[onclick*="togglePin('${sectionId}')"]`);
+  if(index === -1){
+    pinnedSections.push(sectionId);
+    star.classList.add('pinned');
+    star.title='Unpin section';
+  }else{
+    pinnedSections.splice(index,1);
+    star.classList.remove('pinned');
+    star.title='Pin section open';
+  }
+  localStorage.setItem('soulPinned', JSON.stringify(pinnedSections));
+}
+
+function loadPinnedSections(){
+  const saved = localStorage.getItem('soulPinned');
+  if(saved){
+    pinnedSections = JSON.parse(saved);
+    pinnedSections.forEach(id=>{
+      const el=document.getElementById(id);
+      const star=document.querySelector(`[onclick*="togglePin('${id}')"]`);
+      if(el && star){ el.classList.remove('hidden'); star.classList.add('pinned'); star.title='Unpin section'; }
+    });
+  }
+}
+
+async function loadSoul(){
+  try{
+    const res = await fetch('/api/soul-data');
+    if(res.ok){
+      const d = await res.json();
+      meditations = d.meditations || [];
+      nextMeditationId = d.nextMeditationId || 1;
+      journalTypes = d.journalTypes || [];
+      nextJournalTypeId = d.nextJournalTypeId || 1;
+        journals = (d.journals || []).map(j=>({ ...j, media: j.media || [] }));
+      nextJournalId = d.nextJournalId || 1;
+      mottos = d.mottos || [];
+      nextMottoId = d.nextMottoId || 1;
+    }
+  }catch(e){}
+}
+
+async function saveSoul(){
+  const payload = {meditations,nextMeditationId,journalTypes,nextJournalTypeId,journals,nextJournalId,mottos,nextMottoId};
+  await fetch('/api/soul-data',{method:'POST',headers:{'Content-Type':'application/json'},body:JSON.stringify(payload)});
+}
+
+/* Meditation functions */
+function addMeditation(){
+  const name=document.getElementById('meditationName').value.trim();
+  const desc=document.getElementById('meditationDesc').value.trim();
+  const color=document.getElementById('meditationColor').value;
+  const file=document.getElementById('meditationAudio').files[0];
+  if(!name || !file) return;
+  const reader=new FileReader();
+  reader.onload=function(){
+    meditations.push({id:nextMeditationId++,name,desc,color,audio:reader.result});
+    document.getElementById('meditationName').value='';
+    document.getElementById('meditationDesc').value='';
+    document.getElementById('meditationAudio').value='';
+    renderMeditations();
+    saveSoul();
+  };
+  reader.readAsDataURL(file);
+}
+
+function renderMeditations(){
+  const container=document.getElementById('meditationList');
+  if(!meditations.length){ container.innerHTML='<p style="opacity:.7">No meditations yet.</p>'; return;}
+  container.innerHTML=meditations.map(m=>`<div class=\"meditation-item\" style=\"background:${m.color}\" onclick=\"playMeditation(${m.id})\"><strong>${m.name}</strong><button class=\"info-btn\" onclick=\"event.stopPropagation();editMeditation(${m.id})\">ℹ️</button></div>`).join('');
+}
+
+function playMeditation(id){
+  const m=meditations.find(x=>x.id===id); if(!m) return;
+  const modal=document.getElementById('modalContainer');
+  modal.innerHTML=`<div class=\"modal\"><div class=\"modal-content\"><div class=\"modal-header\"><h3>${m.name}</h3><span class=\"close\" onclick=\"closeModal()\">&times;</span></div><div class=\"modal-body\"><audio id=\"audioPlayer\" src=\"${m.audio}\"></audio><div class=\"audio-controls\"><button id=\"rewindBtn\">-30s</button><button id=\"playPauseBtn\">Play</button><button id=\"forwardBtn\">+30s</button><input type=\"range\" id=\"seekBar\" min=\"0\" max=\"100\" value=\"0\"><button id=\"speedBtn\">1x</button></div></div></div></div>`;
+  modal.classList.remove('hidden');
+  initAudioPlayer();
+}
+
+function initAudioPlayer(){
+  const audio=document.getElementById('audioPlayer');
+  const playPause=document.getElementById('playPauseBtn');
+  const seek=document.getElementById('seekBar');
+  const rewind=document.getElementById('rewindBtn');
+  const forward=document.getElementById('forwardBtn');
+  const speed=document.getElementById('speedBtn');
+  const speeds=[0.5,1,1.5,2];
+  playPause.onclick=()=>{ if(audio.paused){ audio.play(); playPause.textContent='Pause'; } else { audio.pause(); playPause.textContent='Play'; } };
+  audio.addEventListener('timeupdate',()=>{ if(audio.duration) seek.value=(audio.currentTime/audio.duration)*100; });
+  seek.oninput=()=>{ if(audio.duration) audio.currentTime=(seek.value/100)*audio.duration; };
+  rewind.onclick=()=>{ audio.currentTime=Math.max(0,audio.currentTime-30); };
+  forward.onclick=()=>{ audio.currentTime=Math.min(audio.duration||0,audio.currentTime+30); };
+  speed.onclick=()=>{ let idx=speeds.indexOf(audio.playbackRate); idx=(idx+1)%speeds.length; audio.playbackRate=speeds[idx]; speed.textContent=speeds[idx]+"x"; };
+}
+
+function editMeditation(id){
+  const m=meditations.find(x=>x.id===id); if(!m) return;
+  const modal=document.getElementById('modalContainer');
+  modal.innerHTML=`<div class=\"modal\"><div class=\"modal-content\"><div class=\"modal-header\"><h3>Edit ${m.name}</h3><span class=\"close\" onclick=\"closeModal()\">&times;</span></div><div class=\"modal-body form-grid\"><label>Name<input id=\"editMedName\" value=\"${m.name}\"></label><label>Description<textarea id=\"editMedDesc\">${m.desc}</textarea></label><label>Colour<input type=\"color\" id=\"editMedColor\" value=\"${m.color}\"></label><div style=\"grid-column:1/-1;text-align:right\"><button class=\"btn\" onclick=\"updateMeditation(${m.id})\">Save</button><button class=\"btn\" style=\"margin-left:0.5rem\" onclick=\"deleteMeditation(${m.id})\">Delete</button></div></div></div></div>`;
+  modal.classList.remove('hidden');
+}
+
+function updateMeditation(id){
+  const m=meditations.find(x=>x.id===id); if(!m) return;
+  m.name=document.getElementById('editMedName').value.trim();
+  m.desc=document.getElementById('editMedDesc').value.trim();
+  m.color=document.getElementById('editMedColor').value;
+  renderMeditations();
+  saveSoul();
+  closeModal();
+}
+
+function deleteMeditation(id){
+  meditations=meditations.filter(x=>x.id!==id);
+  renderMeditations();
+  saveSoul();
+  closeModal();
+}
+
+/* Journal functions */
+function addJournalType(){
+  const name=document.getElementById('journalTypeName').value.trim();
+  const color=document.getElementById('journalTypeColor').value;
+  if(!name) return;
+  journalTypes.push({id:nextJournalTypeId++,name,color});
+  document.getElementById('journalTypeName').value='';
+  renderJournalTypeOptions();
+  saveSoul();
+}
+
+function renderJournalTypeOptions(){
+  const selects=[document.getElementById('journalTypeSelect'), document.getElementById('filterJournalType')];
+  selects.forEach(sel=>{ sel.innerHTML='<option value="">--Type--</option>'+journalTypes.map(t=>`<option value="${t.id}">${t.name}</option>`).join(''); });
+}
+
+  function addJournal(){
+    const title=document.getElementById('journalTitle').value.trim();
+    const date=document.getElementById('journalDate').value;
+    const type=document.getElementById('journalTypeSelect').value;
+    const text=document.getElementById('journalText').value.trim();
+    const files=Array.from(document.getElementById('journalMedia').files);
+    if(!title || !date || !type) return;
+    const readers=files.map(f=>new Promise(res=>{const r=new FileReader();r.onload=()=>res(r.result);r.readAsDataURL(f);}));
+    Promise.all(readers).then(media=>{
+      journals.push({id:nextJournalId++,title,date,type,text,media});
+      document.getElementById('journalTitle').value='';
+      document.getElementById('journalDate').value='';
+      document.getElementById('journalText').value='';
+      document.getElementById('journalMedia').value='';
+      renderJournals();
+      saveSoul();
+    });
+  }
+
+function renderJournals(){
+  const container=document.getElementById('journalList');
+  if(!journals.length){ container.innerHTML='<p style="opacity:.7">No journal entries.</p>'; return;}
+  const nameFilter=document.getElementById('filterJournalName').value.toLowerCase();
+  const start=document.getElementById('filterJournalStart').value;
+  const end=document.getElementById('filterJournalEnd').value;
+  const type=document.getElementById('filterJournalType').value;
+  let list=journals.slice();
+  if(nameFilter) list=list.filter(j=>j.title.toLowerCase().includes(nameFilter));
+  if(start) list=list.filter(j=>j.date>=start);
+  if(end) list=list.filter(j=>j.date<=end);
+  if(type) list=list.filter(j=>j.type===type);
+  if(!list.length){ container.innerHTML='<p style="opacity:.7">No journal entries match.</p>'; return;}
+    container.innerHTML=list.map(j=>{ const t=journalTypes.find(x=>x.id===j.type); const color=t?t.color:'#fff'; const mediaThumbs=(j.media||[]).map(m=>m.startsWith('data:image')?`<img src=\"${m}\" style=\"width:40px;height:40px;object-fit:cover;margin-right:4px\">`:`<a href=\"${m}\" target=\"_blank\" onclick=\"event.stopPropagation()\" style=\"margin-right:4px\">file</a>`).join(''); return `<div class=\"journal-item\" style=\"background:${color}\" onclick=\"viewJournal(${j.id})\"><strong>${j.date}</strong><div>${j.title}</div><div>${mediaThumbs}</div></div>`; }).join('');
+  }
+
+function viewJournal(id){
+  const j=journals.find(x=>x.id===id); if(!j) return;
+  const t=journalTypes.find(x=>x.id===j.type);
+  const modal=document.getElementById('modalContainer');
+    const mediaHtml=(j.media||[]).map(m=>{
+      if(m.startsWith('data:image')) return `<img src="${m}" style="max-width:100%;margin-top:0.5rem;">`;
+      if(m.startsWith('data:video')) return `<video controls src="${m}" style="width:100%;margin-top:0.5rem;"></video>`;
+      if(m.startsWith('data:audio')) return `<audio controls src="${m}" style="width:100%;margin-top:0.5rem;"></audio>`;
+      return `<a href="${m}" target="_blank">Download file</a>`;
+    }).join('');
+    modal.innerHTML=`<div class=\"modal\"><div class=\"modal-content\"><div class=\"modal-header\"><h3>${j.title}</h3><span class=\"close\" onclick=\"closeModal()\">&times;</span></div><div class=\"modal-body\"><p><strong>Date:</strong> ${j.date}</p><p><strong>Type:</strong> ${t?t.name:''}</p><p>${j.text}</p>${mediaHtml}</div><div class=\"modal-footer\" style=\"text-align:right\"><button class=\"btn\" onclick=\"deleteJournal(${j.id})\">Delete</button></div></div></div>`;
+  modal.classList.remove('hidden');
+}
+
+function deleteJournal(id){
+  journals=journals.filter(j=>j.id!==id);
+  renderJournals();
+  saveSoul();
+  closeModal();
+}
+
+/* Motto functions */
+function addMotto(){
+  const name=document.getElementById('mottoName').value.trim();
+  const text=document.getElementById('mottoText').value.trim();
+  if(!name || !text) return;
+  mottos.push({id:nextMottoId++,name,text,readCount:0,lastRead:null});
+  document.getElementById('mottoName').value='';
+  document.getElementById('mottoText').value='';
+  renderMottos();
+  saveSoul();
+}
+
+function renderMottos(){
+  const container=document.getElementById('mottoList');
+  if(!mottos.length){ container.innerHTML='<p style="opacity:.7">No mottos yet.</p>'; return;}
+  container.innerHTML=mottos.map(m=>`<div class=\"motto-item\" onclick=\"viewMotto(${m.id})\"><strong>${m.name}</strong></div>`).join('');
+}
+
+function viewMotto(id){
+  const m=mottos.find(x=>x.id===id); if(!m) return;
+  const modal=document.getElementById('modalContainer');
+  modal.innerHTML=`<div class=\"modal\"><div class=\"modal-content\"><div class=\"modal-header\"><h3>${m.name}</h3><span class=\"close\" onclick=\"closeModal()\">&times;</span></div><div class=\"modal-body\"><p>${m.text}</p><p>Read ${m.readCount} times${m.lastRead? ' (last: '+m.lastRead+')':''}</p></div><div class=\"modal-footer\" style=\"text-align:right\"><button class=\"btn\" onclick=\"markMottoRead(${m.id})\">Read</button><button class=\"btn\" style=\"margin-left:0.5rem\" onclick=\"editMotto(${m.id})\">Edit</button><button class=\"btn\" style=\"margin-left:0.5rem\" onclick=\"deleteMotto(${m.id})\">Delete</button></div></div></div>`;
+  modal.classList.remove('hidden');
+}
+
+function markMottoRead(id){
+  const m=mottos.find(x=>x.id===id); if(!m) return;
+  m.readCount++; m.lastRead=new Date().toISOString().slice(0,10);
+  saveSoul();
+  viewMotto(id);
+}
+
+function deleteMotto(id){
+  mottos=mottos.filter(x=>x.id!==id);
+  renderMottos();
+  saveSoul();
+  closeModal();
+}
+
+function editMotto(id){
+  const m=mottos.find(x=>x.id===id); if(!m) return;
+  const modal=document.getElementById('modalContainer');
+  modal.innerHTML=`<div class=\"modal\"><div class=\"modal-content\"><div class=\"modal-header\"><h3>Edit ${m.name}</h3><span class=\"close\" onclick=\"closeModal()\">&times;</span></div><div class=\"modal-body form-grid\"><label>Name<input id=\"editMottoName\" value=\"${m.name}\"></label><label>Text<textarea id=\"editMottoText\">${m.text}</textarea></label><div style=\"grid-column:1/-1;text-align:right\"><button class=\"btn\" onclick=\"updateMotto(${m.id})\">Save</button><button class=\"btn\" style=\"margin-left:0.5rem\" onclick=\"deleteMotto(${m.id})\">Delete</button></div></div></div></div>`;
+  modal.classList.remove('hidden');
+}
+
+function updateMotto(id){
+  const m=mottos.find(x=>x.id===id); if(!m) return;
+  m.name=document.getElementById('editMottoName').value.trim();
+  m.text=document.getElementById('editMottoText').value.trim();
+  renderMottos();
+  saveSoul();
+  closeModal();
+}
+
+function closeModal(){
+  const modal=document.getElementById('modalContainer');
+  modal.classList.add('hidden');
+  modal.innerHTML='';
+}
+
+async function init(){
+  await loadSoul();
+  renderMeditations();
+  renderJournalTypeOptions();
+  renderJournals();
+  renderMottos();
+  loadPinnedSections();
+}
+document.addEventListener('DOMContentLoaded', init);
+</script>
+</body>
+</html>
