@@ -82,40 +82,8 @@ body { margin: 0; padding: 0; }
 })();
 </script>
 
-<!-- Today Section at the top -->
-<div id="todaySection">
-  <h2>Today</h2>
-  <input type="text" id="quickInput" placeholder="New item">
-  <button onclick="addQuickItem()">Add</button>
-  <button onclick="clearToday()">Clear</button>
-  <div id="todayListContainer">
-    <ul id="todayList" class="task-list"></ul>
-  </div>
-</div>
-
-<!-- Side pickers (work/DIY/stretch/big) below -->
-<div id="container">
-  <div id="side">
-    <label style="display:block;margin-top:0.5rem;"><input type="checkbox" id="workToggle"> Show Work Tasks</label>
-    <ul id="workTaskList" class="task-list hidden"></ul>
-    <label style="display:block;margin-top:0.5rem;"><input type="checkbox" id="diyToggle"> Show DIY Tasks</label>
-    <ul id="diyTaskList" class="task-list hidden"></ul>
-    <label style="display:block;margin-top:0.5rem;"><input type="checkbox" id="stretchToggle"> Show Stretch Tasks</label>
-    <ul id="stretchTaskList" class="task-list hidden"></ul>
-    <label style="display:block;margin-top:0.5rem;"><input type="checkbox" id="bigToggle"> Show Big Tasks</label>
-    <ul id="bigTaskList" class="task-list hidden"></ul>
-    <label style="display:block;margin-top:0.5rem;"><input type="checkbox" id="diyBigToggle"> Show DIY Big Tasks</label>
-    <ul id="diyBigTaskList" class="task-list hidden"></ul>
-    <label style="display:block;margin-top:0.5rem;"><input type="checkbox" id="devToggle"> Show Development Activities</label>
-    <ul id="devTaskList" class="task-list hidden"></ul>
-  </div>
-  <div id="main">
-    <!-- This can be used for additional content later -->
-  </div>
-</div>
-
 <!-- To Do Tasks Section -->
-<div id="todoTasksSection" style="padding: 1rem; border-top: 2px solid #e2e5e9; margin-top: 1rem;">
+<div id="todoTasksSection" style="padding: 1rem; margin-top: 1rem;">
   <h2>To Do Tasks</h2>
   <div style="display: flex; gap: 1rem; flex-wrap: wrap;">
     <button onclick="openWeeklyTasksModal()" style="padding: 0.75rem 1.5rem; background: #B5A89A; color: #2B2C29; border: none; border-radius: 6px; cursor: pointer; font-weight: 500;">Weekly Tasks</button>
@@ -129,7 +97,7 @@ body { margin: 0; padding: 0; }
 
   <!-- Today Data Management Section -->
   <div style="margin-top: 2rem; background: #f8f9fa; padding: 1.5rem; border-radius: 8px; border: 1px solid #e2e5e9;">
-    <h3 style="margin: 0 0 1rem 0; color: #2B2C29; font-size: 1.2rem;">Today's Task List Manager</h3>
+    <h3 style="margin: 0 0 1rem 0; color: #2B2C29; font-size: 1.2rem;">Today</h3>
     
     <!-- Add Quick Item -->
     <div style="margin-bottom: 1.5rem; display: flex; gap: 0.5rem; align-items: center;">
@@ -412,12 +380,7 @@ function rebuildToday(){
   });
 }
 function renderSide(){
-  if(document.getElementById('workToggle').checked) renderWorkTasks();
-  if(document.getElementById('diyToggle').checked) renderDiyTasks();
-  if(document.getElementById('stretchToggle').checked) renderStretchTasks();
-  if(document.getElementById('bigToggle').checked) renderBigTasks();
-  if(document.getElementById('diyBigToggle').checked) renderDiyBigTasks();
-  if(document.getElementById('devToggle').checked) renderDevTasks();
+  // Side panel removed - function kept as stub to prevent errors
 }
 function renderWorkTasks(){
   const ul=document.getElementById('workTaskList');
@@ -528,111 +491,12 @@ function addDevToToday(id){
   }).catch(e => console.error('Failed to add dev task to today:', e));
 }
 function updateToggles(){
-  const wt=document.getElementById('workToggle');
-  const dt=document.getElementById('diyToggle');
-  const bt=document.getElementById('bigToggle');
-  const db=document.getElementById('diyBigToggle');
-  const dv=document.getElementById('devToggle');
-  document.getElementById('workTaskList').classList.toggle('hidden', !wt.checked);
-  document.getElementById('diyTaskList').classList.toggle('hidden', !dt.checked);
-  document.getElementById('bigTaskList').classList.toggle('hidden', !bt.checked);
-  document.getElementById('diyBigTaskList').classList.toggle('hidden', !db.checked);
-  document.getElementById('devTaskList').classList.toggle('hidden', !dv.checked);
+  // Toggle elements removed - function kept as stub to prevent errors
 }
 function renderToday(){
-  const ul=document.getElementById('todayList');
-  ul.innerHTML='';
-  todayTasks.forEach((t,i)=>{
-    const li=document.createElement('li');
-    li.className='today-item';
-    li.draggable=true;
-    li.dataset.index=i;
-    if(t.depth) li.style.paddingLeft=(t.depth)+'rem';
-    
-    // Add completion styling
-    if(t.completed) {
-      li.style.opacity = '0.6';
-      li.style.textDecoration = 'line-through';
-    }
-    
-    const text=document.createElement('span');
-    let page='', label='', prefix='';
-    
-    if(t.type==='adhoc'){
-      label = t.item.name;
-      prefix = '[Ad-hoc] ';
-    } else {
-      if(t.type === 'work') page = 'Work';
-      else if(t.type === 'diy') page = 'DIY';
-      else if(t.type === 'index') page = 'Todo';
-      else if(t.type === 'parenting') page = 'Parenting';
-      
-      let projectText = '';
-      if(t.type === 'parenting'){
-        const skill = parentingSkills.find(s => s.id === t.item.skillId);
-        projectText = skill ? skill.name : '';
-      } else {
-        projectText = t.item.project || '';
-      }
-      
-      label = `${t.item.name}${projectText ? ` (${projectText})` : ''}`;
-      
-      if(t.subtype === 'big' || t.subtype === 'diybig') label = '[BIG] ' + label;
-      
-      let info = '';
-      if(page === 'Todo') info = t.subtype;
-      else if(page === 'Work') info = t.item.project;
-      prefix = page ? `[${page}${info ? ` - ${info}` : ''}] ` : '';
-      
-      if(taskScheduledToday(t.type, t.item.id)) text.style.fontWeight = 'bold';
-    }
-    
-    text.textContent = prefix + label;
-    
-    if(page){
-      const timerBtn = createTimerButton(page.toLowerCase(), t.item.name);
-      timerBtn.style.marginLeft = '0.25rem';
-      text.appendChild(timerBtn);
-    }
-    
-    const btnBox=document.createElement('span');
-    const up=document.createElement('button');
-    up.textContent='↑';
-    up.onclick=()=>moveTodayUp(i);
-    up.disabled = i === 0;
-    
-    const down=document.createElement('button');
-    down.textContent='↓';
-    down.onclick=()=>moveTodayDown(i);
-    down.disabled = i === todayTasks.length - 1;
-    
-    const btnR=document.createElement('button');
-    btnR.textContent='✖';
-    btnR.onclick=()=>removeToday(i);
-    btnR.title='Remove from Today';
-    
-    const btnC=document.createElement('button');
-    btnC.textContent = t.completed ? '↶' : '✓';
-    btnC.onclick=()=>toggleComplete(i);
-    btnC.title = t.completed ? 'Mark incomplete' : 'Complete';
-    
-    btnBox.appendChild(up);
-    btnBox.appendChild(down);
-    btnBox.appendChild(btnR);
-    btnBox.appendChild(btnC);
-    
-    const num=document.createElement('span');
-    num.textContent=(i+1)+'. ';
-    num.style.fontWeight = 'bold';
-    num.style.minWidth = '2em';
-    num.style.display = 'inline-block';
-    
-    li.appendChild(num);
-    li.appendChild(text);
-    li.appendChild(btnBox);
-    ul.appendChild(li);
-  });
-  updateToggles();
+  // Legacy function - now using renderTodayDataList instead
+  // Keeping this stub to prevent errors if called from other places
+  console.log('renderToday called - using renderTodayDataList instead');
 }
 // Removed selectTask for overdue/due lists
 function addWorkToToday(id){
@@ -652,7 +516,7 @@ function addWorkToToday(id){
     if(result.status === 'ok') {
       loadData().then(() => {
         rebuildToday();
-        renderToday();
+        renderTodayDataList();
         updateToggles();
       });
     }
@@ -675,7 +539,7 @@ function addDiyToToday(id){
     if(result.success) {
       loadData().then(() => {
         rebuildToday();
-        renderToday();
+        renderTodayDataList();
         updateToggles();
       });
     }
@@ -698,7 +562,7 @@ function addStretchToToday(id){
     if(result.success) {
       loadData().then(() => {
         rebuildToday();
-        renderToday();
+        renderTodayDataList();
         updateToggles();
       });
     }
@@ -721,7 +585,7 @@ function addBigToToday(id){
     if(result.success) {
       loadData().then(() => {
         rebuildToday();
-        renderToday();
+        renderTodayDataList();
         updateToggles();
       });
     }
@@ -873,77 +737,6 @@ function completeToday(idx){
     }
   }).catch(e => console.error('Failed to complete item:', e));
 }
-// Drag-and-drop functionality for reordering
-document.getElementById('todayList').addEventListener('dragstart',e=>{
-  if(e.target.tagName==='LI'){
-    e.dataTransfer.setData('text/plain',e.target.dataset.index);
-  }
-});
-
-document.getElementById('todayList').addEventListener('dragover',e=>{
-  e.preventDefault();
-});
-
-document.getElementById('todayList').addEventListener('drop',e=>{
-  e.preventDefault();
-  const from=+e.dataTransfer.getData('text/plain');
-  const to=e.target.closest('li');
-  if(!to) return;
-  const idx=+to.dataset.index;
-  
-  // Get current order from todayData
-  const currentItems = [...todayData.linked, ...todayData.adHoc];
-  if(from < 0 || from >= currentItems.length || idx < 0 || idx >= currentItems.length) return;
-  
-  // Create new order array by moving item
-  const newOrder = currentItems.map(item => item.id);
-  const movedId = newOrder.splice(from, 1)[0];
-  newOrder.splice(idx, 0, movedId);
-  
-  // Send to server
-  fetch('/api/today/reorder', {
-    method: 'POST',
-    headers: {'Content-Type': 'application/json'},
-    body: JSON.stringify({ newOrder })
-  }).then(res => res.json()).then(result => {
-    if(result.success) {
-      loadData().then(() => {
-        rebuildToday();
-        renderToday();
-      });
-    }
-  }).catch(e => console.error('Failed to reorder via drag-drop:', e));
-});
-document.getElementById('workToggle').addEventListener('change',e=>{
-  document.getElementById('workTaskList').classList.toggle('hidden',!e.target.checked);
-  if(e.target.checked) renderWorkTasks();
-  updateToggles();
-});
-document.getElementById('diyToggle').addEventListener('change',e=>{
-  document.getElementById('diyTaskList').classList.toggle('hidden',!e.target.checked);
-  if(e.target.checked) renderDiyTasks();
-  updateToggles();
-});
-document.getElementById('stretchToggle').addEventListener('change',e=>{
-  document.getElementById('stretchTaskList').classList.toggle('hidden',!e.target.checked);
-  if(e.target.checked) renderStretchTasks();
-});
-document.getElementById('bigToggle').addEventListener('change',e=>{
-  document.getElementById('bigTaskList').classList.toggle('hidden',!e.target.checked);
-  if(e.target.checked) renderBigTasks();
-  updateToggles();
-});
-document.getElementById('diyBigToggle').addEventListener('change',e=>{
-  document.getElementById('diyBigTaskList').classList.toggle('hidden',!e.target.checked);
-  if(e.target.checked) renderDiyBigTasks();
-  updateToggles();
-});
-document.getElementById('devToggle').addEventListener('change',e=>{
-  document.getElementById('devTaskList').classList.toggle('hidden',!e.target.checked);
-  if(e.target.checked) renderDevTasks();
-  updateToggles();
-});
-
 // Modal functionality for task selection
 let modalCurrentWeekStart = new Date();
 
@@ -1840,7 +1633,7 @@ function renderTodayDataList() {
   });
 }
 
-async function init(){await loadData();rebuildToday();renderSide();renderToday();renderTodayDataList();}
+async function init(){await loadData();renderTodayDataList();}
 init();
 </script>
 </body>

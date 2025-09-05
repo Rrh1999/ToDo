@@ -18,7 +18,7 @@
         "Sat",
         "Sun"
       ],
-      "nextTrigger": null,
+      "nextTrigger": "2025-09-06T07:00:00.000Z",
       "questions": [
         {
           "text": "How rewarding do you expect today to be?",
@@ -55,8 +55,9 @@
       ],
       "id": 4,
       "createdAt": "2025-09-05T06:45:55.497Z",
-      "pendingResponse": true,
-      "lastTriggeredAt": "2025-09-05T07:00:07.158Z"
+      "pendingResponse": false,
+      "lastTriggeredAt": "2025-09-05T07:31:07.493Z",
+      "lastRespondedAt": "2025-09-05T07:31:26.849Z"
     },
     {
       "name": "Reward ",
@@ -97,6 +98,93 @@
       ],
       "id": 5,
       "createdAt": "2025-09-05T06:46:26.841Z"
+    },
+    {
+      "name": "Mood",
+      "description": "Regular Mood Rating",
+      "triggerType": "recurring",
+      "responseType": "more",
+      "status": "active",
+      "intervalNumber": 4,
+      "intervalType": "hours",
+      "nextTrigger": "2025-09-05T11:41:50.668Z",
+      "questions": [
+        {
+          "text": "Valence Rating",
+          "type": "select",
+          "options": [
+            "Unpleasant",
+            "Unsatisfied",
+            "Neutral",
+            "Pleased",
+            "Pleasant"
+          ]
+        },
+        {
+          "text": "Arousal Rating",
+          "type": "select",
+          "options": [
+            "Excited",
+            "Wide-awake",
+            "Neutral",
+            "Dull",
+            "Calm"
+          ]
+        },
+        {
+          "text": "Dominance rating",
+          "type": "select",
+          "options": [
+            "Dependent",
+            "Powerlessness",
+            "Neutral",
+            "Powerful",
+            "Independent"
+          ]
+        }
+      ],
+      "id": 6,
+      "createdAt": "2025-09-05T07:41:50.503Z"
+    },
+    {
+      "name": "MH",
+      "description": "End of day Rating",
+      "triggerType": "set",
+      "responseType": "more",
+      "status": "active",
+      "timesOfDay": [
+        "20:30"
+      ],
+      "daysOfWeek": [
+        "Mon",
+        "Tue",
+        "Wed",
+        "Thu",
+        "Fri",
+        "Sat",
+        "Sun"
+      ],
+      "nextTrigger": "2025-09-05T19:30:00.000Z",
+      "questions": [
+        {
+          "text": "Little interest or pleasure in doing things",
+          "type": "select",
+          "options": [
+            "Yes",
+            "No"
+          ]
+        },
+        {
+          "text": ".Feeling down, depressed or hopeless",
+          "type": "select",
+          "options": [
+            "Yes",
+            "No"
+          ]
+        }
+      ],
+      "id": 7,
+      "createdAt": "2025-09-05T07:43:06.972Z"
     }
   ],
   "responses": [
@@ -179,8 +267,23 @@
       ],
       "id": 7,
       "timestamp": "2025-09-04T20:25:57.740Z"
+    },
+    {
+      "experienceId": 4,
+      "answers": [
+        {
+          "questionIndex": 0,
+          "value": "4"
+        },
+        {
+          "questionIndex": 1,
+          "value": "3"
+        }
+      ],
+      "id": 8,
+      "timestamp": "2025-09-05T07:31:26.849Z"
     }
   ],
-  "nextExperienceId": 6,
-  "nextResponseId": 8
+  "nextExperienceId": 8,
+  "nextResponseId": 9
 }
