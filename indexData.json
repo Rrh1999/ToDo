@@ -1268,6 +1268,20 @@
       "taskType": "One-off",
       "completedDates": [],
       "missedDates": []
+    },
+    {
+      "id": "00000150",
+      "name": "test",
+      "project": "Self Care",
+      "importance": "High",
+      "urgency": "High",
+      "dueDate": "",
+      "startDate": "2025-09-05",
+      "status": "open",
+      "closedDate": "",
+      "taskType": "One-off",
+      "completedDates": [],
+      "missedDates": []
     }
   ],
   "recurringTasks": [
@@ -1277,7 +1291,7 @@
       "project": "Self Care",
       "importance": "High/Medium",
       "urgency": "High/Medium",
-      "dueDate": "2025-09-06",
+      "dueDate": "2025-09-09",
       "frequency": "daily",
       "interval": 4,
       "from": "today",
@@ -1289,11 +1303,12 @@
         "2025-07-29",
         "2025-08-06",
         "2025-08-14",
-        "2025-08-25"
+        "2025-08-25",
+        "2025-09-06"
       ],
       "missedDates": [],
-      "lastCompleted": "2025-09-02",
-      "lastDiff": 8
+      "lastCompleted": "2025-09-05",
+      "lastDiff": -1
     },
     {
       "id": "00000026",
@@ -1794,6 +1809,78 @@
   ],
   "todayList": [
     {
+      "id": 28,
+      "type": "oneoff",
+      "originalId": "00000146",
+      "name": "Mot",
+      "completed": false,
+      "addedAt": "2025-09-05T08:00:02.233Z"
+    },
+    {
+      "id": 24,
+      "type": "weekly",
+      "originalId": "00000069",
+      "name": "Review spending",
+      "completed": false,
+      "addedAt": "2025-09-05T07:58:00.540Z"
+    },
+    {
+      "id": 25,
+      "type": "oneoff",
+      "originalId": "00000053",
+      "name": "Get everyones bday as a list",
+      "completed": false,
+      "addedAt": "2025-09-05T07:59:52.132Z"
+    },
+    {
+      "id": 26,
+      "type": "oneoff",
+      "originalId": "00000032",
+      "name": "Figure out monas bday, her replacement bday event and mum gift",
+      "completed": false,
+      "addedAt": "2025-09-05T07:59:55.826Z"
+    },
+    {
+      "id": 27,
+      "type": "oneoff",
+      "originalId": "00000134",
+      "name": "How to get rust off trays",
+      "completed": false,
+      "addedAt": "2025-09-05T08:00:01.592Z"
+    },
+    {
+      "id": 29,
+      "type": "recurring",
+      "originalId": "00000139",
+      "name": "Hoover Spider Weds",
+      "completed": false,
+      "addedAt": "2025-09-05T08:00:31.117Z"
+    },
+    {
+      "id": 30,
+      "type": "recurring",
+      "originalId": "00000058",
+      "name": "Clear Emails",
+      "completed": false,
+      "addedAt": "2025-09-05T08:00:32.932Z"
+    },
+    {
+      "id": 33,
+      "type": "work",
+      "originalId": "00000064",
+      "name": "Arrange the scanning training",
+      "completed": false,
+      "addedAt": "2025-09-05T08:05:15.049Z"
+    },
+    {
+      "id": 35,
+      "type": "work",
+      "originalId": "00000076",
+      "name": "Send stephane part time paper (with reasonable adjustement plan)",
+      "completed": false,
+      "addedAt": "2025-09-05T08:05:30.026Z"
+    },
+    {
       "id": 1756721674582,
       "type": "weekly",
       "originalId": "00000003",
@@ -1808,10 +1895,6 @@
       "name": "Meditation",
       "completed": false,
       "addedAt": "2025-09-01T10:14:52.153Z"
-    },
-    {
-      "type": "work",
-      "id": "00000020"
     },
     {
       "id": 1756721671161,
@@ -1854,7 +1937,7 @@
       "type": "work",
       "originalId": "00000072",
       "name": "Read the chbh oplr part c and operating rules",
-      "completed": false,
+      "completed": true,
       "addedAt": "2025-08-28T08:36:43.173Z"
     },
     {
@@ -1967,10 +2050,6 @@
     },
     {
       "type": "weekly",
-      "id": "00000036"
-    },
-    {
-      "type": "weekly",
       "id": "00000069"
     },
     {
@@ -1994,7 +2073,7 @@
       "type": "work",
       "originalId": "00000072",
       "name": "Read the chbh oplr part c and operating rules",
-      "completed": false,
+      "completed": true,
       "addedAt": "2025-09-02T11:53:54.914Z"
     },
     {
@@ -2062,7 +2141,7 @@
       "type": "work",
       "originalId": "00000071",
       "name": "Daniel book the scan after 1  get volunteer",
-      "completed": false,
+      "completed": true,
       "addedAt": "2025-09-05T06:01:33.505Z"
     },
     {
@@ -2070,7 +2149,7 @@
       "type": "work",
       "originalId": "00000072",
       "name": "Read the chbh oplr part c and operating rules",
-      "completed": false,
+      "completed": true,
       "addedAt": "2025-09-05T06:01:36.039Z"
     },
     {
@@ -2086,7 +2165,7 @@
       "type": "work",
       "originalId": "00000065",
       "name": "Do a rough planner for the goal posts for when stephane comes back",
-      "completed": false,
+      "completed": true,
       "addedAt": "2025-09-05T06:01:46.908Z"
     },
     {
@@ -2094,7 +2173,7 @@
       "type": "work",
       "originalId": "00000074",
       "name": "GSR3",
-      "completed": false,
+      "completed": true,
       "addedAt": "2025-09-05T06:01:52.967Z"
     },
     {
@@ -2166,7 +2245,7 @@
       "type": "work",
       "originalId": "00000072",
       "name": "Read the chbh oplr part c and operating rules",
-      "completed": false,
+      "completed": true,
       "addedAt": "2025-09-05T06:18:37.510Z"
     },
     {
@@ -2192,14 +2271,6 @@
       "name": "Chane Bedding",
       "completed": false,
       "addedAt": "2025-09-05T06:21:38.190Z"
-    },
-    {
-      "id": 10,
-      "type": "weekly",
-      "originalId": "00000036",
-      "name": "Meditation",
-      "completed": false,
-      "addedAt": "2025-09-05T07:37:24.357Z"
     }
   ],
   "todayQuickHistory": [
@@ -2225,7 +2296,7 @@
       "done": false
     }
   ],
-  "nextId": 150,
+  "nextId": 151,
   "deletedShoppingItems": [
     {
       "id": "00000137",

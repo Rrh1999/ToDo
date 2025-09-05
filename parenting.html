@@ -439,7 +439,20 @@
     function deleteActivity(id){ activities=activities.filter(a=>a.id!==id); saveParenting(); renderActivities(); }
 
     async function addActivityToToday(id,name){
-      await fetch('/api/add-to-today',{method:'POST',headers:{'Content-Type':'application/json'},body:JSON.stringify({taskType:'dev',taskId:id,taskName:name})});
+      try{
+        const res = await fetch('/api/add-to-today',{method:'POST',headers:{'Content-Type':'application/json'},body:JSON.stringify({taskType:'parenting',taskId:id,taskName:name})});
+        const result = await res.json();
+        if(result.status === 'ok'){
+          console.log(`Added to Today: ${name}`);
+        }else if(result.status === 'already_exists'){
+          alert('Task is already on today list');
+        }else{
+          alert('Failed to add to Today');
+        }
+      }catch(e){
+        console.error('Error adding to Today', e);
+        alert('Error adding to Today');
+      }
     }
 
     function togglePin(sectionId){

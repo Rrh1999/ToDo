@@ -410,9 +410,23 @@ app.get('/api/work-data', (req, res) => {
 });
 
 app.post('/api/work-data', (req, res) => {
+  const oldWorkData = { ...workData };
   workData = req.body;
+  
+  // Check for completion changes and propagate to Today
+  detectAndPropagateCompletionChanges('work', oldWorkData.workTasks || [], workData.workTasks || []);
+  
   fs.writeFileSync(WORK_FILE, JSON.stringify(workData, null, 2));
   res.json({ status: 'ok' });
+});
+
+// Work task completion endpoint with Today propagation
+app.post('/api/work/complete-task', (req, res) => {
+  const { taskId, completed } = req.body;
+  if (!taskId) return res.status(400).json({ error: 'taskId required' });
+  
+  const success = updateWorkTaskCompletion(String(taskId), !!completed);
+  res.json({ success, propagated: success });
 });
 
 
@@ -421,9 +435,23 @@ app.get('/api/diy-data', (req, res) => {
 });
 
 app.post('/api/diy-data', (req, res) => {
+  const oldDiyData = { ...diyData };
   diyData = req.body;
+  
+  // Check for completion changes and propagate to Today
+  detectAndPropagateCompletionChanges('diy', oldDiyData.diyTasks || [], diyData.diyTasks || []);
+  
   fs.writeFileSync(DIY_FILE, JSON.stringify(diyData, null, 2));
   res.json({ status: 'ok' });
+});
+
+// DIY task completion endpoint with Today propagation
+app.post('/api/diy/complete-task', (req, res) => {
+  const { taskId, completed } = req.body;
+  if (!taskId) return res.status(400).json({ error: 'taskId required' });
+  
+  const success = updateDiyTaskCompletion(String(taskId), !!completed);
+  res.json({ success, propagated: success });
 });
 
 app.get('/api/finance-data', (req, res) => {
@@ -452,6 +480,15 @@ app.post('/api/parenting-data', (req, res) => {
   parentingData = req.body;
   fs.writeFileSync(PARENTING_FILE, JSON.stringify(parentingData, null, 2));
   res.json({ status: 'ok' });
+});
+
+// Parenting task completion endpoint with Today propagation
+app.post('/api/parenting/complete-task', (req, res) => {
+  const { taskId, completed } = req.body;
+  if (!taskId) return res.status(400).json({ error: 'taskId required' });
+  
+  const success = updateParentingTaskCompletion(String(taskId), !!completed);
+  res.json({ success, propagated: success });
 });
 
 // soul page data
@@ -620,6 +657,21 @@ app.delete('/api/experiences/:id', (req, res) => {
 
 app.post('/api/add-to-today', (req, res) => {
   const { taskType, taskId, taskName } = req.body || {};
+  
+  // Check if task already exists in today list
+  const existingTask = todayData.linked.find(item => 
+    item.source.page === String(taskType) && 
+    item.source.id === String(taskId)
+  );
+  
+  if (existingTask) {
+    return res.json({ 
+      status: 'already_exists', 
+      message: 'Task is already on today list',
+      item: existingTask 
+    });
+  }
+  
   const addedAt = new Date().toISOString();
   // Primary storage: todayData.json (linked task)
   const linkedItem = {
@@ -665,6 +717,33 @@ app.post('/api/today/reorder', (req, res) => {
     indexData.todayList.sort((a, b) => (pos.get(Number(a.id)) ?? 9999) - (pos.get(Number(b.id)) ?? 9999));
     fs.writeFileSync(INDEX_FILE, JSON.stringify(indexData, null, 2));
   }
+  res.json({ success: true });
+});
+
+// Reorder entire today list (both linked and ad-hoc items)
+app.post('/api/today/reorder-all', (req, res) => {
+  const { newOrder } = req.body || {};
+  if (!Array.isArray(newOrder)) return res.status(400).json({ error: 'newOrder must be an array' });
+  
+  const linkedMap = new Map(todayData.linked.map(i => [Number(i.id), i]));
+  const adHocMap = new Map(todayData.adHoc.map(i => [Number(i.id), i]));
+  
+  const newLinked = [];
+  const newAdHoc = [];
+  
+  newOrder.forEach(id => {
+    const numId = Number(id);
+    if (linkedMap.has(numId)) {
+      newLinked.push(linkedMap.get(numId));
+    } else if (adHocMap.has(numId)) {
+      newAdHoc.push(adHocMap.get(numId));
+    }
+  });
+  
+  todayData.linked = newLinked;
+  todayData.adHoc = newAdHoc;
+  fs.writeFileSync(TODAY_FILE, JSON.stringify(todayData, null, 2));
+  
   res.json({ success: true });
 });
 
@@ -742,11 +821,278 @@ function updateWorkTaskCompletion(sourceId, completed) {
     };
     if (visit(data.workTasks)) {
       fs.writeFileSync(WORK_FILE, JSON.stringify(data, null, 2));
+      
+      // Propagate back to Today list
+      updateTodayItemCompletion('work', sourceId, completed);
     }
     return changed;
   } catch (e) {
     console.warn('Failed to update work task completion:', e.message);
     return false;
+  }
+}
+
+// Helper function to format ISO date
+function formatISO(date) {
+  return date.toISOString().split('T')[0];
+}
+
+// Helper function to compute next due date for recurring tasks
+function computeNextDue(task, fromDate) {
+  const from = task.from === 'completed' ? fromDate : new Date(task.dueDate);
+  const interval = parseInt(task.interval) || 1;
+  const next = new Date(from);
+  
+  switch (task.unit) {
+    case 'days':
+      next.setDate(next.getDate() + interval);
+      break;
+    case 'weeks':
+      next.setDate(next.getDate() + (interval * 7));
+      break;
+    case 'months':
+      next.setMonth(next.getMonth() + interval);
+      break;
+    case 'years':
+      next.setFullYear(next.getFullYear() + interval);
+      break;
+  }
+  
+  return formatISO(next);
+}
+
+// Complete work tasks with proper rules
+function completeWorkTask(sourceId) {
+  try {
+    const data = loadJson(WORK_FILE, { workProjects: [], workTasks: [], workNextId: 1 });
+    let changed = false;
+    
+    const visit = (list) => {
+      for (const t of list) {
+        if (t.id === sourceId) {
+          if (t.recurring) {
+            t.dueDate = computeNextDue(t, new Date());
+          } else {
+            t.status = 'closed';
+          }
+          changed = true;
+          return true;
+        }
+        if (t.subtasks && t.subtasks.length && visit(t.subtasks)) return true;
+      }
+      return false;
+    };
+    
+    if (visit(data.workTasks)) {
+      fs.writeFileSync(WORK_FILE, JSON.stringify(data, null, 2));
+      workData = data; // Update in-memory copy
+    }
+    return changed;
+  } catch (e) {
+    console.warn('Failed to complete work task:', e.message);
+    return false;
+  }
+}
+
+// Complete DIY tasks with proper rules
+function completeDiyTask(sourceId) {
+  try {
+    const data = loadJson(DIY_FILE, { diyTasks: [], diyBigTasks: [] });
+    let changed = false;
+    
+    // Check regular DIY tasks
+    const visit = (list) => {
+      for (const t of list) {
+        if (String(t.id) === String(sourceId)) {
+          t.status = 'closed';
+          changed = true;
+          return true;
+        }
+        if (t.subtasks && t.subtasks.length && visit(t.subtasks)) return true;
+      }
+      return false;
+    };
+    
+    // Check big DIY tasks
+    const bigTask = data.diyBigTasks.find(t => String(t.id) === String(sourceId));
+    if (bigTask) {
+      bigTask.status = 'closed';
+      changed = true;
+    } else {
+      visit(data.diyTasks || []);
+    }
+    
+    if (changed) {
+      fs.writeFileSync(DIY_FILE, JSON.stringify(data, null, 2));
+      diyData = data; // Update in-memory copy
+    }
+    return changed;
+  } catch (e) {
+    console.warn('Failed to complete DIY task:', e.message);
+    return false;
+  }
+}
+
+// Complete parenting tasks with proper rules
+function completeParentingTask(sourceId) {
+  try {
+    const data = loadJson(PARENTING_FILE, { activities: [] });
+    const activity = data.activities.find(a => String(a.id) === String(sourceId));
+    
+    if (activity) {
+      activity.status = 'closed';
+      activity.completedDates = activity.completedDates || [];
+      activity.completedDates.push(formatISO(new Date()));
+      
+      fs.writeFileSync(PARENTING_FILE, JSON.stringify(data, null, 2));
+      parentingData = data; // Update in-memory copy
+      return true;
+    }
+    return false;
+  } catch (e) {
+    console.warn('Failed to complete parenting task:', e.message);
+    return false;
+  }
+}
+
+// Complete index tasks with proper rules based on task type
+function completeIndexTask(sourceId, taskName) {
+  try {
+    const data = loadJson(INDEX_FILE, { weeklyTasks: [], oneOffTasks: [], bigTasks: [], recurringTasks: [], stretchTasks: [] });
+    const today = formatISO(new Date());
+    let changed = false;
+    
+    // Check weekly tasks
+    const weeklyTask = data.weeklyTasks.find(t => t.id === sourceId);
+    if (weeklyTask) {
+      weeklyTask.completedDates = weeklyTask.completedDates || [];
+      if (!weeklyTask.completedDates.includes(today)) {
+        weeklyTask.completedDates.push(today);
+      }
+      // Remove from missed dates if present
+      weeklyTask.missedDates = (weeklyTask.missedDates || []).filter(d => d !== today);
+      changed = true;
+    }
+    
+    // Check one-off tasks
+    const oneOffTask = data.oneOffTasks.find(t => t.id === sourceId);
+    if (oneOffTask) {
+      oneOffTask.completedDates = oneOffTask.completedDates || [];
+      oneOffTask.completedDates.push(today);
+      oneOffTask.status = 'closed';
+      oneOffTask.closedDate = today;
+      changed = true;
+    }
+    
+    // Check big tasks
+    const bigTask = data.bigTasks.find(t => t.id === sourceId);
+    if (bigTask) {
+      bigTask.completedDates = bigTask.completedDates || [];
+      bigTask.completedDates.push(today);
+      bigTask.status = 'closed';
+      bigTask.closedDate = today;
+      changed = true;
+    }
+    
+    // Check recurring tasks
+    const recurringTask = data.recurringTasks.find(t => t.id === sourceId);
+    if (recurringTask) {
+      recurringTask.completedDates = recurringTask.completedDates || [];
+      recurringTask.completedDates.push(recurringTask.dueDate);
+      const now = new Date();
+      const due = new Date(recurringTask.dueDate);
+      recurringTask.lastDiff = Math.floor((now - due) / (1000*60*60*24));
+      recurringTask.lastCompleted = formatISO(now);
+      recurringTask.dueDate = computeNextDue(recurringTask, now);
+      changed = true;
+    }
+    
+    // Check stretch tasks
+    const stretchTask = data.stretchTasks.find(t => t.id === sourceId);
+    if (stretchTask) {
+      stretchTask.completedDates = stretchTask.completedDates || [];
+      stretchTask.completedDates.push(today);
+      changed = true;
+    }
+    
+    if (changed) {
+      fs.writeFileSync(INDEX_FILE, JSON.stringify(data, null, 2));
+      indexData = data; // Update in-memory copy
+    }
+    return changed;
+  } catch (e) {
+    console.warn('Failed to complete index task:', e.message);
+    return false;
+  }
+}
+function updateTodayItemCompletion(sourcePage, sourceId, completed) {
+  try {
+    let todayChanged = false;
+    
+    // Update linked items in todayData
+    todayData.linked.forEach(item => {
+      if (item.source.page === sourcePage && item.source.id === String(sourceId)) {
+        item.completedAt = completed ? new Date().toISOString() : null;
+        todayChanged = true;
+      }
+    });
+    
+    // Update legacy todayList in indexData
+    if (indexData.todayList) {
+      indexData.todayList.forEach(item => {
+        if (item.type === sourcePage && item.originalId === String(sourceId)) {
+          item.completed = !!completed;
+          todayChanged = true;
+        }
+      });
+    }
+    
+    if (todayChanged) {
+      fs.writeFileSync(TODAY_FILE, JSON.stringify(todayData, null, 2));
+      fs.writeFileSync(INDEX_FILE, JSON.stringify(indexData, null, 2));
+    }
+    
+    return todayChanged;
+  } catch (e) {
+    console.warn('Failed to update today item completion:', e.message);
+    return false;
+  }
+}
+
+// Function to detect completion changes and propagate to Today
+function detectAndPropagateCompletionChanges(sourcePage, oldTasks, newTasks) {
+  try {
+    const getTaskMap = (tasks) => {
+      const map = new Map();
+      const visit = (list) => {
+        list.forEach(task => {
+          map.set(String(task.id), task.status);
+          if (task.subtasks && task.subtasks.length) {
+            visit(task.subtasks);
+          }
+        });
+      };
+      visit(tasks);
+      return map;
+    };
+    
+    const oldMap = getTaskMap(oldTasks);
+    const newMap = getTaskMap(newTasks);
+    
+    // Check for completion changes
+    newMap.forEach((newStatus, taskId) => {
+      const oldStatus = oldMap.get(taskId);
+      if (oldStatus !== newStatus) {
+        const wasCompleted = oldStatus === 'closed';
+        const isCompleted = newStatus === 'closed';
+        
+        if (wasCompleted !== isCompleted) {
+          updateTodayItemCompletion(sourcePage, taskId, isCompleted);
+        }
+      }
+    });
+  } catch (e) {
+    console.warn('Failed to detect completion changes:', e.message);
   }
 }
 
@@ -767,6 +1113,9 @@ function updateDiyTaskCompletion(sourceId, completed) {
     };
     if (visit(data.diyTasks || [])) {
       fs.writeFileSync(DIY_FILE, JSON.stringify(data, null, 2));
+      
+      // Propagate back to Today list
+      updateTodayItemCompletion('diy', sourceId, completed);
     }
     return changed;
   } catch (e) {
@@ -788,6 +1137,10 @@ function updateParentingTaskCompletion(sourceId, completed) {
         a.completedDates.push(new Date().toISOString());
       }
       fs.writeFileSync(PARENTING_FILE, JSON.stringify(data, null, 2));
+      
+      // Propagate back to Today list
+      updateTodayItemCompletion('parenting', sourceId, completed);
+      
       return true;
     }
     return false;
@@ -843,45 +1196,78 @@ app.post('/api/today/complete', (req, res) => {
   if (!todayId) {
     return res.status(400).json({ error: 'todayId required' });
   }
-  // Try new todayData first
+  
   const tid = Number(todayId);
-  const linked = todayData.linked.find(i => Number(i.id) === tid);
-  if (linked) {
-    // Mirror to legacy list
-    const mirror = (indexData.todayList || []).find(i => Number(i.id) === tid);
-    if (mirror) mirror.completed = !!completed;
-    fs.writeFileSync(INDEX_FILE, JSON.stringify(indexData, null, 2));
-    // Propagate
-    let propagated = false;
-    const page = linked.source.page;
-    const srcId = String(linked.source.id);
-    switch (page) {
-      case 'work':
-        propagated = updateWorkTaskCompletion(srcId, !!completed);
-        break;
-      case 'diy':
-        propagated = updateDiyTaskCompletion(srcId, !!completed);
-        break;
-      case 'parenting':
-        propagated = updateParentingTaskCompletion(srcId, !!completed);
-        break;
-      case 'index':
-      default:
-        break;
+  
+  // Find the item in todayData
+  const linkedIndex = todayData.linked.findIndex(i => Number(i.id) === tid);
+  const adHocIndex = todayData.adHoc.findIndex(i => Number(i.id) === tid);
+  
+  if (linkedIndex >= 0) {
+    const linked = todayData.linked[linkedIndex];
+    
+    if (completed) {
+      // Apply completion rules to source task
+      let propagated = false;
+      const page = linked.source.page;
+      const srcId = String(linked.source.id);
+      
+      switch (page) {
+        case 'work':
+          propagated = completeWorkTask(srcId);
+          break;
+        case 'diy':
+          propagated = completeDiyTask(srcId);
+          break;
+        case 'parenting':
+          propagated = completeParentingTask(srcId);
+          break;
+        case 'index':
+        case 'oneoff':
+        case 'weekly':
+        case 'recurring':
+        case 'stretch':
+        case 'big':
+          propagated = completeIndexTask(srcId, linked.name);
+          break;
+      }
+      
+      // Remove from today list (task is completed, so remove it)
+      todayData.linked.splice(linkedIndex, 1);
+      
+      // Also remove from legacy todayList
+      const legacyIndex = (indexData.todayList || []).findIndex(i => Number(i.id) === tid);
+      if (legacyIndex >= 0) {
+        indexData.todayList.splice(legacyIndex, 1);
+        fs.writeFileSync(INDEX_FILE, JSON.stringify(indexData, null, 2));
+      }
+      
+      fs.writeFileSync(TODAY_FILE, JSON.stringify(todayData, null, 2));
+      return res.json({ success: true, propagated, removed: true });
+    } else {
+      // Uncompleting - just mark as incomplete but keep in list
+      linked.completedAt = null;
+      fs.writeFileSync(TODAY_FILE, JSON.stringify(todayData, null, 2));
+      return res.json({ success: true, propagated: false });
     }
-    fs.writeFileSync(TODAY_FILE, JSON.stringify(todayData, null, 2));
-    return res.json({ success: true, propagated });
   }
-  // Legacy path: indexData.todayList item
-  const item = (indexData.todayList || []).find(i => Number(i.id) === tid);
-  if (!item) return res.status(404).json({ error: 'Today item not found' });
-  item.completed = !!completed;
-  fs.writeFileSync(INDEX_FILE, JSON.stringify(indexData, null, 2));
-  let propagated = false;
-  if (item.type === 'work') propagated = updateWorkTaskCompletion(String(item.originalId), !!completed);
-  else if (item.type === 'diy') propagated = updateDiyTaskCompletion(String(item.originalId), !!completed);
-  else if (item.type === 'parenting') propagated = updateParentingTaskCompletion(String(item.originalId), !!completed);
-  res.json({ success: true, propagated });
+  
+  if (adHocIndex >= 0) {
+    if (completed) {
+      // Remove ad-hoc item when completed
+      todayData.adHoc.splice(adHocIndex, 1);
+      fs.writeFileSync(TODAY_FILE, JSON.stringify(todayData, null, 2));
+      return res.json({ success: true, propagated: false, removed: true });
+    } else {
+      // Uncompleting ad-hoc item
+      const adHoc = todayData.adHoc[adHocIndex];
+      adHoc.completedAt = null;
+      fs.writeFileSync(TODAY_FILE, JSON.stringify(todayData, null, 2));
+      return res.json({ success: true, propagated: false });
+    }
+  }
+  
+  return res.status(404).json({ error: 'Today item not found' });
 });
 const EXPERIENCES_FILE = path.join(DATA_DIR, 'experienceData.json');
 

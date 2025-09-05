@@ -240,7 +240,7 @@
       "frequency": null,
       "interval": null,
       "from": null,
-      "status": "open",
+      "status": "closed",
       "subtasks": [
         {
           "id": "00000042",
@@ -401,7 +401,7 @@
       "frequency": null,
       "interval": null,
       "from": null,
-      "status": "open",
+      "status": "closed",
       "subtasks": [],
       "notes": ""
     },
@@ -417,7 +417,7 @@
       "frequency": null,
       "interval": null,
       "from": null,
-      "status": "open",
+      "status": "closed",
       "subtasks": [],
       "notes": ""
     },
@@ -434,6 +434,22 @@
       "interval": null,
       "from": null,
       "status": "open",
+      "subtasks": [],
+      "notes": ""
+    },
+    {
+      "id": "00000074",
+      "parent": null,
+      "name": "GSR3",
+      "project": "PhD Admin",
+      "dueDate": "2025-09-04",
+      "importance": "High",
+      "urgency": "High",
+      "recurring": false,
+      "frequency": null,
+      "interval": null,
+      "from": null,
+      "status": "closed",
       "subtasks": [],
       "notes": ""
     },
@@ -579,7 +595,7 @@
       "frequency": null,
       "interval": null,
       "from": null,
-      "status": "open",
+      "status": "closed",
       "subtasks": [],
       "notes": ""
     },
@@ -889,6 +905,55 @@
       "notes": ""
     },
     {
+      "id": "00000077",
+      "parent": null,
+      "recurring": false,
+      "frequency": null,
+      "interval": null,
+      "from": null,
+      "status": "open",
+      "subtasks": [
+        {
+          "id": "00000076",
+          "parent": "00000077",
+          "recurring": false,
+          "frequency": null,
+          "interval": null,
+          "from": null,
+          "status": "open",
+          "subtasks": [],
+          "name": "Send stephane part time paper (with reasonable adjustement plan)",
+          "project": "",
+          "dueDate": "",
+          "importance": "Medium",
+          "urgency": "Medium",
+          "notes": "from meeting 14"
+        }
+      ],
+      "name": "Email the person back about the annual review and say we are looking to organise now",
+      "project": "",
+      "dueDate": "",
+      "importance": "Medium",
+      "urgency": "Medium",
+      "notes": "from meeting 14"
+    },
+    {
+      "id": "00000078",
+      "parent": null,
+      "recurring": false,
+      "frequency": null,
+      "interval": null,
+      "from": null,
+      "status": "open",
+      "subtasks": [],
+      "name": "Look at who will be your Viva Supervisor through the website, make suggestions and we will go through it",
+      "project": "",
+      "dueDate": "",
+      "importance": "Medium",
+      "urgency": "Medium",
+      "notes": "from meeting 14"
+    },
+    {
       "id": "00000033",
       "parent": null,
       "name": "Upload coding data so I dont loose it",
@@ -985,6 +1050,22 @@
       "notes": ""
     },
     {
+      "id": "00000079",
+      "parent": null,
+      "name": "See if John signs GRS3 and send",
+      "project": "PhD Admin",
+      "dueDate": "2025-09-21",
+      "importance": "Medium/Low",
+      "urgency": "Medium/Low",
+      "recurring": false,
+      "frequency": null,
+      "interval": null,
+      "from": null,
+      "status": "open",
+      "subtasks": [],
+      "notes": ""
+    },
+    {
       "id": "00000032",
       "parent": null,
       "name": "Double Check Altruism",
@@ -1015,25 +1096,9 @@
       "status": "open",
       "subtasks": [],
       "notes": ""
-    },
-    {
-      "id": "00000074",
-      "parent": null,
-      "name": "GSR3",
-      "project": "PhD Admin",
-      "dueDate": "2025-09-04",
-      "importance": "High",
-      "urgency": "High",
-      "recurring": false,
-      "frequency": null,
-      "interval": null,
-      "from": null,
-      "status": "open",
-      "subtasks": [],
-      "notes": ""
     }
   ],
-  "workNextId": 75,
+  "workNextId": 80,
   "maxSubDepth": 7,
   "calendarEvents": [
     {

@@ -1662,8 +1662,12 @@ async function addTaskToToday(taskType, taskId, taskName) {
       body: JSON.stringify({ taskType, taskId, taskName })
     });
     
-    if (response.ok) {
+    const result = await response.json();
+    
+    if (result.status === 'ok') {
       alert(`"${taskName}" added to Today list!`);
+    } else if (result.status === 'already_exists') {
+      alert('Task is already on today list');
     } else {
       alert('Failed to add task to Today list');
     }
