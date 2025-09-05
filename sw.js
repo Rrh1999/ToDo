@@ -1,106 +1,158 @@
-// Lightweight service worker for notifications and fast activation
-// Scope is controlled by server.js which sets Service-Worker-Allowed: /
-
-const SW_VERSION = '1.0.0';
-
+// Minimal Service Worker for notifications and future caching if needed
 self.addEventListener('install', (event) => {
-	// Take control immediately on first load
-	self.skipWaiting();
+  self.skipWaiting();
 });
 
 self.addEventListener('activate', (event) => {
-	// Become active for all open clients
-	event.waitUntil(self.clients.claim());
+  event.waitUntil(self.clients.claim());
 });
 
-// Helper: safe JSON parse
-function safeJson(text) {
-	try { return JSON.parse(text); } catch { return null; }
-}
-
-// Helper: show a notification from a payload
-async function showPushNotification(payload) {
-	const title = payload && (payload.title || payload.t) || 'Notification';
-	const body = payload && (payload.body || payload.b) || '';
-	const actions = Array.isArray(payload && payload.actions) ? payload.actions : [];
-	const data = payload && payload.data ? payload.data : null;
-	const tag = payload && payload.tag ? payload.tag : 'push';
-
-	const options = {
-		body,
-		// Avoid caching issues; keep it simple without icons if not provided
-		// icon: payload.icon || '/icon.png',
-		badge: payload && payload.badge ? payload.badge : undefined,
-		tag,
-		requireInteraction: !!(payload && payload.requireInteraction),
-		actions,
-		data: { source: 'push', receivedAt: Date.now(), data }
-	};
-
-	await self.registration.showNotification(title, options);
-}
-
+// Handle push events (background notifications)
 self.addEventListener('push', (event) => {
-	event.waitUntil((async () => {
-		try {
-			const hasData = event.data && (event.data.json || event.data.text);
-			if (!hasData) { await showPushNotification({ title: 'Notification', body: '' }); return; }
+  console.log('SW: push event received', event);
+  
+  let data = {};
+  try {
+    data = event.data ? event.data.json() : {};
+  } catch (e) {
+    console.warn('SW: failed to parse push data', e);
+  }
 
-			// Try JSON first; fall back to text
-			let payload = null;
-			try { payload = event.data.json(); }
-			catch { const txt = await event.data.text(); payload = safeJson(txt) || { body: String(txt || '') }; }
+  const title = data.title || 'ToDo Notification';
+  const options = {
+    body: data.body || 'You have a new notification',
+    icon: data.icon || '/favicon.ico',
+    badge: data.badge || '/favicon.ico',
+    tag: data.tag || 'todo-push',
+    renotify: true,
+    requireInteraction: true,
+    data: data.data || {},
+    actions: data.actions || [
+      { action: 'yes', title: 'Yes' },
+      { action: 'no', title: 'No' }
+    ]
+  };
 
-			await showPushNotification(payload || {});
-		} catch (e) {
-			// As a last resort show a generic notification so user sees something
-			await showPushNotification({ title: 'Notification', body: '' });
-		}
-	})());
+  // For experience notifications, customize the options
+  if (data.data && data.data.experienceId) {
+    console.log('SW: Experience push notification:', data.data);
+    
+    // If it's a survey experience, just show "Open Survey" action
+    if (data.data.experienceType === 'more') {
+      options.actions = [
+        { action: 'open', title: 'Open Survey' },
+        { action: 'skip', title: 'Skip' }
+      ];
+    }
+    // For simple responses, actions are already set in data.actions
+  }
+
+  event.waitUntil(
+    self.registration.showNotification(title, options)
+  );
 });
 
-// When user clicks a notification, send action back to server and focus/open a page
-self.addEventListener('notificationclick', (event) => {
-	const action = event.action || 'clicked';
-	const payloadData = event.notification && event.notification.data ? event.notification.data.data : null;
-	event.notification && event.notification.close && event.notification.close();
-
-	event.waitUntil((async () => {
-		// Best-effort report back (ignore failures silently)
-		try {
-			await fetch('/api/health/response', {
-				method: 'POST',
-				headers: { 'Content-Type': 'application/json' },
-				body: JSON.stringify({ action, data: payloadData })
-			});
-		} catch {}
-
-		// Try to focus an existing client; else open the Health page (or root if unavailable)
-		try {
-			const all = await self.clients.matchAll({ type: 'window', includeUncontrolled: true });
-			const urlToOpen = payloadData && payloadData.source === 'experience' ? '/health.html?fromPush=1' : '/';
-			const target = all.find(c => c.url && new URL(c.url).pathname === new URL(urlToOpen, self.location.origin).pathname);
-			if (target && 'focus' in target) {
-				await target.focus();
-			} else if (self.clients.openWindow) {
-				await self.clients.openWindow(urlToOpen);
-			}
-		} catch {}
-	})());
-});
-
-// Optional: track user dismissals (no server call needed, but hook is here if desired)
-self.addEventListener('notificationclose', () => {
-	// No-op
-});
-
-// No fetch handler -> passthrough to network/HTTP caching
-// This avoids interfering with API requests and simplifies behavior under Caddy/HTTPS
-
-// Keep a pingable message handler for future extension
+// Optional: listen for postMessage to show a notification (not required for this feature)
 self.addEventListener('message', (event) => {
-	if (event && event.data === 'sw-version') {
-		event.source && event.source.postMessage && event.source.postMessage({ type: 'sw-version', version: SW_VERSION });
-	}
+  if (event.data && event.data.type === 'SHOW_NOTIFICATION') {
+    const { title, options } = event.data;
+    if (self.registration && self.registration.showNotification) {
+      self.registration.showNotification(title || 'Notification', options || {});
+    }
+  }
 });
+
+// Diagnostics: log notification lifecycle and handle click
+self.addEventListener('notificationshow', (e) => {
+  // Not all browsers fire this, but log if available
+  try { console.log('SW: notificationshow', e?.notification?.tag); } catch {}
+});
+
+self.addEventListener('notificationclick', (e) => {
+  const action = e.action || 'default';
+  const tag = e?.notification?.tag;
+  const data = e?.notification?.data || {};
+  
+  try { console.log('SW: notificationclick', action, tag, data); } catch {}
+  e.notification.close();
+  
+  e.waitUntil((async () => {
+  // Handle experience tracker notifications
+    if (tag && tag.startsWith('experience-') && data.experienceId) {
+      if (action.startsWith('response-')) {
+        // Extract response index and record the response
+        const responseIndex = parseInt(action.replace('response-', ''));
+        try {
+          await fetch('/api/experience-responses', {
+            method: 'POST',
+            headers: { 'Content-Type': 'application/json' },
+            body: JSON.stringify({
+              experienceId: data.experienceId,
+              type: 'notification_action',
+              data: { responseIndex, action },
+              timestamp: new Date().toISOString()
+            })
+          });
+          console.log('SW: Experience response recorded');
+        } catch (err) {
+          console.error('SW: Failed to record experience response:', err);
+        }
+      } else if (action === 'skip') {
+        // Record a skipped response and do not open the page
+        try {
+          await fetch('/api/experience-responses', {
+            method: 'POST',
+            headers: { 'Content-Type': 'application/json' },
+            body: JSON.stringify({
+              experienceId: data.experienceId,
+              type: 'skipped',
+              timestamp: new Date().toISOString()
+            })
+          });
+        } catch (err) { /* ignore */ }
+        return; // stop here, don't open the page
+      }
+    }
+    
+    // Report to server if action is yes/no (for regular notifications)
+    if (action === 'open' || action === 'dismiss' || action === 'yes' || action === 'no') {
+      const mapped = action === 'open' ? 'yes' : (action === 'dismiss' ? 'no' : action);
+      try {
+        await fetch('/api/notification-event', {
+          method: 'POST',
+          headers: { 'Content-Type': 'application/json' },
+          body: JSON.stringify({ action: mapped, tag: tag, ts: new Date().toISOString() })
+        });
+      } catch (err) { /* ignore */ }
+    }
+
+    // Broadcast to client pages to refresh stats
+    try {
+      const clients = await self.clients.matchAll({ type: 'window', includeUncontrolled: true });
+      clients.forEach(c => c.postMessage({ type: 'NOTIF_STATS_UPDATED' }));
+    } catch {}
+
+    const allClients = await self.clients.matchAll({ type: 'window', includeUncontrolled: true });
+  const baseUrl = '/notification.html';
+  const isSurvey = data.experienceId && (data.experienceType === 'more');
+  const wantOpenSurvey = isSurvey && (action === 'open' || action === 'default');
+    // Try to focus an existing tab first
+    const client = allClients.find(c => c.url.includes(baseUrl));
+    if (client) {
+      await client.focus();
+      if (wantOpenSurvey) {
+        try { client.postMessage({ type: 'OPEN_SURVEY', experienceId: data.experienceId }); } catch {}
+      }
+      return;
+    }
+    // Otherwise open a new tab and pass the id via query string so the page can open the modal
+    const targetUrl = wantOpenSurvey ? `${baseUrl}?openSurvey=${encodeURIComponent(data.experienceId)}` : baseUrl;
+    return self.clients.openWindow(targetUrl);
+  })());
+});
+
+self.addEventListener('notificationclose', (e) => {
+  try { console.log('SW: notificationclose', e?.notification?.tag); } catch {}
+});
+
 

@@ -126,6 +126,22 @@ body { margin: 0; padding: 0; }
   <button onclick="openBigTasksModal()" style="padding: 0.75rem 1.5rem; background: #B5A89A; color: #2B2C29; border: none; border-radius: 6px; cursor: pointer; font-weight: 500;">Big Tasks</button>
   <button onclick="openStretchTasksModal()" style="padding: 0.75rem 1.5rem; background: #B5A89A; color: #2B2C29; border: none; border-radius: 6px; cursor: pointer; font-weight: 500;">Stretch Tasks</button>
   </div>
+
+  <!-- Today Data Management Section -->
+  <div style="margin-top: 2rem; background: #f8f9fa; padding: 1.5rem; border-radius: 8px; border: 1px solid #e2e5e9;">
+    <h3 style="margin: 0 0 1rem 0; color: #2B2C29; font-size: 1.2rem;">Today's Task List Manager</h3>
+    
+    <!-- Add Quick Item -->
+    <div style="margin-bottom: 1.5rem; display: flex; gap: 0.5rem; align-items: center;">
+      <input type="text" id="quickTodayItem" placeholder="Add quick item..." style="flex: 1; padding: 0.5rem; border: 1px solid #ccc; border-radius: 4px;">
+      <button onclick="addQuickTodayItem()" style="padding: 0.5rem 1rem; background: #B8A4D9; color: white; border: none; border-radius: 4px; cursor: pointer;">Add</button>
+    </div>
+    
+    <!-- Today Data List -->
+    <div id="todayDataList" style="min-height: 200px;">
+      <!-- Items will be populated here -->
+    </div>
+  </div>
 </div>
 
 <!-- Weekly Tasks Modal -->
@@ -233,6 +249,7 @@ body { margin: 0; padding: 0; }
 
 <script>
 let projects=[], weeklyTasks=[], oneOffTasks=[], recurringTasks=[], stretchTasks=[], bigTasks=[], deletedTasks=[], shoppingList=[], longTermList=[], generalList=[], parentingSkills=[], parentingActivities=[], parentingNextSkillId=1, parentingNextActivityId=1;
+let todayData = { linked: [], adHoc: [], nextLinkedId: 1, nextAdHocId: 1 };
 let todayList=[], todayTasks=[], todayQuickHistory=[];
 // Removed Overdue/Due Soon lists
 let nextId=1;
@@ -288,6 +305,13 @@ function lastDueDate(task){return prevDueDate(task,new Date());}
 function updateMissed(task){const last=new Date(task.dateLastChecked);const today=new Date();let d=new Date(last);while(d<=today){const dayName=['Sun','Mon','Tue','Wed','Thu','Fri','Sat'][d.getDay()];const iso=formatISO(d);if(d>last&&task.days.includes(dayName)){if(!task.completedDates.includes(iso)&&!task.missedDates.includes(iso)){task.missedDates.push(iso);}}d.setDate(d.getDate()+1);}task.dateLastChecked=formatISO(today);saveData();}
 async function loadData(){
   try{
+    // Load today data first (new primary source)
+    const resToday = await fetch('/api/today-data');
+    if(resToday.ok) {
+      todayData = await resToday.json();
+    }
+    
+    // Load legacy index data for compatibility and other page types
     const res=await fetch('/api/index-data');
     if(res.ok){
       const obj=await res.json();
@@ -339,53 +363,52 @@ async function saveParentingData(){
 // Removed categorize/overdue logic
 function rebuildToday(){
   todayTasks=[];
-  todayList.forEach(r=>{
-    if(r.type==='quick'){
-      todayTasks.push({category:'quick',type:'quick',item:r});
-      return;
+  
+  // Process linked tasks from todayData (new primary source)
+  todayData.linked.forEach(linked => {
+    const page = linked.source.page;
+    const sourceId = linked.source.id;
+    let task = null, depth = 0;
+    
+    if(page === 'work') {
+      const info = getWorkTaskInfo(sourceId);
+      if(info) { task = info.task; depth = info.depth; }
+    } else if(page === 'diy') {
+      const info = getDiyTaskInfo(sourceId);
+      if(info) { task = info.task; depth = info.depth; }
+    } else if(page === 'index') {
+      // Handle index page tasks (stretch, big, etc.)
+      if(linked.source.type === 'stretch') task = stretchTasks.find(t => t.id === sourceId);
+      else if(linked.source.type === 'big') task = bigTasks.find(t => t.id === sourceId);
+      else if(linked.source.type === 'oneoff') task = oneOffTasks.find(t => t.id === sourceId);
+      else if(linked.source.type === 'recurring') task = recurringTasks.find(t => t.id === sourceId);
+      else if(linked.source.type === 'weekly') task = weeklyTasks.find(t => t.id === sourceId);
+    } else if(page === 'parenting') {
+      task = parentingActivities.find(a => a.id === sourceId);
     }
-    // Support both local shape {type,id} and server shape {type,originalId}
-    const refId = (r.id !== undefined) ? r.id : (r.originalId !== undefined ? r.originalId : undefined);
-    let arr;
-    if(r.type==='oneoff') arr=oneOffTasks;
-    else if(r.type==='recurring') arr=recurringTasks;
-    else if(r.type==='weekly') arr=weeklyTasks;
-    else if(r.type==='stretch') arr=stretchTasks;
-    else if(r.type==='big') arr=bigTasks;
-    else if(r.type==='diybig') arr=diyBigTasks;
-    else if(r.type==='dev') arr=parentingActivities;
-    let task=null, depth=0;
-    if(r.type==='work'){
-      const info=getWorkTaskInfo(r.id);
-      if(info){ task=info.task; depth=info.depth; }
-    }else if(r.type==='diy'){
-      const info=getDiyTaskInfo(r.id);
-      if(info){ task=info.task; depth=info.depth; }
-    }else if(arr){
-      task=arr.find(t=>t.id===refId);
+    
+    if(task) {
+      todayTasks.push({
+        category: page,
+        type: page,
+        subtype: linked.source.type || 'task',
+        item: task,
+        depth: depth || 0,
+        todayId: linked.id,
+        completed: linked.completedAt ? true : false
+      });
     }
-    if(!task) return;
-    if(r.type==='work'){
-      todayTasks.push({category:'work',type:'work',item:task,depth});
-      return;
-    } else if(r.type==='diy'){
-      todayTasks.push({category:'diy',type:'diy',item:task,depth});
-      return;
-    } else if(r.type==='stretch'){
-      todayTasks.push({category:'stretch',type:'stretch',item:task});
-      return;
-    } else if(r.type==='big'){
-      todayTasks.push({category:'big',type:'big',item:task});
-      return;
-    } else if(r.type==='diybig'){
-      todayTasks.push({category:'diybig',type:'diybig',item:task});
-      return;
-    } else if(r.type==='dev'){
-      todayTasks.push({category:'dev',type:'dev',item:task});
-      return;
-    }
-  // No overdue/due buckets anymore; just push a simple today item
-  todayTasks.push({category:'today',type:r.type,item:task});
+  });
+  
+  // Process ad-hoc tasks from todayData
+  todayData.adHoc.forEach(adhoc => {
+    todayTasks.push({
+      category: 'adhoc',
+      type: 'adhoc',
+      item: { id: adhoc.id, name: adhoc.text },
+      todayId: adhoc.id,
+      completed: adhoc.completedAt ? true : false
+    });
   });
 }
 function renderSide(){
@@ -484,11 +507,25 @@ function renderDevTasks(){
 function addDevToToday(id){
   const task=parentingActivities.find(a=>a.id===id);
   if(!task) return;
-  todayTasks.push({category:'dev',type:'dev',item:task});
-  todayList.push({type:'dev',id});
-  saveData();
-  saveParentingData();
-  renderToday();
+  
+  // Use new API to add linked item
+  fetch('/api/add-to-today', {
+    method: 'POST',
+    headers: {'Content-Type': 'application/json'},
+    body: JSON.stringify({ 
+      type: 'dev',
+      id: id,
+      text: task.name
+    })
+  }).then(res => res.json()).then(result => {
+    if(result.success) {
+      loadData().then(() => {
+        rebuildToday();
+        renderToday();
+        updateToggles();
+      });
+    }
+  }).catch(e => console.error('Failed to add dev task to today:', e));
 }
 function updateToggles(){
   const wt=document.getElementById('workToggle');
@@ -511,55 +548,85 @@ function renderToday(){
     li.draggable=true;
     li.dataset.index=i;
     if(t.depth) li.style.paddingLeft=(t.depth)+'rem';
+    
+    // Add completion styling
+    if(t.completed) {
+      li.style.opacity = '0.6';
+      li.style.textDecoration = 'line-through';
+    }
+    
     const text=document.createElement('span');
     let page='', label='', prefix='';
-    if(t.type==='quick'){
-      label=t.item.name;
-    }else{
-      if(['oneoff','recurring','weekly','stretch','big'].includes(t.type)) page='Todo';
-      else if(t.type==='work') page='Work';
-      else if(t.type==='diy' || t.type==='diybig') page='DIY';
-      else if(t.type==='dev') page='Parenting';
-      let projectText='';
-      if(t.type==='dev'){
-        const skill=parentingSkills.find(s=>s.id===t.item.skillId);
-        projectText=skill?skill.name:'';
-      }else{
-        projectText=t.item.project;
+    
+    if(t.type==='adhoc'){
+      label = t.item.name;
+      prefix = '[Ad-hoc] ';
+    } else {
+      if(t.type === 'work') page = 'Work';
+      else if(t.type === 'diy') page = 'DIY';
+      else if(t.type === 'index') page = 'Todo';
+      else if(t.type === 'parenting') page = 'Parenting';
+      
+      let projectText = '';
+      if(t.type === 'parenting'){
+        const skill = parentingSkills.find(s => s.id === t.item.skillId);
+        projectText = skill ? skill.name : '';
+      } else {
+        projectText = t.item.project || '';
       }
-      label=`${t.item.name} (${projectText})`;
-      if(t.type==='big' || t.type==='diybig') label='[BIG] '+label;
-      let info='';
-      if(page==='Todo'){info=t.type;}
-      else if(page==='Work'){info=t.item.project;}
-      prefix=page?`[${page}${info?` - ${info}`:''}] `:'';
-      if(taskScheduledToday(t.type,t.item.id)) text.style.fontWeight='bold';
+      
+      label = `${t.item.name}${projectText ? ` (${projectText})` : ''}`;
+      
+      if(t.subtype === 'big' || t.subtype === 'diybig') label = '[BIG] ' + label;
+      
+      let info = '';
+      if(page === 'Todo') info = t.subtype;
+      else if(page === 'Work') info = t.item.project;
+      prefix = page ? `[${page}${info ? ` - ${info}` : ''}] ` : '';
+      
+      if(taskScheduledToday(t.type, t.item.id)) text.style.fontWeight = 'bold';
     }
-    text.textContent=prefix+label;
+    
+    text.textContent = prefix + label;
+    
     if(page){
-      const timerBtn=createTimerButton(page.toLowerCase(), t.item.name);
-      timerBtn.style.marginLeft='0.25rem';
+      const timerBtn = createTimerButton(page.toLowerCase(), t.item.name);
+      timerBtn.style.marginLeft = '0.25rem';
       text.appendChild(timerBtn);
     }
+    
     const btnBox=document.createElement('span');
     const up=document.createElement('button');
-    up.textContent='Up';
+    up.textContent='↑';
     up.onclick=()=>moveTodayUp(i);
+    up.disabled = i === 0;
+    
     const down=document.createElement('button');
-    down.textContent='Down';
+    down.textContent='↓';
     down.onclick=()=>moveTodayDown(i);
+    down.disabled = i === todayTasks.length - 1;
+    
     const btnR=document.createElement('button');
-    btnR.textContent='Remove';
+    btnR.textContent='✖';
     btnR.onclick=()=>removeToday(i);
+    btnR.title='Remove from Today';
+    
     const btnC=document.createElement('button');
-    btnC.textContent='Complete';
-    btnC.onclick=()=>completeToday(i);
+    btnC.textContent = t.completed ? '↶' : '✓';
+    btnC.onclick=()=>toggleComplete(i);
+    btnC.title = t.completed ? 'Mark incomplete' : 'Complete';
+    
     btnBox.appendChild(up);
     btnBox.appendChild(down);
     btnBox.appendChild(btnR);
     btnBox.appendChild(btnC);
+    
     const num=document.createElement('span');
     num.textContent=(i+1)+'. ';
+    num.style.fontWeight = 'bold';
+    num.style.minWidth = '2em';
+    num.style.display = 'inline-block';
+    
     li.appendChild(num);
     li.appendChild(text);
     li.appendChild(btnBox);
@@ -571,82 +638,206 @@ function renderToday(){
 function addWorkToToday(id){
   const info=getWorkTaskInfo(id);
   if(!info) return;
-  todayTasks.push({category:'work',type:'work',item:info.task,depth:info.depth});
-  todayList.push({type:'work',id});
-  saveData();
-  renderToday();
-  updateToggles();
+  
+  // Use new API to add linked task
+  fetch('/api/add-to-today', {
+    method: 'POST',
+    headers: {'Content-Type': 'application/json'},
+    body: JSON.stringify({
+      taskType: 'work',
+      taskId: id,
+      taskName: info.task.name
+    })
+  }).then(res => res.json()).then(result => {
+    if(result.status === 'ok') {
+      loadData().then(() => {
+        rebuildToday();
+        renderToday();
+        updateToggles();
+      });
+    }
+  }).catch(e => console.error('Failed to add to today:', e));
 }
 function addDiyToToday(id){
   const info=getDiyTaskInfo(id);
   if(!info) return;
-  todayTasks.push({category:'diy',type:'diy',item:info.task,depth:info.depth});
-  todayList.push({type:'diy',id});
-  saveData();
-  renderToday();
-  updateToggles();
+  
+  // Use new API to add linked item
+  fetch('/api/add-to-today', {
+    method: 'POST',
+    headers: {'Content-Type': 'application/json'},
+    body: JSON.stringify({ 
+      type: 'diy',
+      id: id,
+      text: info.task.name
+    })
+  }).then(res => res.json()).then(result => {
+    if(result.success) {
+      loadData().then(() => {
+        rebuildToday();
+        renderToday();
+        updateToggles();
+      });
+    }
+  }).catch(e => console.error('Failed to add DIY task to today:', e));
 }
 function addStretchToToday(id){
   const task=stretchTasks.find(t=>t.id===id);
   if(!task) return;
-  todayTasks.push({category:'stretch',type:'stretch',item:task});
-  todayList.push({type:'stretch',id});
-  saveData();
-  renderToday();
+  
+  // Use new API to add linked item
+  fetch('/api/add-to-today', {
+    method: 'POST',
+    headers: {'Content-Type': 'application/json'},
+    body: JSON.stringify({ 
+      type: 'stretch',
+      id: id,
+      text: task.name
+    })
+  }).then(res => res.json()).then(result => {
+    if(result.success) {
+      loadData().then(() => {
+        rebuildToday();
+        renderToday();
+        updateToggles();
+      });
+    }
+  }).catch(e => console.error('Failed to add stretch task to today:', e));
 }
 function addBigToToday(id){
   const task=bigTasks.find(t=>t.id===id);
   if(!task) return;
-  todayTasks.push({category:'big',type:'big',item:task});
-  todayList.push({type:'big',id});
-  saveData();
-  renderToday();
+  
+  // Use new API to add linked item
+  fetch('/api/add-to-today', {
+    method: 'POST',
+    headers: {'Content-Type': 'application/json'},
+    body: JSON.stringify({ 
+      type: 'big',
+      id: id,
+      text: task.name
+    })
+  }).then(res => res.json()).then(result => {
+    if(result.success) {
+      loadData().then(() => {
+        rebuildToday();
+        renderToday();
+        updateToggles();
+      });
+    }
+  }).catch(e => console.error('Failed to add big task to today:', e));
 }
 function addDiyBigToToday(id){
   const task=diyBigTasks.find(t=>t.id===id);
   if(!task) return;
-  todayTasks.push({category:'diybig',type:'diybig',item:task});
-  todayList.push({type:'diybig',id});
-  saveData();
-  renderToday();
+  
+  // Use new API to add linked item
+  fetch('/api/add-to-today', {
+    method: 'POST',
+    headers: {'Content-Type': 'application/json'},
+    body: JSON.stringify({ 
+      type: 'diybig',
+      id: id,
+      text: task.name
+    })
+  }).then(res => res.json()).then(result => {
+    if(result.success) {
+      loadData().then(() => {
+        rebuildToday();
+        renderToday();
+        updateToggles();
+      });
+    }
+  }).catch(e => console.error('Failed to add DIY big task to today:', e));
 }
 
 function moveTodayUp(idx){
   if(idx<=0) return;
-  [todayTasks[idx-1],todayTasks[idx]]=[todayTasks[idx],todayTasks[idx-1]];
-  [todayList[idx-1],todayList[idx]]=[todayList[idx],todayList[idx-1]];
-  saveData();
-  renderToday();
+  
+  // Get current order from todayData
+  const currentItems = [...todayData.linked, ...todayData.adHoc];
+  if (idx >= currentItems.length) return;
+  
+  // Create new order array by swapping items
+  const newOrder = currentItems.map(item => item.id);
+  [newOrder[idx-1], newOrder[idx]] = [newOrder[idx], newOrder[idx-1]];
+  
+  // Send to server
+  fetch('/api/today/reorder', {
+    method: 'POST',
+    headers: {'Content-Type': 'application/json'},
+    body: JSON.stringify({ newOrder })
+  }).then(res => res.json()).then(result => {
+    if(result.success) {
+      loadData().then(() => {
+        rebuildToday();
+        renderToday();
+      });
+    }
+  }).catch(e => console.error('Failed to reorder:', e));
 }
 
 function moveTodayDown(idx){
-  if(idx>=todayTasks.length-1) return;
-  [todayTasks[idx],todayTasks[idx+1]]=[todayTasks[idx+1],todayTasks[idx]];
-  [todayList[idx],todayList[idx+1]]=[todayList[idx+1],todayList[idx]];
-  saveData();
-  renderToday();
+  // Get current order from todayData
+  const currentItems = [...todayData.linked, ...todayData.adHoc];
+  if(idx>=currentItems.length-1) return;
+  
+  // Create new order array by swapping items
+  const newOrder = currentItems.map(item => item.id);
+  [newOrder[idx], newOrder[idx+1]] = [newOrder[idx+1], newOrder[idx]];
+  
+  // Send to server
+  fetch('/api/today/reorder', {
+    method: 'POST',
+    headers: {'Content-Type': 'application/json'},
+    body: JSON.stringify({ newOrder })
+  }).then(res => res.json()).then(result => {
+    if(result.success) {
+      loadData().then(() => {
+        rebuildToday();
+        renderToday();
+      });
+    }
+  }).catch(e => console.error('Failed to reorder:', e));
 }
 function addQuickItem(){
   const input=document.getElementById('quickInput');
   const name=input.value.trim();
   if(!name) return;
-  todayList.push({type:'quick',id:nextId++,name,added:formatISO(new Date())});
-  input.value='';
-  rebuildToday();
-  saveData();
-  renderToday();
+  
+  // Use new API to add ad-hoc item
+  fetch('/api/today/adhoc', {
+    method: 'POST',
+    headers: {'Content-Type': 'application/json'},
+    body: JSON.stringify({ text: name })
+  }).then(res => res.json()).then(result => {
+    if(result.success) {
+      input.value = '';
+      loadData().then(() => {
+        rebuildToday();
+        renderToday();
+      });
+    }
+  }).catch(e => console.error('Failed to add adhoc item:', e));
 }
 function removeToday(idx){
-  const t=todayTasks.splice(idx,1)[0];
-  todayList=todayList.filter(r=>{
-    const rid = (r.id !== undefined) ? r.id : (r.originalId !== undefined ? r.originalId : undefined);
-    return !(r.type===t.type && rid===t.item.id);
-  });
-  if(t.type==='quick') todayQuickHistory.push({name:t.item.name,added:t.item.added,done:false});
-  saveData();
-  renderSide();
-  renderToday();
-  updateToggles();
+  const currentItems = [...todayData.linked, ...todayData.adHoc];
+  if(idx < 0 || idx >= currentItems.length) return;
+  
+  const itemToRemove = currentItems[idx];
+  
+  // Use DELETE API to remove item
+  fetch(`/api/today/${itemToRemove.id}`, {
+    method: 'DELETE'
+  }).then(res => res.json()).then(result => {
+    if(result.success) {
+      loadData().then(() => {
+        rebuildToday();
+        renderToday();
+        updateToggles();
+      });
+    }
+  }).catch(e => console.error('Failed to remove item:', e));
 }
 function clearToday(){
   todayTasks.forEach(t=>{ if(t.type==='quick') todayQuickHistory.push({name:t.item.name,added:t.item.added,done:false}); });
@@ -659,53 +850,70 @@ function clearToday(){
 }
 function computeNextDue(task,actionDate){const base=(task.from==='today')?new Date(actionDate):new Date(task.dueDate);let d=new Date(base);if(task.frequency==='daily')d.setDate(d.getDate()+task.interval);if(task.frequency==='weekly')d.setDate(d.getDate()+7*task.interval);if(task.frequency==='monthly')d.setMonth(d.getMonth()+task.interval);if(task.frequency==='yearly')d.setFullYear(d.getFullYear()+task.interval);return formatISO(d);}
 function completeToday(idx){
-  const t=todayTasks.splice(idx,1)[0];
-  todayList=todayList.filter(r=>!(r.type===t.type&&r.id===t.item.id));
-  const now=new Date();
-  if(t.type==='quick'){
-    todayQuickHistory.push({name:t.item.name,added:t.item.added,done:true,completed:formatISO(now)});
-  }else if(t.type==='oneoff'){
-    t.item.completedDates.push(formatISO(now));
-    t.item.status='closed';
-    t.item.closedDate=formatISO(now);
-  }else if(t.type==='recurring'){
-    t.item.completedDates.push(t.item.dueDate);
-    t.item.lastDiff=Math.floor((now-new Date(t.item.dueDate))/(1000*60*60*24));
-    t.item.lastCompleted=formatISO(now);
-    t.item.dueDate=computeNextDue(t.item,now);
-  }else if(t.type==='weekly'){
-    const iso=nearestDueDate(t.item,now);
-    if(!t.item.completedDates.includes(iso)) t.item.completedDates.push(iso);
-    t.item.missedDates=t.item.missedDates.filter(d=>d!==iso);
-  }else if(t.type==='work'){
-    if(t.item.recurring){
-      t.item.dueDate=computeNextDue(t.item,now);
-    }else{
-      t.item.status='closed';
+  const currentItems = [...todayData.linked, ...todayData.adHoc];
+  if(idx < 0 || idx >= currentItems.length) return;
+  
+  const itemToComplete = currentItems[idx];
+  
+  // Use new completion API
+  fetch('/api/today/complete', {
+    method: 'POST',
+    headers: {'Content-Type': 'application/json'},
+    body: JSON.stringify({ 
+      id: itemToComplete.id,
+      completed: true
+    })
+  }).then(res => res.json()).then(result => {
+    if(result.success) {
+      loadData().then(() => {
+        rebuildToday();
+        renderToday();
+        updateToggles();
+      });
     }
-    saveWorkData();
-  }else if(t.type==='diy'){
-    t.item.status='closed';
-    saveDiyData();
-  }else if(t.type==='stretch'){
-    t.item.completedDates.push(formatISO(now));
-  }else if(t.type==='big'){
-    t.item.completedDates.push(formatISO(now));
-    t.item.status='closed';
-    t.item.closedDate=formatISO(now);
-  }else if(t.type==='diybig'){
-    t.item.status='closed';
-    saveDiyData();
-  }else if(t.type==='dev'){
-    t.item.completedDates.push(formatISO(now));
-    saveParentingData();
-  }
-  // Overdue/Due categories removed
-  saveData();
-  renderSide();
-  renderToday();
+  }).catch(e => console.error('Failed to complete item:', e));
 }
-document.getElementById('todayList').addEventListener('dragstart',e=>{if(e.target.tagName==='LI'){e.dataTransfer.setData('text/plain',e.target.dataset.index);}});document.getElementById('todayList').addEventListener('dragover',e=>{e.preventDefault();});document.getElementById('todayList').addEventListener('drop',e=>{e.preventDefault();const from=+e.dataTransfer.getData('text/plain');const to=e.target.closest('li');if(!to)return;const idx=+to.dataset.index;const item=todayTasks.splice(from,1)[0];const ref=todayList.splice(from,1)[0];todayTasks.splice(idx,0,item);todayList.splice(idx,0,ref);saveData();renderToday();});
+// Drag-and-drop functionality for reordering
+document.getElementById('todayList').addEventListener('dragstart',e=>{
+  if(e.target.tagName==='LI'){
+    e.dataTransfer.setData('text/plain',e.target.dataset.index);
+  }
+});
+
+document.getElementById('todayList').addEventListener('dragover',e=>{
+  e.preventDefault();
+});
+
+document.getElementById('todayList').addEventListener('drop',e=>{
+  e.preventDefault();
+  const from=+e.dataTransfer.getData('text/plain');
+  const to=e.target.closest('li');
+  if(!to) return;
+  const idx=+to.dataset.index;
+  
+  // Get current order from todayData
+  const currentItems = [...todayData.linked, ...todayData.adHoc];
+  if(from < 0 || from >= currentItems.length || idx < 0 || idx >= currentItems.length) return;
+  
+  // Create new order array by moving item
+  const newOrder = currentItems.map(item => item.id);
+  const movedId = newOrder.splice(from, 1)[0];
+  newOrder.splice(idx, 0, movedId);
+  
+  // Send to server
+  fetch('/api/today/reorder', {
+    method: 'POST',
+    headers: {'Content-Type': 'application/json'},
+    body: JSON.stringify({ newOrder })
+  }).then(res => res.json()).then(result => {
+    if(result.success) {
+      loadData().then(() => {
+        rebuildToday();
+        renderToday();
+      });
+    }
+  }).catch(e => console.error('Failed to reorder via drag-drop:', e));
+});
 document.getElementById('workToggle').addEventListener('change',e=>{
   document.getElementById('workTaskList').classList.toggle('hidden',!e.target.checked);
   if(e.target.checked) renderWorkTasks();
@@ -961,7 +1169,7 @@ function renderModalOneOffTable() {
     actionTd.style.padding = '8px';
     const addBtn = document.createElement('button');
     addBtn.title = 'Add to Today';
-    addBtn.innerHTML = '<svg width="22" height="22" viewBox="0 0 20 20" fill="none" xmlns="http://www.w3.org/2000/svg"><circle cx="10" cy="10" r="8" fill="#B5A89A"/><path d="M10 6v8M6 10h8" stroke="#fff" stroke-width="2" stroke-linecap="round"/></svg>';
+    addBtn.innerHTML = '<svg width="22" height="22" viewBox="0 0 20 20" fill="none" xmlns="http://www.w3.org/2000/svg"><circle cx="10" cy="10" r="8" fill="#B8A4D9"/><path d="M10 6v8M6 10h8" stroke="#fff" stroke-width="2" stroke-linecap="round"/></svg>';
     addBtn.style.background = 'none';
     addBtn.style.border = 'none';
     addBtn.style.cursor = 'pointer';
@@ -1027,7 +1235,7 @@ function renderModalRecurringTable() {
     actionTd.style.padding = '8px';
     const addBtn = document.createElement('button');
     addBtn.title = 'Add to Today';
-    addBtn.innerHTML = '<svg width="22" height="22" viewBox="0 0 20 20" fill="none" xmlns="http://www.w3.org/2000/svg"><circle cx="10" cy="10" r="8" fill="#B5A89A"/><path d="M10 6v8M6 10h8" stroke="#fff" stroke-width="2" stroke-linecap="round"/></svg>';
+    addBtn.innerHTML = '<svg width="22" height="22" viewBox="0 0 20 20" fill="none" xmlns="http://www.w3.org/2000/svg"><circle cx="10" cy="10" r="8" fill="#B8A4D9"/><path d="M10 6v8M6 10h8" stroke="#fff" stroke-width="2" stroke-linecap="round"/></svg>';
     addBtn.style.background = 'none';
     addBtn.style.border = 'none';
     addBtn.style.cursor = 'pointer';
@@ -1099,7 +1307,7 @@ function renderModalWorkTable() {
     actionTd.style.padding = '8px';
     const addBtn = document.createElement('button');
     addBtn.title = 'Add to Today';
-    addBtn.innerHTML = '<svg width="22" height="22" viewBox="0 0 20 20" fill="none" xmlns="http://www.w3.org/2000/svg"><circle cx="10" cy="10" r="8" fill="#B5A89A"/><path d="M10 6v8M6 10h8" stroke="#fff" stroke-width="2" stroke-linecap="round"/></svg>';
+    addBtn.innerHTML = '<svg width="22" height="22" viewBox="0 0 20 20" fill="none" xmlns="http://www.w3.org/2000/svg"><circle cx="10" cy="10" r="8" fill="#B8A4D9"/><path d="M10 6v8M6 10h8" stroke="#fff" stroke-width="2" stroke-linecap="round"/></svg>';
     addBtn.style.background = 'none';
     addBtn.style.border = 'none';
     addBtn.style.cursor = 'pointer';
@@ -1174,7 +1382,7 @@ function renderModalDiyTable() {
     actionTd.style.padding = '8px';
     const addBtn = document.createElement('button');
     addBtn.title = 'Add to Today';
-    addBtn.innerHTML = '<svg width="22" height="22" viewBox="0 0 20 20" fill="none" xmlns="http://www.w3.org/2000/svg"><circle cx="10" cy="10" r="8" fill="#B5A89A"/><path d="M10 6v8M6 10h8" stroke="#fff" stroke-width="2" stroke-linecap="round"/></svg>';
+    addBtn.innerHTML = '<svg width="22" height="22" viewBox="0 0 20 20" fill="none" xmlns="http://www.w3.org/2000/svg"><circle cx="10" cy="10" r="8" fill="#B8A4D9"/><path d="M10 6v8M6 10h8" stroke="#fff" stroke-width="2" stroke-linecap="round"/></svg>';
     addBtn.style.background = 'none';
     addBtn.style.border = 'none';
     addBtn.style.cursor = 'pointer';
@@ -1236,7 +1444,7 @@ function renderModalBigTable() {
     actionTd.style.padding = '8px';
     const addBtn = document.createElement('button');
     addBtn.title = 'Add to Today';
-    addBtn.innerHTML = '<svg width="22" height="22" viewBox="0 0 20 20" fill="none" xmlns="http://www.w3.org/2000/svg"><circle cx="10" cy="10" r="8" fill="#B5A89A"/><path d="M10 6v8M6 10h8" stroke="#fff" stroke-width="2" stroke-linecap="round"/></svg>';
+    addBtn.innerHTML = '<svg width="22" height="22" viewBox="0 0 20 20" fill="none" xmlns="http://www.w3.org/2000/svg"><circle cx="10" cy="10" r="8" fill="#B8A4D9"/><path d="M10 6v8M6 10h8" stroke="#fff" stroke-width="2" stroke-linecap="round"/></svg>';
     addBtn.style.background = 'none';
     addBtn.style.border = 'none';
     addBtn.style.cursor = 'pointer';
@@ -1298,7 +1506,7 @@ function renderModalStretchTable() {
     actionTd.style.padding = '8px';
     const addBtn = document.createElement('button');
     addBtn.title = 'Add to Today';
-    addBtn.innerHTML = '<svg width="22" height="22" viewBox="0 0 20 20" fill="none" xmlns="http://www.w3.org/2000/svg"><circle cx="10" cy="10" r="8" fill="#B5A89A"/><path d="M10 6v8M6 10h8" stroke="#fff" stroke-width="2" stroke-linecap="round"/></svg>';
+    addBtn.innerHTML = '<svg width="22" height="22" viewBox="0 0 20 20" fill="none" xmlns="http://www.w3.org/2000/svg"><circle cx="10" cy="10" r="8" fill="#B8A4D9"/><path d="M10 6v8M6 10h8" stroke="#fff" stroke-width="2" stroke-linecap="round"/></svg>';
     addBtn.style.background = 'none';
     addBtn.style.border = 'none';
     addBtn.style.cursor = 'pointer';
@@ -1346,7 +1554,7 @@ function createModalTaskCell(task) {
   
   // Add to Today button
   const addTodayBtn = document.createElement('button');
-  addTodayBtn.innerHTML = '<svg width="20" height="20" viewBox="0 0 20 20" fill="none" xmlns="http://www.w3.org/2000/svg"><circle cx="10" cy="10" r="8" fill="#B5A89A"/><path d="M10 6v8M6 10h8" stroke="#fff" stroke-width="2" stroke-linecap="round"/></svg>';
+  addTodayBtn.innerHTML = '<svg width="20" height="20" viewBox="0 0 20 20" fill="none" xmlns="http://www.w3.org/2000/svg"><circle cx="10" cy="10" r="8" fill="#B8A4D9"/><path d="M10 6v8M6 10h8" stroke="#fff" stroke-width="2" stroke-linecap="round"/></svg>';
   addTodayBtn.title = 'Add to Today';
   addTodayBtn.style.background = 'none';
   addTodayBtn.style.border = 'none';
@@ -1392,12 +1600,12 @@ async function addTaskToToday(taskType, taskId, taskName) {
     });
     
     if (response.ok) {
-      // Regardless of server response shape, maintain local client shape
-      todayList.push({ type: taskType, id: taskId });
-      const result = await response.json(); // consume for completeness
+      // Refresh data from server to get updated todayData structure
+      await loadData();
       rebuildToday();
       renderToday();
-      // Optionally refresh the modal grid to reflect any UI state
+      
+      // Optionally refresh the modal grids to reflect any UI state
       if (document.getElementById('weeklyTasksModal').style.display === 'block') {
         renderModalWeeklyGrid();
       }
@@ -1446,7 +1654,193 @@ window.onclick = function(event) {
   if (event.target === stretchM) closeStretchTasksModal();
 }
 
-async function init(){await loadData();rebuildToday();renderSide();renderToday();}
+// Today Data List Management Functions
+async function addQuickTodayItem() {
+  const input = document.getElementById('quickTodayItem');
+  const text = input.value.trim();
+  if (!text) return;
+  
+  try {
+    const response = await fetch('/api/today/adhoc', {
+      method: 'POST',
+      headers: { 'Content-Type': 'application/json' },
+      body: JSON.stringify({ text })
+    });
+    
+    if (response.ok) {
+      input.value = '';
+      await loadData();
+      renderTodayDataList();
+    } else {
+      alert('Failed to add item');
+    }
+  } catch (e) {
+    console.error('Error adding quick item:', e);
+    alert('Error adding item');
+  }
+}
+
+async function removeTodayDataItem(id) {
+  if (!confirm('Remove this item from today?')) return;
+  
+  try {
+    const response = await fetch(`/api/today/${id}`, {
+      method: 'DELETE'
+    });
+    
+    if (response.ok) {
+      await loadData();
+      renderTodayDataList();
+    } else {
+      alert('Failed to remove item');
+    }
+  } catch (e) {
+    console.error('Error removing item:', e);
+    alert('Error removing item');
+  }
+}
+
+async function completeTodayDataItem(id) {
+  try {
+    const response = await fetch('/api/today/complete', {
+      method: 'POST',
+      headers: { 'Content-Type': 'application/json' },
+      body: JSON.stringify({ id, completed: true })
+    });
+    
+    if (response.ok) {
+      await loadData();
+      renderTodayDataList();
+      rebuildToday();
+      renderToday();
+    } else {
+      alert('Failed to complete item');
+    }
+  } catch (e) {
+    console.error('Error completing item:', e);
+    alert('Error completing item');
+  }
+}
+
+async function moveTodayDataItem(fromIndex, toIndex) {
+  const allItems = [...todayData.linked, ...todayData.adHoc];
+  const newOrder = allItems.map(item => item.id);
+  
+  // Move item from fromIndex to toIndex
+  const [movedItem] = newOrder.splice(fromIndex, 1);
+  newOrder.splice(toIndex, 0, movedItem);
+  
+  try {
+    const response = await fetch('/api/today/reorder', {
+      method: 'POST',
+      headers: { 'Content-Type': 'application/json' },
+      body: JSON.stringify({ newOrder })
+    });
+    
+    if (response.ok) {
+      await loadData();
+      renderTodayDataList();
+    } else {
+      alert('Failed to reorder items');
+    }
+  } catch (e) {
+    console.error('Error reordering items:', e);
+    alert('Error reordering items');
+  }
+}
+
+function renderTodayDataList() {
+  const container = document.getElementById('todayDataList');
+  container.innerHTML = '';
+  
+  const allItems = [...todayData.linked, ...todayData.adHoc];
+  
+  if (allItems.length === 0) {
+    container.innerHTML = '<div style="text-align: center; color: #666; padding: 2rem;">No items in today\'s list</div>';
+    return;
+  }
+  
+  allItems.forEach((item, index) => {
+    const itemDiv = document.createElement('div');
+    itemDiv.style.cssText = 'display: flex; align-items: center; padding: 0.75rem; margin-bottom: 0.5rem; background: white; border: 1px solid #e2e5e9; border-radius: 6px; gap: 0.5rem;';
+    
+    // Priority number
+    const prioritySpan = document.createElement('span');
+    prioritySpan.textContent = index + 1;
+    prioritySpan.style.cssText = 'background: #B8A4D9; color: white; width: 24px; height: 24px; border-radius: 50%; display: flex; align-items: center; justify-content: center; font-size: 0.8rem; font-weight: bold; flex-shrink: 0;';
+    
+    // Task name and details
+    const taskDiv = document.createElement('div');
+    taskDiv.style.cssText = 'flex: 1; min-width: 0;';
+    
+    const nameDiv = document.createElement('div');
+    nameDiv.style.cssText = 'font-weight: 500; color: #2B2C29;';
+    nameDiv.textContent = item.name || item.text || 'Untitled Task';
+    
+    const detailDiv = document.createElement('div');
+    detailDiv.style.cssText = 'font-size: 0.85rem; color: #666; margin-top: 2px;';
+    
+    if (item.source) {
+      // Linked task
+      detailDiv.textContent = `From ${item.source.page}${item.source.type ? ` (${item.source.type})` : ''}`;
+      detailDiv.style.color = '#B8A4D9';
+    } else {
+      // Ad-hoc task
+      detailDiv.textContent = 'Quick item';
+      detailDiv.style.color = '#81B29A';
+    }
+    
+    taskDiv.appendChild(nameDiv);
+    taskDiv.appendChild(detailDiv);
+    
+    // Action buttons
+    const actionsDiv = document.createElement('div');
+    actionsDiv.style.cssText = 'display: flex; gap: 0.25rem; flex-shrink: 0;';
+    
+    // Move up button
+    if (index > 0) {
+      const upBtn = document.createElement('button');
+      upBtn.innerHTML = '↑';
+      upBtn.title = 'Move up';
+      upBtn.style.cssText = 'width: 28px; height: 28px; border: 1px solid #ddd; background: white; border-radius: 4px; cursor: pointer; font-size: 14px; display: flex; align-items: center; justify-content: center;';
+      upBtn.onclick = () => moveTodayDataItem(index, index - 1);
+      actionsDiv.appendChild(upBtn);
+    }
+    
+    // Move down button
+    if (index < allItems.length - 1) {
+      const downBtn = document.createElement('button');
+      downBtn.innerHTML = '↓';
+      downBtn.title = 'Move down';
+      downBtn.style.cssText = 'width: 28px; height: 28px; border: 1px solid #ddd; background: white; border-radius: 4px; cursor: pointer; font-size: 14px; display: flex; align-items: center; justify-content: center;';
+      downBtn.onclick = () => moveTodayDataItem(index, index + 1);
+      actionsDiv.appendChild(downBtn);
+    }
+    
+    // Remove button
+    const removeBtn = document.createElement('button');
+    removeBtn.innerHTML = '✖';
+    removeBtn.title = 'Remove from today';
+    removeBtn.style.cssText = 'width: 28px; height: 28px; border: 1px solid #ff6b6b; background: white; color: #ff6b6b; border-radius: 4px; cursor: pointer; font-size: 12px; display: flex; align-items: center; justify-content: center;';
+    removeBtn.onclick = () => removeTodayDataItem(item.id);
+    actionsDiv.appendChild(removeBtn);
+    
+    // Complete button
+    const completeBtn = document.createElement('button');
+    completeBtn.innerHTML = '✓';
+    completeBtn.title = 'Mark complete';
+    completeBtn.style.cssText = 'width: 28px; height: 28px; border: 1px solid #81B29A; background: white; color: #81B29A; border-radius: 4px; cursor: pointer; font-size: 14px; display: flex; align-items: center; justify-content: center;';
+    completeBtn.onclick = () => completeTodayDataItem(item.id);
+    actionsDiv.appendChild(completeBtn);
+    
+    itemDiv.appendChild(prioritySpan);
+    itemDiv.appendChild(taskDiv);
+    itemDiv.appendChild(actionsDiv);
+    container.appendChild(itemDiv);
+  });
+}
+
+async function init(){await loadData();rebuildToday();renderSide();renderToday();renderTodayDataList();}
 init();
 </script>
 </body>

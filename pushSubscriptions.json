@@ -1,0 +1,24 @@
+[
+  {
+    "endpoint": "https://wns2-ln2p.notify.windows.com/w/?token=BQYAAAB6wVye91jSLmX7wMjbCIcFll4itlS2s0B41Uqa6ysof6jMsQpdv93UNmUHy12CburvQ9eIS%2fD0KdUC8BJVc8z5oBcquaqxxltUm%2f1uFSsyQYw87KrpvyIiucdMCu64u47t7mQ8O8i82piexoySrbP%2fkIoVE9D%2bUOCMMZBygdK8y4vkQmrcHGyAWn%2fNdEuUfZZoL5WtKg%2fC2GoKs2dU07tBP17ZKLOxKdnr9dTZeVts%2bD2VWl2EhfeqotFVLNBkgcLyG3Zah%2f%2fVf%2bauh6pXlDpwg0HcECPu4JAOyCTQcQUM5Mnb6QUxijLhwaIElPe%2f3qfiipjiJIL9o75kTqCPV8o5",
+    "expirationTime": null,
+    "keys": {
+      "p256dh": "BBo2mDF0pCl5jlmsMmmU1_Gz9QiDjmjqRlDQbvuzMXcxj6i8SiXRsT0yP0hue0hdfMhHiMwZBOyAWVg0plRPnY0",
+      "auth": "ToH9pMUVh6uvkIrsP3hQWw"
+    },
+    "subscribedAt": "2025-09-04T19:00:37.476Z",
+    "userAgent": "Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/139.0.0.0 Safari/537.36 Edg/139.0.0.0",
+    "ip": "::1"
+  },
+  {
+    "endpoint": "https://fcm.googleapis.com/fcm/send/fNfXo8jz3R4:APA91bEGKCL-gvOxhFiHXYQBzpIfQKJ7S0i-NDBhbCQ0TIvU2zvdyNp9qGyALve7LzdMcKDmHRkTa2UVsCd2iN2VCrz8vtc_yR3evNN3XTD964r3vXt0rSDHYJyhKQHDqAR5YAPGihuP",
+    "expirationTime": null,
+    "keys": {
+      "p256dh": "BN4oiRYnXtxhrclYXvW80EjTD9YKGIoBVSHT4sDUgOQJEtoLNRKbGcO7h80A_U1ehTAKPK1GGHWGdswIlqPwAy4",
+      "auth": "YF0xaV1NkYVvIQFQTXHamQ"
+    },
+    "subscribedAt": "2025-09-04T20:25:14.857Z",
+    "userAgent": "Mozilla/5.0 (X11; Linux x86_64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/139.0.0.0 Safari/537.36",
+    "ip": "::1"
+  }
+]

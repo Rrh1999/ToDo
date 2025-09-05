@@ -1015,9 +1015,25 @@
       "status": "open",
       "subtasks": [],
       "notes": ""
+    },
+    {
+      "id": "00000074",
+      "parent": null,
+      "name": "GSR3",
+      "project": "PhD Admin",
+      "dueDate": "2025-09-04",
+      "importance": "High",
+      "urgency": "High",
+      "recurring": false,
+      "frequency": null,
+      "interval": null,
+      "from": null,
+      "status": "open",
+      "subtasks": [],
+      "notes": ""
     }
   ],
-  "workNextId": 74,
+  "workNextId": 75,
   "maxSubDepth": 7,
   "calendarEvents": [
     {

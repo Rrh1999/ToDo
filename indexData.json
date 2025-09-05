@@ -55,7 +55,7 @@
       "status": "open",
       "startDate": "2025-07-28",
       "closedDate": "",
-      "dateLastChecked": "2025-09-02"
+      "dateLastChecked": "2025-09-05"
     },
     {
       "id": "00000003",
@@ -71,7 +71,6 @@
         "2025-08-13",
         "2025-08-11",
         "2025-08-25",
-        "2025-09-02",
         "2025-09-01"
       ],
       "missedDates": [
@@ -81,7 +80,7 @@
       "status": "open",
       "startDate": "2025-07-28",
       "closedDate": "",
-      "dateLastChecked": "2025-09-02"
+      "dateLastChecked": "2025-09-05"
     },
     {
       "id": "00000004",
@@ -97,19 +96,19 @@
         "2025-08-10",
         "2025-08-14",
         "2025-08-12",
-        "2025-08-29"
+        "2025-08-29",
+        "2025-09-02"
       ],
       "missedDates": [
         "2025-07-29",
         "2025-08-05",
         "2025-08-19",
-        "2025-08-26",
-        "2025-09-02"
+        "2025-08-26"
       ],
       "status": "open",
       "startDate": "2025-07-28",
       "closedDate": "",
-      "dateLastChecked": "2025-09-02"
+      "dateLastChecked": "2025-09-05"
     },
     {
       "id": "00000005",
@@ -135,7 +134,7 @@
       "status": "open",
       "startDate": "2025-07-28",
       "closedDate": "",
-      "dateLastChecked": "2025-09-02"
+      "dateLastChecked": "2025-09-05"
     },
     {
       "id": "00000006",
@@ -160,7 +159,7 @@
       "status": "open",
       "startDate": "2025-07-28",
       "closedDate": "",
-      "dateLastChecked": "2025-09-02"
+      "dateLastChecked": "2025-09-05"
     },
     {
       "id": "00000007",
@@ -184,7 +183,7 @@
       "status": "open",
       "startDate": "2025-07-28",
       "closedDate": "",
-      "dateLastChecked": "2025-09-02"
+      "dateLastChecked": "2025-09-05"
     },
     {
       "id": "00000008",
@@ -199,7 +198,8 @@
         "2025-08-02",
         "2025-08-09",
         "2025-08-16",
-        "2025-08-31"
+        "2025-08-31",
+        "2025-09-04"
       ],
       "missedDates": [
         "2025-08-23",
@@ -208,7 +208,7 @@
       "status": "open",
       "startDate": "2025-07-28",
       "closedDate": "",
-      "dateLastChecked": "2025-09-02"
+      "dateLastChecked": "2025-09-05"
     },
     {
       "id": "00000009",
@@ -233,7 +233,7 @@
       "status": "open",
       "startDate": "2025-07-28",
       "closedDate": "",
-      "dateLastChecked": "2025-09-02"
+      "dateLastChecked": "2025-09-05"
     },
     {
       "id": "00000012",
@@ -265,12 +265,14 @@
         "2025-08-18",
         "2025-08-20",
         "2025-08-25",
-        "2025-08-27"
+        "2025-08-27",
+        "2025-09-03",
+        "2025-09-05"
       ],
       "status": "open",
       "startDate": "2025-07-28",
       "closedDate": "",
-      "dateLastChecked": "2025-09-02"
+      "dateLastChecked": "2025-09-05"
     },
     {
       "id": "00000013",
@@ -295,7 +297,7 @@
       "status": "open",
       "startDate": "2025-07-28",
       "closedDate": "",
-      "dateLastChecked": "2025-09-02"
+      "dateLastChecked": "2025-09-05"
     },
     {
       "id": "00000035",
@@ -321,7 +323,7 @@
       "status": "open",
       "startDate": "2025-07-28",
       "closedDate": "",
-      "dateLastChecked": "2025-09-02"
+      "dateLastChecked": "2025-09-05"
     },
     {
       "id": "00000036",
@@ -372,12 +374,15 @@
         "2025-08-29",
         "2025-08-31",
         "2025-09-01",
-        "2025-09-02"
+        "2025-09-02",
+        "2025-09-03",
+        "2025-09-04",
+        "2025-09-05"
       ],
       "status": "open",
       "startDate": "2025-07-28",
       "closedDate": "",
-      "dateLastChecked": "2025-09-02"
+      "dateLastChecked": "2025-09-05"
     },
     {
       "id": "00000037",
@@ -417,12 +422,14 @@
         "2025-08-25",
         "2025-08-27",
         "2025-08-29",
-        "2025-08-30"
+        "2025-08-30",
+        "2025-09-03",
+        "2025-09-05"
       ],
       "status": "open",
       "startDate": "2025-07-28",
       "closedDate": "",
-      "dateLastChecked": "2025-09-02"
+      "dateLastChecked": "2025-09-05"
     },
     {
       "id": "00000060",
@@ -446,7 +453,7 @@
       "status": "open",
       "startDate": "2025-08-02",
       "closedDate": "",
-      "dateLastChecked": "2025-09-02"
+      "dateLastChecked": "2025-09-05"
     },
     {
       "id": "00000069",
@@ -470,7 +477,7 @@
       "status": "open",
       "startDate": "2025-08-03",
       "closedDate": "",
-      "dateLastChecked": "2025-09-02"
+      "dateLastChecked": "2025-09-05"
     },
     {
       "id": "00000115",
@@ -485,18 +492,20 @@
       ],
       "completedDates": [
         "2025-08-20",
-        "2025-08-25"
+        "2025-08-25",
+        "2025-09-05"
       ],
       "missedDates": [
         "2025-08-22",
         "2025-08-27",
         "2025-08-29",
-        "2025-09-01"
+        "2025-09-01",
+        "2025-09-03"
       ],
       "status": "open",
       "startDate": "2025-08-18",
       "closedDate": "",
-      "dateLastChecked": "2025-09-02"
+      "dateLastChecked": "2025-09-05"
     }
   ],
   "oneOffTasks": [
@@ -1033,10 +1042,12 @@
       "urgency": "Medium",
       "dueDate": "",
       "startDate": "2025-08-07",
-      "status": "open",
-      "closedDate": "",
+      "status": "closed",
+      "closedDate": "2025-09-03",
       "taskType": "One-off",
-      "completedDates": [],
+      "completedDates": [
+        "2025-09-03"
+      ],
       "missedDates": []
     },
     {
@@ -1238,6 +1249,20 @@
       "urgency": "Medium",
       "dueDate": "",
       "startDate": "2025-08-30",
+      "status": "open",
+      "closedDate": "",
+      "taskType": "One-off",
+      "completedDates": [],
+      "missedDates": []
+    },
+    {
+      "id": "00000146",
+      "name": "Mot",
+      "project": "Chores",
+      "importance": "High",
+      "urgency": "High",
+      "dueDate": "",
+      "startDate": "2025-09-04",
       "status": "open",
       "closedDate": "",
       "taskType": "One-off",
@@ -1687,6 +1712,22 @@
       "cost": "",
       "month": "",
       "bought": false
+    },
+    {
+      "id": "00000147",
+      "name": "Boxes for blankets",
+      "project": "Chores",
+      "cost": "",
+      "month": "",
+      "bought": false
+    },
+    {
+      "id": "00000148",
+      "name": "Boxes for thing in landing",
+      "project": "Chores",
+      "cost": "",
+      "month": "",
+      "bought": false
     }
   ],
   "longTermList": [
@@ -1744,9 +1785,42 @@
       "id": "00000141",
       "name": "Clothes for Kari",
       "bought": false
+    },
+    {
+      "id": "00000149",
+      "name": "Mini bin bags",
+      "bought": false
     }
   ],
   "todayList": [
+    {
+      "id": 1756721674582,
+      "type": "weekly",
+      "originalId": "00000003",
+      "name": "Tweeze",
+      "completed": false,
+      "addedAt": "2025-09-01T10:14:34.582Z"
+    },
+    {
+      "id": 1756721692153,
+      "type": "weekly",
+      "originalId": "00000036",
+      "name": "Meditation",
+      "completed": false,
+      "addedAt": "2025-09-01T10:14:52.153Z"
+    },
+    {
+      "type": "work",
+      "id": "00000020"
+    },
+    {
+      "id": 1756721671161,
+      "type": "weekly",
+      "originalId": "00000005",
+      "name": "Laundry",
+      "completed": false,
+      "addedAt": "2025-09-01T10:14:31.162Z"
+    },
     {
       "id": 1756370189905,
       "type": "work",
@@ -1754,10 +1828,6 @@
       "name": "Check crawlet",
       "completed": false,
       "addedAt": "2025-08-28T08:36:29.905Z"
-    },
-    {
-      "type": "work",
-      "id": "00000020"
     },
     {
       "type": "oneoff",
@@ -1794,30 +1864,6 @@
       "name": "Posting box / shape sorter",
       "completed": false,
       "addedAt": "2025-08-30T09:26:30.787Z"
-    },
-    {
-      "id": 1756721671161,
-      "type": "weekly",
-      "originalId": "00000005",
-      "name": "Laundry",
-      "completed": false,
-      "addedAt": "2025-09-01T10:14:31.162Z"
-    },
-    {
-      "id": 1756721674582,
-      "type": "weekly",
-      "originalId": "00000003",
-      "name": "Tweeze",
-      "completed": false,
-      "addedAt": "2025-09-01T10:14:34.582Z"
-    },
-    {
-      "id": 1756721692153,
-      "type": "weekly",
-      "originalId": "00000036",
-      "name": "Meditation",
-      "completed": false,
-      "addedAt": "2025-09-01T10:14:52.153Z"
     },
     {
       "id": 1756721716169,
@@ -1932,14 +1978,6 @@
       "id": "00000053"
     },
     {
-      "type": "oneoff",
-      "id": "00000082"
-    },
-    {
-      "type": "oneoff",
-      "id": "00000134"
-    },
-    {
       "type": "recurring",
       "id": "00000058"
     },
@@ -1950,6 +1988,218 @@
       "name": "Emails",
       "completed": false,
       "addedAt": "2025-09-01T12:01:47.496Z"
+    },
+    {
+      "id": 1756814034914,
+      "type": "work",
+      "originalId": "00000072",
+      "name": "Read the chbh oplr part c and operating rules",
+      "completed": false,
+      "addedAt": "2025-09-02T11:53:54.914Z"
+    },
+    {
+      "type": "weekly",
+      "id": "00000069"
+    },
+    {
+      "id": 1757052034282,
+      "type": "oneoff",
+      "originalId": "00000107",
+      "name": "Bupa foot auth",
+      "completed": false,
+      "addedAt": "2025-09-05T06:00:34.282Z"
+    },
+    {
+      "id": 1757052045672,
+      "type": "oneoff",
+      "originalId": "00000146",
+      "name": "Mot",
+      "completed": false,
+      "addedAt": "2025-09-05T06:00:45.672Z"
+    },
+    {
+      "id": 1757052049422,
+      "type": "oneoff",
+      "originalId": "00000134",
+      "name": "How to get rust off trays",
+      "completed": false,
+      "addedAt": "2025-09-05T06:00:49.422Z"
+    },
+    {
+      "id": 1757052056627,
+      "type": "recurring",
+      "originalId": "00000025",
+      "name": "Prep Food",
+      "completed": false,
+      "addedAt": "2025-09-05T06:00:56.627Z"
+    },
+    {
+      "id": 1757052083308,
+      "type": "work",
+      "originalId": "00000051",
+      "name": "Complete the Data Form",
+      "completed": false,
+      "addedAt": "2025-09-05T06:01:23.308Z"
+    },
+    {
+      "id": 1757052087997,
+      "type": "work",
+      "originalId": "00000052",
+      "name": "Complete the Main Form",
+      "completed": false,
+      "addedAt": "2025-09-05T06:01:27.997Z"
+    },
+    {
+      "id": 1757052090749,
+      "type": "work",
+      "originalId": "00000040",
+      "name": "Going Part Time",
+      "completed": false,
+      "addedAt": "2025-09-05T06:01:30.749Z"
+    },
+    {
+      "id": 1757052093505,
+      "type": "work",
+      "originalId": "00000071",
+      "name": "Daniel book the scan after 1  get volunteer",
+      "completed": false,
+      "addedAt": "2025-09-05T06:01:33.505Z"
+    },
+    {
+      "id": 1757052096039,
+      "type": "work",
+      "originalId": "00000072",
+      "name": "Read the chbh oplr part c and operating rules",
+      "completed": false,
+      "addedAt": "2025-09-05T06:01:36.039Z"
+    },
+    {
+      "id": 1757052101980,
+      "type": "work",
+      "originalId": "00000064",
+      "name": "Arrange the scanning training",
+      "completed": false,
+      "addedAt": "2025-09-05T06:01:41.980Z"
+    },
+    {
+      "id": 1757052106908,
+      "type": "work",
+      "originalId": "00000065",
+      "name": "Do a rough planner for the goal posts for when stephane comes back",
+      "completed": false,
+      "addedAt": "2025-09-05T06:01:46.908Z"
+    },
+    {
+      "id": 1757052112967,
+      "type": "work",
+      "originalId": "00000074",
+      "name": "GSR3",
+      "completed": false,
+      "addedAt": "2025-09-05T06:01:52.967Z"
+    },
+    {
+      "id": 1757052165283,
+      "type": "weekly",
+      "originalId": "00000006",
+      "name": "Chane Bedding",
+      "completed": false,
+      "addedAt": "2025-09-05T06:02:45.283Z"
+    },
+    {
+      "id": 1757052227739,
+      "type": "weekly",
+      "originalId": "00000013",
+      "name": "Parenting App",
+      "completed": false,
+      "addedAt": "2025-09-05T06:03:47.739Z"
+    },
+    {
+      "id": 1757052228958,
+      "type": "weekly",
+      "originalId": "00000004",
+      "name": "Order Food",
+      "completed": false,
+      "addedAt": "2025-09-05T06:03:48.958Z"
+    },
+    {
+      "id": 1757052229482,
+      "type": "weekly",
+      "originalId": "00000005",
+      "name": "Laundry",
+      "completed": false,
+      "addedAt": "2025-09-05T06:03:49.482Z"
+    },
+    {
+      "id": 1757053049485,
+      "type": "weekly",
+      "originalId": "00000012",
+      "name": "Reply to Friends",
+      "completed": false,
+      "addedAt": "2025-09-05T06:17:29.485Z"
+    },
+    {
+      "id": 1757053049982,
+      "type": "weekly",
+      "originalId": "00000037",
+      "name": "Quabble Wellbeing",
+      "completed": false,
+      "addedAt": "2025-09-05T06:17:29.982Z"
+    },
+    {
+      "id": 1757053050789,
+      "type": "weekly",
+      "originalId": "00000115",
+      "name": "Practice Listening to F",
+      "completed": false,
+      "addedAt": "2025-09-05T06:17:30.789Z"
+    },
+    {
+      "id": 1757053062661,
+      "type": "oneoff",
+      "originalId": "00000074",
+      "name": "Check Monzo gave 50 refund",
+      "completed": false,
+      "addedAt": "2025-09-05T06:17:42.661Z"
+    },
+    {
+      "id": 1757053117510,
+      "type": "work",
+      "originalId": "00000072",
+      "name": "Read the chbh oplr part c and operating rules",
+      "completed": false,
+      "addedAt": "2025-09-05T06:18:37.510Z"
+    },
+    {
+      "id": 1757053296038,
+      "type": "weekly",
+      "originalId": "00000060",
+      "name": "Check physiatry UK emails",
+      "completed": false,
+      "addedAt": "2025-09-05T06:21:36.038Z"
+    },
+    {
+      "id": 1757053297599,
+      "type": "weekly",
+      "originalId": "00000007",
+      "name": "Change Towels",
+      "completed": false,
+      "addedAt": "2025-09-05T06:21:37.599Z"
+    },
+    {
+      "id": 1757053298190,
+      "type": "weekly",
+      "originalId": "00000006",
+      "name": "Chane Bedding",
+      "completed": false,
+      "addedAt": "2025-09-05T06:21:38.190Z"
+    },
+    {
+      "id": 9,
+      "type": "weekly",
+      "originalId": "00000115",
+      "name": "Practice Listening to F",
+      "completed": false,
+      "addedAt": "2025-09-05T07:23:05.423Z"
     }
   ],
   "todayQuickHistory": [
@@ -1968,9 +2218,14 @@
       "name": "MRI Practice",
       "added": "2025-08-28",
       "done": false
+    },
+    {
+      "name": "Practice mrI",
+      "added": "2025-09-02",
+      "done": false
     }
   ],
-  "nextId": 145,
+  "nextId": 150,
   "deletedShoppingItems": [
     {
       "id": "00000137",

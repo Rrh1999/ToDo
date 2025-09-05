@@ -1050,6 +1050,7 @@ function isDescendant(rootId,targetId){
 
 function completeTask(id){
   const info=getTaskInfo(id); if(!info) return; info.task.status='closed'; deleteCalendarEvents(id); saveData(); renderTasks(); renderCalendarTasks(); renderCompletedDiyTasks();
+  try{ fetch('/api/source/complete',{method:'POST',headers:{'Content-Type':'application/json'},body:JSON.stringify({type:'diy',id,completed:true})}); }catch(e){}
 }
 
 function deleteTask(id){
@@ -1139,7 +1140,7 @@ function renderTasks(){
   const addTodayBtn=document.createElement('button');
   addTodayBtn.className='task-icon-btn';
   addTodayBtn.title='Add to Today';
-  addTodayBtn.innerHTML='<svg width="18" height="18" viewBox="0 0 20 20" fill="none" xmlns="http://www.w3.org/2000/svg"><circle cx="10" cy="10" r="8" fill="#B5A89A"/><path d="M10 6v8M6 10h8" stroke="#fff" stroke-width="2" stroke-linecap="round"/></svg>';
+  addTodayBtn.innerHTML='<svg width="18" height="18" viewBox="0 0 20 20" fill="none" xmlns="http://www.w3.org/2000/svg"><circle cx="10" cy="10" r="8" fill="#B8A4D9"/><path d="M10 6v8M6 10h8" stroke="#fff" stroke-width="2" stroke-linecap="round"/></svg>';
   addTodayBtn.onclick=()=>addDiyTaskToToday(t.id, t.name);
     const completeBtn=document.createElement('button');
     completeBtn.className='task-icon-btn complete'; completeBtn.title='Complete Task';

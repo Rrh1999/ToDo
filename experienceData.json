@@ -1,0 +1,186 @@
+{
+  "experiences": [
+    {
+      "name": "Reward",
+      "description": "Start of the Day",
+      "triggerType": "set",
+      "responseType": "more",
+      "status": "active",
+      "timesOfDay": [
+        "08:00"
+      ],
+      "daysOfWeek": [
+        "Mon",
+        "Tue",
+        "Wed",
+        "Thu",
+        "Fri",
+        "Sat",
+        "Sun"
+      ],
+      "nextTrigger": null,
+      "questions": [
+        {
+          "text": "How rewarding do you expect today to be?",
+          "type": "select",
+          "options": [
+            "1",
+            "2",
+            "3",
+            "4",
+            "5",
+            "6",
+            "7",
+            "8",
+            "9",
+            "10"
+          ]
+        },
+        {
+          "text": "How certain are you of that?",
+          "type": "select",
+          "options": [
+            "1",
+            "2",
+            "3",
+            "4",
+            "5",
+            "6",
+            "7",
+            "8",
+            "9",
+            "10"
+          ]
+        }
+      ],
+      "id": 4,
+      "createdAt": "2025-09-05T06:45:55.497Z",
+      "pendingResponse": true,
+      "lastTriggeredAt": "2025-09-05T07:00:07.158Z"
+    },
+    {
+      "name": "Reward ",
+      "description": "End of the Day",
+      "triggerType": "set",
+      "responseType": "more",
+      "status": "active",
+      "timesOfDay": [
+        "20:30"
+      ],
+      "daysOfWeek": [
+        "Mon",
+        "Tue",
+        "Wed",
+        "Thu",
+        "Fri",
+        "Sat",
+        "Sun"
+      ],
+      "nextTrigger": "2025-09-05T19:30:00.000Z",
+      "questions": [
+        {
+          "text": "How rewarding was today?",
+          "type": "select",
+          "options": [
+            "1",
+            "2",
+            "3",
+            "4",
+            "5",
+            "6",
+            "7",
+            "8",
+            "9",
+            "10"
+          ]
+        }
+      ],
+      "id": 5,
+      "createdAt": "2025-09-05T06:46:26.841Z"
+    }
+  ],
+  "responses": [
+    {
+      "experienceId": 1,
+      "type": "notification_action",
+      "data": {
+        "responseIndex": 0,
+        "action": "response-0"
+      },
+      "timestamp": "2025-09-04T15:05:16.835Z",
+      "id": 1
+    },
+    {
+      "experienceId": 1,
+      "type": "notification_action",
+      "data": {
+        "responseIndex": 1,
+        "action": "response-1"
+      },
+      "timestamp": "2025-09-04T15:31:33.300Z",
+      "id": 2
+    },
+    {
+      "experienceId": 1,
+      "type": "notification_action",
+      "data": {
+        "responseIndex": 0,
+        "action": "response-0"
+      },
+      "timestamp": "2025-09-04T18:51:34.473Z",
+      "id": 3
+    },
+    {
+      "experienceId": 1,
+      "type": "notification_action",
+      "data": {
+        "responseIndex": 1,
+        "action": "response-1"
+      },
+      "timestamp": "2025-09-04T18:51:43.999Z",
+      "id": 4
+    },
+    {
+      "experienceId": 1,
+      "type": "notification_action",
+      "data": {
+        "responseIndex": 0,
+        "action": "response-0"
+      },
+      "timestamp": "2025-09-04T19:03:16.998Z",
+      "id": 5
+    },
+    {
+      "experienceId": 3,
+      "answers": [
+        {
+          "questionIndex": 0,
+          "value": "test"
+        },
+        {
+          "questionIndex": 1,
+          "value": "h"
+        }
+      ],
+      "id": 6,
+      "timestamp": "2025-09-04T20:22:44.426Z"
+    },
+    {
+      "experienceId": 3,
+      "answers": [
+        {
+          "questionIndex": 0,
+          "value": "test"
+        },
+        {
+          "questionIndex": 1,
+          "value": "g"
+        }
+      ],
+      "id": 7,
+      "timestamp": "2025-09-04T20:25:57.740Z"
+    }
+  ],
+  "nextExperienceId": 6,
+  "nextResponseId": 8
+}

@@ -908,6 +908,8 @@ function completeTask(id){
   deleteCalendarEvents(id);
   saveData();
   renderTasks();
+  // Tell server to reflect completion into Today list
+  try{ fetch('/api/source/complete',{method:'POST',headers:{'Content-Type':'application/json'},body:JSON.stringify({type:'work',id,completed:true})}); }catch(e){}
 }
 
 function deleteTask(id){
@@ -1109,7 +1111,7 @@ function renderTasks(){
   const addTodayBtn=document.createElement('button');
   addTodayBtn.className='task-icon-btn';
   addTodayBtn.title='Add to Today';
-  addTodayBtn.innerHTML='<svg width="18" height="18" viewBox="0 0 20 20" fill="none" xmlns="http://www.w3.org/2000/svg"><circle cx="10" cy="10" r="8" fill="#B5A89A"/><path d="M10 6v8M6 10h8" stroke="#fff" stroke-width="2" stroke-linecap="round"/></svg>';
+  addTodayBtn.innerHTML='<svg width="18" height="18" viewBox="0 0 20 20" fill="none" xmlns="http://www.w3.org/2000/svg"><circle cx="10" cy="10" r="8" fill="#B8A4D9"/><path d="M10 6v8M6 10h8" stroke="#fff" stroke-width="2" stroke-linecap="round"/></svg>';
   addTodayBtn.onclick=()=>addWorkTaskToToday(t.id, t.name);
   const timerBtn=createTimerButton('work', t.name);
   timerBtn.className='task-icon-btn';
