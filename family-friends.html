@@ -106,6 +106,29 @@
   </script>
 
   <section>
+    <div class="toggle section-header" onclick="toggle('birthdaysSection')">
+      Birthdays
+      <span class="pin-star" onclick="event.stopPropagation(); togglePin('birthdaysSection')" title="Pin section open">
+        <svg viewBox="0 0 24 24" fill="#2B2C29" stroke="#F7F6F3" stroke-width="1">
+          <polygon points="12,2 15.09,8.26 22,9.27 17,14.14 18.18,21.02 12,17.77 5.82,21.02 7,14.14 2,9.27 8.91,8.26"></polygon>
+        </svg>
+      </span>
+    </div>
+    <div id="birthdaysSection" class="hidden">
+      <div id="birthdaysList"></div>
+      <div class="toggle add-toggle" onclick="toggle('addBirthdayForm')">Add Birthday</div>
+      <div id="addBirthdayForm" class="hidden subtoggle form-grid">
+        <label>Name<input type="text" id="bdayName" placeholder="e.g., Alex"></label>
+        <label>Birthday<input type="date" id="bdayDate"></label>
+        <label style="grid-column:1/-1;">Notes<textarea id="bdayNotes" rows="2" placeholder="Optional notes"></textarea></label>
+        <div style="grid-column:1/-1;text-align:center;">
+          <button class="submit-btn" onclick="addBirthday()">Submit</button>
+        </div>
+      </div>
+    </div>
+  </section>
+
+  <section>
     <div class="toggle section-header" onclick="toggle('developmentSection')">
       Development Activities
       <span class="pin-star" onclick="event.stopPropagation(); togglePin('developmentSection')" title="Pin section open">
@@ -270,8 +293,11 @@
     // Development Activities Data
     let skills=[]; let activities=[]; let nextSkillId=1; let nextActivityId=1; let editingSkillId=null; let editingActivityInfoId=null;
 
-    // Relationship Data
-    let people=[]; let entries=[]; let nextEntryId=1; let editingId=null;
+  // Relationship Data
+  let people=[]; let entries=[]; let nextEntryId=1; let editingId=null;
+
+  // Birthdays Data
+  let birthdays=[]; let nextBirthdayId=1;
 
     async function loadFamilyFriends(){
       try {
@@ -285,21 +311,27 @@
         nextSkillId = Number(data.nextSkillId)||1;
         nextActivityId = Number(data.nextActivityId)||1;
         
-        // Relationships
+  // Relationships
         people = Array.isArray(data.people)?data.people:[];
         entries = Array.isArray(data.entries)?data.entries:[];
         nextEntryId = Number(data.nextEntryId)||1;
+
+  // Birthdays
+  birthdays = Array.isArray(data.birthdays)?data.birthdays:[];
+  nextBirthdayId = Number(data.nextBirthdayId)||1;
       } catch(err){
         console.warn('Using defaults for family-friends data', err);
-        skills=[]; activities=[]; nextSkillId=1; nextActivityId=1;
-        people=[]; entries=[]; nextEntryId=1;
+  skills=[]; activities=[]; nextSkillId=1; nextActivityId=1;
+  people=[]; entries=[]; nextEntryId=1;
+  birthdays=[]; nextBirthdayId=1;
       }
     }
 
     async function saveFamilyFriends(){
       const payload = { 
         skills, activities, nextSkillId, nextActivityId,
-        people, entries, nextEntryId
+        people, entries, nextEntryId,
+        birthdays, nextBirthdayId
       };
       await fetch('/api/family-friends-data', {
         method:'POST', headers:{'Content-Type':'application/json'}, body: JSON.stringify(payload)
@@ -702,12 +734,70 @@
       });
     }
 
+    // Birthdays functions
+    function addBirthday(){
+      const name=(document.getElementById('bdayName').value||'').trim();
+      const date=document.getElementById('bdayDate').value||'';
+      const notes=(document.getElementById('bdayNotes').value||'').trim();
+      if(!name||!date) return;
+      birthdays.push({ id:String(nextBirthdayId++).padStart(8,'0'), name, date, notes });
+      document.getElementById('bdayName').value='';
+      document.getElementById('bdayDate').value='';
+      document.getElementById('bdayNotes').value='';
+      renderBirthdays();
+      saveFamilyFriends();
+    }
+
+    function renderBirthdays(){
+      const container=document.getElementById('birthdaysList');
+      container.innerHTML='';
+      if(!birthdays.length){ container.textContent='No birthdays added yet'; return; }
+      const table=document.createElement('table'); table.className='task-table';
+      const head=document.createElement('tr'); head.innerHTML='<th>Name</th><th>Birthday</th><th>Notes</th><th>Action</th>';
+      table.appendChild(head);
+      birthdays
+        .slice()
+        .sort((a,b)=> a.name.localeCompare(b.name))
+        .forEach(b=>{
+          const tr=document.createElement('tr');
+          tr.innerHTML=`<td>${b.name}</td><td>${b.date||''}</td>`;
+          const notesTd=document.createElement('td');
+          const notesInput=document.createElement('textarea');
+          notesInput.rows=2; notesInput.style.width='100%';
+          notesInput.value=b.notes||'';
+          notesInput.onchange=()=>{ b.notes=notesInput.value.trim(); saveFamilyFriends(); };
+          notesTd.appendChild(notesInput);
+          tr.appendChild(notesTd);
+          const actionTd=document.createElement('td');
+          actionTd.style.display='grid'; actionTd.style.gridTemplateColumns='repeat(2,1fr)'; actionTd.style.gap='0.2rem'; actionTd.style.justifyItems='center'; actionTd.style.alignItems='center';
+          // Edit (use same calendar icon style)
+          const editBtn=document.createElement('button');
+          editBtn.innerHTML='<svg width="18" height="18" viewBox="0 0 20 20" fill="none" xmlns="http://www.w3.org/2000/svg"><rect x="3" y="4" width="14" height="12" rx="2" fill="#B5A89A"/><path d="m6 2v4m8-4v4" stroke="#2B2C29" stroke-width="2" stroke-linecap="round"/><path d="M3 8h14" stroke="#2B2C29" stroke-width="2"/><circle cx="8" cy="12" r="1" fill="#2B2C29"/><circle cx="12" cy="12" r="1" fill="#2B2C29"/></svg>';
+          editBtn.title='Edit name/date'; editBtn.style.background='none'; editBtn.style.border='none'; editBtn.style.cursor='pointer'; editBtn.style.padding='2px';
+          editBtn.onclick=()=>{
+            const n=prompt('Name:', b.name||''); if(n===null) return;
+            const d=prompt('Birthday (YYYY-MM-DD):', b.date||''); if(d===null) return;
+            b.name=n.trim(); b.date=d; saveFamilyFriends(); renderBirthdays();
+          };
+          // Delete (trash icon)
+          const delBtn=document.createElement('button');
+          delBtn.innerHTML='<svg width="18" height="18" viewBox="0 0 20 20" fill="none" xmlns="http://www.w3.org/2000/svg"><rect x="6" y="8" width="8" height="8" rx="2" fill="#E07A5F"/><rect x="9" y="11" width="2" height="3" rx="1" fill="#fff"/><rect x="8" y="4" width="4" height="2" rx="1" fill="#2B2C29"/></svg>';
+          delBtn.title='Delete'; delBtn.style.background='none'; delBtn.style.border='none'; delBtn.style.cursor='pointer'; delBtn.style.padding='2px';
+          delBtn.onclick=()=>{ if(!confirm('Delete this birthday?')) return; birthdays = birthdays.filter(x=>x.id!==b.id); saveFamilyFriends(); renderBirthdays(); };
+          actionTd.appendChild(editBtn); actionTd.appendChild(delBtn);
+          tr.appendChild(actionTd);
+          table.appendChild(tr);
+        });
+      container.appendChild(table);
+    }
+
     async function init(){ 
-      await loadFamilyFriends(); 
+  await loadFamilyFriends(); 
       renderSkills(); 
       renderActivities(); 
       renderPeople(); 
       renderEntries(); 
+  renderBirthdays();
       restorePins(); 
     }
     document.addEventListener('DOMContentLoaded', init);

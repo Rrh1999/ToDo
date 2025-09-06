@@ -110,7 +110,7 @@
       "status": "active",
       "intervalNumber": 4,
       "intervalType": "hours",
-      "nextTrigger": "2025-09-06T18:30:42.238Z",
+      "nextTrigger": null,
       "questions": [
         {
           "text": "Valence Rating",
@@ -148,8 +148,8 @@
       ],
       "id": 6,
       "createdAt": "2025-09-05T07:41:50.503Z",
-      "pendingResponse": false,
-      "lastTriggeredAt": "2025-09-06T11:06:27.846Z",
+      "pendingResponse": true,
+      "lastTriggeredAt": "2025-09-06T18:31:05.543Z",
       "lastRespondedAt": "2025-09-06T14:30:42.238Z"
     },
     {

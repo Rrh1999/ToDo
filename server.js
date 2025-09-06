@@ -290,6 +290,7 @@ const SOUL_FILE = path.join(DATA_DIR, 'soulData.json');
 const RELATIONSHIPS_FILE = path.join(DATA_DIR, 'relationshipsData.json');
 const TIME_TRACKER_FILE = path.join(DATA_DIR, 'timeTrackerData.json');
 const NOTIF_FILE = path.join(DATA_DIR, 'notificationData.json');
+const HEALTH_FILE = path.join(DATA_DIR, 'healthData.json');
 
 function loadJson(file, def) {
   if (fs.existsSync(file)) {
@@ -316,6 +317,7 @@ function initDb() {
   relationshipsData = loadJson(RELATIONSHIPS_FILE, relationshipsData);
   timeTrackerData = loadJson(TIME_TRACKER_FILE, timeTrackerData);
   notificationStats = loadJson(NOTIF_FILE, notificationStats);
+  healthData = loadJson(HEALTH_FILE, healthData);
   soulData.meditations = soulData.meditations || [];
   soulData.nextMeditationId = soulData.nextMeditationId || 1;
   soulData.journalTypes = soulData.journalTypes || [];
@@ -467,7 +469,6 @@ app.post('/api/finance-data', (req, res) => {
   fs.writeFileSync(FINANCE_FILE, JSON.stringify(financeData, null, 2));
   res.json({ status: 'ok' });
 });
-
 // Manual backup endpoint
 app.post('/save-backup', (req, res) => {
   try {
@@ -513,7 +514,18 @@ let familyFriendsData = {
   nextActivityId: 1,
   people: [],
   entries: [],
-  nextEntryId: 1
+  nextEntryId: 1,
+  birthdays: [], // { id, name, date (YYYY-MM-DD), notes }
+  nextBirthdayId: 1
+};
+
+// health tracker data
+let healthData = {
+  periodCycles: [], // { id, startDate, estEndDate, endDate|null, daily: [{date,intensity:0-3,symptoms:[]}] }
+  nextPeriodId: 1,
+  healthTypes: [], // ["Headache", "Cold", ...]
+  healthNotes: [], // { id, type, startDate, hasDuration, endDate, intensity, notes }
+  nextHealthNoteId: 1
 };
 
 app.get('/api/parenting-data', (req, res) => {
@@ -813,6 +825,17 @@ app.post('/api/today/reorder', (req, res) => {
     fs.writeFileSync(INDEX_FILE, JSON.stringify(indexData, null, 2));
   }
   res.json({ success: true });
+});
+
+// Health tracker endpoints
+app.get('/api/health-data', (req, res) => {
+  res.json(healthData);
+});
+
+app.post('/api/health-data', (req, res) => {
+  healthData = req.body || healthData;
+  fs.writeFileSync(HEALTH_FILE, JSON.stringify(healthData, null, 2));
+  res.json({ status: 'ok' });
 });
 
 // Reorder entire today list (both linked and ad-hoc items)

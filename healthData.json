@@ -1,0 +1,11 @@
+{
+  "healthTypes": [
+    "Feeling Ill",
+    "Really Ill",
+    "Medicine"
+  ],
+  "healthNotes": [],
+  "nextHealthNoteId": 1,
+  "periodCycles": [],
+  "nextPeriodId": 1
+}

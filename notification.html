@@ -3,7 +3,7 @@
 <head>
   <meta charset="UTF-8">
   <meta name="viewport" content="width=device-width, initial-scale=1">
-  <title>Experience Tracker</title>
+  <title>Health Tracker</title>
   <link rel="stylesheet" href="styles.css">
   <style>
     body { margin:0; padding:0; }
@@ -122,12 +122,286 @@
 </head>
 <body>
   <header>
-    <h1>Experience Tracker</h1>
+  <h1>Health Tracker</h1>
   </header>
   <div id="nav-placeholder"></div>
   <script src="nav-loader.js"></script>
+  <script>
+    // Health Tracker state
+    let healthTypes = [];
+    let healthNotes = [];
+    let nextHealthNoteId = 1;
+    let periodCycles = [];
+    let nextPeriodId = 1;
 
-  <!-- Experience Tracker Section -->
+    async function loadHealthData(){
+      try{
+        const res = await fetch('/api/health-data');
+        if(!res.ok) throw new Error('Failed to load health-data');
+        const data = await res.json();
+        healthTypes = Array.isArray(data.healthTypes)?data.healthTypes:[];
+        healthNotes = Array.isArray(data.healthNotes)?data.healthNotes:[];
+        nextHealthNoteId = Number(data.nextHealthNoteId)||1;
+        periodCycles = Array.isArray(data.periodCycles)?data.periodCycles:[];
+        nextPeriodId = Number(data.nextPeriodId)||1;
+      }catch(e){
+        console.warn('Using default health data', e);
+        healthTypes = [];
+        healthNotes = []; nextHealthNoteId = 1;
+        periodCycles = []; nextPeriodId = 1;
+      }
+    }
+
+    async function saveHealthData(){
+      const payload = { healthTypes, healthNotes, nextHealthNoteId, periodCycles, nextPeriodId };
+      await fetch('/api/health-data', { method:'POST', headers:{'Content-Type':'application/json'}, body: JSON.stringify(payload) });
+    }
+
+    function updateHealthTypeOptions(){
+      const sel = document.getElementById('hnType');
+      if(!sel) return;
+      sel.innerHTML = '';
+      healthTypes.forEach(t=>{ const o=document.createElement('option'); o.value=t; o.textContent=t; sel.appendChild(o); });
+    }
+
+    function addHealthType(){
+      const input = document.getElementById('newHealthType');
+      const val = (input.value||'').trim();
+      if(!val) return;
+      if(!healthTypes.includes(val)) healthTypes.push(val);
+      input.value='';
+      updateHealthTypeOptions();
+      saveHealthData();
+      toggle('addHealthTypeForm');
+    }
+
+    function toggleHealthDuration(){
+      const v = (document.getElementById('hnHasDuration')||{}).value;
+      const box = document.getElementById('hnDurationFields');
+      if(!box) return;
+      if(v==='yes') box.classList.remove('hidden'); else box.classList.add('hidden');
+    }
+
+    function addHealthNote(){
+      const type = (document.getElementById('hnType')||{}).value;
+      const start = (document.getElementById('hnStart')||{}).value;
+      const hasDur = (document.getElementById('hnHasDuration')||{}).value === 'yes';
+      const end = hasDur ? (document.getElementById('hnEnd')||{}).value : '';
+      const intensity = hasDur ? Number((document.getElementById('hnIntensity')||{}).value||0) : 0;
+      const notes = (document.getElementById('hnNotes')||{}).value||'';
+      if(!type||!start) return;
+      const item = { id: String(nextHealthNoteId++).padStart(8,'0'), type, startDate: start, hasDuration: hasDur, endDate: end||'', intensity: intensity||0, notes };
+      healthNotes.push(item);
+      document.getElementById('hnStart').value='';
+      document.getElementById('hnHasDuration').value='no';
+      toggleHealthDuration();
+      document.getElementById('hnEnd').value='';
+      document.getElementById('hnIntensity').value='';
+      document.getElementById('hnNotes').value='';
+      renderHealthNotes();
+      saveHealthData();
+      toggle('addHealthNoteForm');
+    }
+
+    function renderHealthNotes(){
+      const container = document.getElementById('healthNotesList');
+      if(!container) return;
+      container.innerHTML='';
+      if(!healthNotes.length){ container.textContent = 'No health notes yet.'; return; }
+      const table=document.createElement('table'); table.className='task-table';
+      const head=document.createElement('tr'); head.innerHTML='<th>Type</th><th>Start</th><th>End</th><th>Intensity</th><th>Notes</th><th>Action</th>';
+      table.appendChild(head);
+      healthNotes.slice().sort((a,b)=> (a.startDate||'').localeCompare(b.startDate||'')).forEach(h=>{
+        const tr=document.createElement('tr');
+        tr.innerHTML=`<td>${h.type||''}</td><td>${h.startDate||''}</td><td>${h.hasDuration?(h.endDate||''):''}</td>`;
+        const intensityTd=document.createElement('td');
+        const intInput=document.createElement('input'); intInput.type='number'; intInput.min='0'; intInput.max='10'; intInput.value=h.intensity||0; intInput.style.width='5rem';
+        intInput.onchange=()=>{ h.intensity=Number(intInput.value||0); saveHealthData(); };
+        intensityTd.appendChild(intInput); tr.appendChild(intensityTd);
+        const notesTd=document.createElement('td');
+        const notesInput=document.createElement('textarea'); notesInput.rows=2; notesInput.style.width='100%'; notesInput.value=h.notes||'';
+        notesInput.onchange=()=>{ h.notes=notesInput.value; saveHealthData(); };
+        notesTd.appendChild(notesInput); tr.appendChild(notesTd);
+        const actionTd=document.createElement('td'); actionTd.style.display='grid'; actionTd.style.gridTemplateColumns='repeat(2,1fr)'; actionTd.style.gap='0.2rem'; actionTd.style.justifyItems='center';
+        const editBtn=document.createElement('button');
+        editBtn.innerHTML='<svg width="18" height="18" viewBox="0 0 20 20" fill="none" xmlns="http://www.w3.org/2000/svg"><rect x="3" y="4" width="14" height="12" rx="2" fill="#B5A89A"/><path d="m6 2v4m8-4v4" stroke="#2B2C29" stroke-width="2" stroke-linecap="round"/><path d="M3 8h14" stroke="#2B2C29" stroke-width="2"/><circle cx="8" cy="12" r="1" fill="#2B2C29"/><circle cx="12" cy="12" r="1" fill="#2B2C29"/></svg>';
+        editBtn.title='Edit'; editBtn.style.background='none'; editBtn.style.border='none'; editBtn.style.cursor='pointer'; editBtn.style.padding='2px';
+        editBtn.onclick=()=>{
+          const t=prompt('Type:', h.type||''); if(t===null) return;
+          const s=prompt('Start date (YYYY-MM-DD):', h.startDate||''); if(s===null) return;
+          const hd=confirm('Has duration? Click OK for Yes, Cancel for No');
+          let e=''; let inten=h.intensity||0;
+          if(hd){ e=prompt('End date (YYYY-MM-DD):', h.endDate||'')||''; inten=Number(prompt('Intensity (0-10):', String(inten))||inten); }
+          const n=prompt('Notes:', h.notes||''); if(n===null) return;
+          h.type=t.trim(); h.startDate=s; h.hasDuration=hd; h.endDate=hd?e:''; h.intensity=inten; h.notes=n||'';
+          saveHealthData(); renderHealthNotes();
+        };
+        const delBtn=document.createElement('button');
+        delBtn.innerHTML='<svg width="18" height="18" viewBox="0 0 20 20" fill="none" xmlns="http://www.w3.org/2000/svg"><rect x="6" y="8" width="8" height="8" rx="2" fill="#E07A5F"/><rect x="9" y="11" width="2" height="3" rx="1" fill="#fff"/><rect x="8" y="4" width="4" height="2" rx="1" fill="#2B2C29"/></svg>';
+        delBtn.title='Delete'; delBtn.style.background='none'; delBtn.style.border='none'; delBtn.style.cursor='pointer'; delBtn.style.padding='2px';
+        delBtn.onclick=()=>{ if(!confirm('Delete this health note?')) return; healthNotes = healthNotes.filter(x=>x.id!==h.id); saveHealthData(); renderHealthNotes(); };
+        actionTd.appendChild(editBtn); actionTd.appendChild(delBtn);
+        tr.appendChild(actionTd);
+        table.appendChild(tr);
+      });
+      container.appendChild(table);
+    }
+
+    // Period tracker
+    function addDays(dateStr, days){ const d=new Date(dateStr); d.setDate(d.getDate()+days); return d.toISOString().slice(0,10); }
+    function todayISO(){ return new Date().toISOString().slice(0,10); }
+    function addPeriod(){
+      const start = (document.getElementById('periodStart')||{}).value;
+      if(!start) return;
+      const estEnd = addDays(start, 5);
+      const cycle = { id: String(nextPeriodId++).padStart(8,'0'), startDate: start, estEndDate: estEnd, endDate: '' , daily: [] };
+      periodCycles.push(cycle);
+      document.getElementById('periodStart').value='';
+      renderPeriods();
+      saveHealthData();
+      toggle('addPeriodForm');
+    }
+
+    function upsertDaily(cycle, date, intensity, symptoms){
+      let d = (cycle.daily||[]).find(x=>x.date===date);
+      if(!d){ d={date, intensity:intensity||0, symptoms:symptoms||''}; cycle.daily.push(d); }
+      d.intensity = Number(intensity||0);
+      d.symptoms = symptoms||'';
+    }
+
+    function renderDayChip(cycle, date){
+      const entry = (cycle.daily||[]).find(x=>x.date===date);
+      const intensity = entry?Number(entry.intensity||0):0;
+      const symptoms = entry?entry.symptoms||'':'';
+      const btn=document.createElement('button');
+      btn.style.width='18px'; btn.style.height='18px'; btn.style.borderRadius='4px'; btn.style.border='1px solid #999'; btn.style.padding='0'; btn.style.cursor='pointer'; btn.style.background= intensity>=3?'#E07A5F': intensity===2?'#EFA86E': intensity===1?'#F6C1C1':'#E0E0E0';
+      btn.title = `${date}${entry?`\nIntensity: ${intensity}${symptoms?`\nSymptoms: ${symptoms}`:''}`:''}`;
+      btn.onclick=()=>{
+        const newInt = prompt(`Intensity for ${date} (0-3):`, String(intensity));
+        if(newInt===null) return;
+        const val = Math.max(0, Math.min(3, Number(newInt)||0));
+        const newSym = prompt('Symptoms (comma separated):', symptoms||'');
+        upsertDaily(cycle, date, val, newSym||'');
+        saveHealthData();
+        renderPeriods();
+      };
+      return btn;
+    }
+
+    function renderPeriods(){
+      const container = document.getElementById('periodList');
+      if(!container) return;
+      container.innerHTML='';
+      if(!periodCycles.length){ container.textContent = 'No period cycles recorded.'; return; }
+      const table=document.createElement('table'); table.className='task-table';
+      const head=document.createElement('tr'); head.innerHTML='<th>Start</th><th>Est End</th><th>Actual End</th><th>Daily</th><th>Action</th>';
+      table.appendChild(head);
+      periodCycles.slice().sort((a,b)=> (b.startDate||'').localeCompare(a.startDate||'')).forEach(c=>{
+        const tr=document.createElement('tr');
+        tr.innerHTML=`<td>${c.startDate||''}</td><td>${c.estEndDate||''}</td>`;
+        // actual end date input
+        const endTd=document.createElement('td');
+        const endInput=document.createElement('input'); endInput.type='date'; endInput.value=c.endDate||''; endInput.onchange=()=>{ c.endDate=endInput.value||''; saveHealthData(); renderPeriods(); };
+        endTd.appendChild(endInput); tr.appendChild(endTd);
+        // daily chips
+        const dailyTd=document.createElement('td');
+        const wrap=document.createElement('div'); wrap.style.display='flex'; wrap.style.flexWrap='wrap'; wrap.style.gap='4px'; wrap.style.maxWidth='420px';
+        const endRange = c.endDate && c.endDate < todayISO() ? c.endDate : todayISO();
+        const start = new Date(c.startDate);
+        const end = new Date(endRange);
+        let count=0; // limit safety
+        for(let d=new Date(start); d<=end && count<120; d.setDate(d.getDate()+1), count++){
+          const iso=d.toISOString().slice(0,10);
+          wrap.appendChild(renderDayChip(c, iso));
+        }
+        dailyTd.appendChild(wrap); tr.appendChild(dailyTd);
+        // actions
+        const actionTd=document.createElement('td'); actionTd.style.display='grid'; actionTd.style.gridTemplateColumns='repeat(2,1fr)'; actionTd.style.gap='0.2rem'; actionTd.style.justifyItems='center';
+        const editBtn=document.createElement('button');
+        editBtn.innerHTML='<svg width="18" height="18" viewBox="0 0 20 20" fill="none" xmlns="http://www.w3.org/2000/svg"><rect x="3" y="4" width="14" height="12" rx="2" fill="#B5A89A"/><path d="m6 2v4m8-4v4" stroke="#2B2C29" stroke-width="2" stroke-linecap="round"/><path d="M3 8h14" stroke="#2B2C29" stroke-width="2"/><circle cx="8" cy="12" r="1" fill="#2B2C29"/><circle cx="12" cy="12" r="1" fill="#2B2C29"/></svg>';
+        editBtn.title='Edit'; editBtn.style.background='none'; editBtn.style.border='none'; editBtn.style.cursor='pointer'; editBtn.style.padding='2px';
+        editBtn.onclick=()=>{
+          const s = prompt('Start date (YYYY-MM-DD):', c.startDate||''); if(s===null) return;
+          const est = prompt('Estimated end date (YYYY-MM-DD):', c.estEndDate||''); if(est===null) return;
+          const aend = prompt('Actual end date (optional YYYY-MM-DD):', c.endDate||''); if(aend===null) return;
+          c.startDate=s; c.estEndDate=est; c.endDate=aend||''; saveHealthData(); renderPeriods();
+        };
+        const delBtn=document.createElement('button');
+        delBtn.innerHTML='<svg width="18" height="18" viewBox="0 0 20 20" fill="none" xmlns="http://www.w3.org/2000/svg"><rect x="6" y="8" width="8" height="8" rx="2" fill="#E07A5F"/><rect x="9" y="11" width="2" height="3" rx="1" fill="#fff"/><rect x="8" y="4" width="4" height="2" rx="1" fill="#2B2C29"/></svg>';
+        delBtn.title='Delete'; delBtn.style.background='none'; delBtn.style.border='none'; delBtn.style.cursor='pointer'; delBtn.style.padding='2px';
+        delBtn.onclick=()=>{ if(!confirm('Delete this period cycle?')) return; periodCycles = periodCycles.filter(x=>x.id!==c.id); saveHealthData(); renderPeriods(); };
+        actionTd.appendChild(editBtn); actionTd.appendChild(delBtn);
+        tr.appendChild(actionTd);
+        table.appendChild(tr);
+      });
+      container.appendChild(table);
+    }
+
+    async function initHealth(){
+      await loadHealthData();
+      updateHealthTypeOptions();
+      renderHealthNotes();
+      renderPeriods();
+    }
+
+    document.addEventListener('DOMContentLoaded', initHealth);
+  </script>
+
+  <!-- Health: Period Tracker -->
+  <section>
+    <div class="toggle section-header" onclick="toggle('periodSection')">Period Tracker</div>
+    <div id="periodSection" class="hidden">
+      <div class="toggle add-toggle" onclick="toggle('addPeriodForm')">Add Period Start</div>
+      <div id="addPeriodForm" class="hidden subtoggle form-grid">
+        <label>Start Date<input type="date" id="periodStart"></label>
+        <div style="grid-column:1/-1;text-align:center;">
+          <button class="submit-btn" onclick="addPeriod()">Submit</button>
+        </div>
+      </div>
+      <div id="periodList"></div>
+    </div>
+  </section>
+
+  <!-- Health: Health Notes -->
+  <section>
+    <div class="toggle section-header" onclick="toggle('healthNotesSection')">Health Notes</div>
+    <div id="healthNotesSection" class="hidden">
+      <div class="toggle add-toggle" onclick="toggle('addHealthTypeForm')">Add Health Type</div>
+      <div id="addHealthTypeForm" class="hidden subtoggle form-grid">
+        <label>New Health Type<input type="text" id="newHealthType" placeholder="e.g., Headache"></label>
+        <div style="grid-column:1/-1;text-align:center;">
+          <button class="submit-btn" onclick="addHealthType()">Add</button>
+        </div>
+      </div>
+
+      <div class="toggle add-toggle" onclick="toggle('addHealthNoteForm')">Add Health Note</div>
+      <div id="addHealthNoteForm" class="hidden subtoggle form-grid">
+        <label>Type
+          <select id="hnType"></select>
+        </label>
+        <label>Start Date<input type="date" id="hnStart"></label>
+        <label>Has Duration
+          <select id="hnHasDuration" onchange="toggleHealthDuration()">
+            <option value="no">No</option>
+            <option value="yes">Yes</option>
+          </select>
+        </label>
+        <div id="hnDurationFields" class="hidden" style="grid-column:1/-1;">
+          <div class="form-grid">
+            <label>End Date<input type="date" id="hnEnd"></label>
+            <label>Intensity<input type="number" id="hnIntensity" min="0" max="10" placeholder="0-10"></label>
+          </div>
+        </div>
+        <label style="grid-column:1/-1;">Notes<textarea id="hnNotes" rows="3"></textarea></label>
+        <div style="grid-column:1/-1;text-align:center;">
+          <button class="submit-btn" onclick="addHealthNote()">Submit</button>
+        </div>
+      </div>
+      <div id="healthNotesList"></div>
+    </div>
+  </section>
+
+  <!-- Experience Tracker Section (kept) -->
   <section>
     <div class="toggle section-header" onclick="toggle('experienceTracker')">
       Experience Tracker

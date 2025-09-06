@@ -246,5 +246,74 @@
       "archived": false
     }
   ],
-  "nextEntryId": 2
+  "nextEntryId": 2,
+  "birthdays": [
+    {
+      "id": "00000001",
+      "name": "Fiacra",
+      "date": "2025-09-28",
+      "notes": "Nolan glasses bought"
+    },
+    {
+      "id": "00000002",
+      "name": "Mum",
+      "date": "2025-09-07",
+      "notes": ""
+    },
+    {
+      "id": "00000003",
+      "name": "Amy",
+      "date": "2025-08-27",
+      "notes": ""
+    },
+    {
+      "id": "00000004",
+      "name": "Pani",
+      "date": "2025-06-18",
+      "notes": "Bought a sweet thing"
+    },
+    {
+      "id": "00000005",
+      "name": "Bhimal",
+      "date": "2025-10-03",
+      "notes": ""
+    },
+    {
+      "id": "00000006",
+      "name": "Vinay",
+      "date": "2025-10-23",
+      "notes": ""
+    },
+    {
+      "id": "00000007",
+      "name": "Sailesh masa",
+      "date": "2025-08-24",
+      "notes": ""
+    },
+    {
+      "id": "00000008",
+      "name": "Navin",
+      "date": "2025-06-12",
+      "notes": ""
+    },
+    {
+      "id": "00000009",
+      "name": "Sheela masi",
+      "date": "2025-04-12",
+      "notes": "Organize bday"
+    },
+    {
+      "id": "00000010",
+      "name": "Svenja",
+      "date": "2026-01-29",
+      "notes": ""
+    },
+    {
+      "id": "00000011",
+      "name": "Pity masi",
+      "date": "2026-01-18",
+      "notes": ""
+    }
+  ],
+  "nextBirthdayId": 12
 }
