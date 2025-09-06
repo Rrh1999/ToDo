@@ -23,6 +23,11 @@ section { padding:1rem; }
 .audio-controls { display:flex; align-items:center; gap:0.5rem; margin-top:0.5rem; }
 .audio-controls button { background:#2B2C29; color:#fff; border:none; padding:0.3rem 0.6rem; border-radius:4px; cursor:pointer; }
 .audio-controls input[type=range]{ flex:1; }
+.event-item { border:1px solid #ddd; padding:0.5rem; margin:0.5rem 0; border-radius:4px; background:var(--color-surface); }
+.event-item .event-header { display:flex; justify-content:space-between; align-items:center; margin-bottom:0.5rem; }
+.gut-feeling-table { width:100%; }
+.gut-feeling-table th, .gut-feeling-table td { padding:0.5rem; text-align:left; border-bottom:1px solid #ddd; }
+.gut-feeling-table th { background:var(--color-table-header); }
 </style>
 </head>
 <body>
@@ -138,6 +143,41 @@ section { padding:1rem; }
   </div>
 </section>
 
+<!-- Gut Feelings Section -->
+<section>
+  <div class="toggle section-header" onclick="toggle('gutFeelingsSection')">
+    Gut Feelings
+    <span class="pin-star" onclick="event.stopPropagation(); togglePin('gutFeelingsSection')" title="Pin section open">
+      <svg viewBox="0 0 20 20" fill="none" stroke="#2B2C29" stroke-width="1.5"><polygon points="10,2 12.5,7.5 18,8 14,12 15,18 10,15 5,18 6,12 2,8 7.5,7.5"/></svg>
+    </span>
+  </div>
+  <div id="gutFeelingsSection" class="hidden">
+    <div class="toggle add-toggle" onclick="toggle('addGutFeelingForm')">Add Gut Feeling</div>
+    <div id="addGutFeelingForm" class="hidden subtoggle form-grid">
+      <label>Name<input type="text" id="gutFeelingName"></label>
+      <label>Type<input type="text" id="gutFeelingType" list="gutFeelingTypesList"></label>
+      <datalist id="gutFeelingTypesList"></datalist>
+      <label>Description<textarea id="gutFeelingDesc"></textarea></label>
+      <label>Initial Thoughts<textarea id="gutFeelingThoughts"></textarea></label>
+      <label>Risk if Wrong
+        <select id="gutFeelingRisk">
+          <option value="">--Select--</option>
+          <option value="low">Low</option>
+          <option value="med">Medium</option>
+          <option value="high">High</option>
+        </select>
+      </label>
+      <label>Review Date<input type="date" id="gutFeelingReviewDate"></label>
+      <label>Actions<textarea id="gutFeelingActions"></textarea></label>
+      <label>Theory<textarea id="gutFeelingTheory"></textarea></label>
+      <div style="grid-column:1/-1;text-align:center;">
+        <button class="submit-btn" onclick="addGutFeeling()">Submit</button>
+      </div>
+    </div>
+    <div id="gutFeelingsList" class="item-grid"></div>
+  </div>
+</section>
+
 <div id="modalContainer" class="hidden"></div>
 
 <script>
@@ -150,6 +190,8 @@ let journals = [];
 let nextJournalId = 1;
 let mottos = [];
 let nextMottoId = 1;
+let gutFeelings = [];
+let nextGutFeelingId = 1;
 
 function toggle(id){ const el=document.getElementById(id); if(el) el.classList.toggle('hidden'); }
 
@@ -189,16 +231,18 @@ async function loadSoul(){
       nextMeditationId = d.nextMeditationId || 1;
       journalTypes = d.journalTypes || [];
       nextJournalTypeId = d.nextJournalTypeId || 1;
-        journals = (d.journals || []).map(j=>({ ...j, media: j.media || [] }));
+      journals = (d.journals || []).map(j=>({ ...j, media: j.media || [] }));
       nextJournalId = d.nextJournalId || 1;
       mottos = d.mottos || [];
       nextMottoId = d.nextMottoId || 1;
+      gutFeelings = d.gutFeelings || [];
+      nextGutFeelingId = d.nextGutFeelingId || 1;
     }
   }catch(e){}
 }
 
 async function saveSoul(){
-  const payload = {meditations,nextMeditationId,journalTypes,nextJournalTypeId,journals,nextJournalId,mottos,nextMottoId};
+  const payload = {meditations,nextMeditationId,journalTypes,nextJournalTypeId,journals,nextJournalId,mottos,nextMottoId,gutFeelings,nextGutFeelingId};
   await fetch('/api/soul-data',{method:'POST',headers:{'Content-Type':'application/json'},body:JSON.stringify(payload)});
 }
 
@@ -402,6 +446,323 @@ function updateMotto(id){
   closeModal();
 }
 
+/* Gut Feelings functions */
+function addGutFeeling(){
+  const name = document.getElementById('gutFeelingName').value.trim();
+  const type = document.getElementById('gutFeelingType').value.trim();
+  const desc = document.getElementById('gutFeelingDesc').value.trim();
+  const thoughts = document.getElementById('gutFeelingThoughts').value.trim();
+  const risk = document.getElementById('gutFeelingRisk').value;
+  const reviewDate = document.getElementById('gutFeelingReviewDate').value;
+  const actions = document.getElementById('gutFeelingActions').value.trim();
+  const theory = document.getElementById('gutFeelingTheory').value.trim();
+  
+  if(!name || !type || !desc) return;
+  
+  const gutFeeling = {
+    id: nextGutFeelingId++,
+    name,
+    type,
+    desc,
+    thoughts,
+    risk,
+    reviewDate,
+    actions,
+    theory,
+    events: [],
+    status: 'open',
+    createdDate: new Date().toISOString().slice(0,10),
+    outcomeNote: ''
+  };
+  
+  gutFeelings.push(gutFeeling);
+  
+  // If review date is set, add to index page one-off tasks
+  if(reviewDate) {
+    addReviewTask(name, reviewDate, gutFeeling.id);
+  }
+  
+  document.getElementById('gutFeelingName').value = '';
+  document.getElementById('gutFeelingType').value = '';
+  document.getElementById('gutFeelingDesc').value = '';
+  document.getElementById('gutFeelingThoughts').value = '';
+  document.getElementById('gutFeelingRisk').value = '';
+  document.getElementById('gutFeelingReviewDate').value = '';
+  document.getElementById('gutFeelingActions').value = '';
+  document.getElementById('gutFeelingTheory').value = '';
+  
+  renderGutFeelings();
+  updateGutFeelingTypesList();
+  saveSoul();
+}
+
+function renderGutFeelings(){
+  const container = document.getElementById('gutFeelingsList');
+  const openGutFeelings = gutFeelings.filter(gf => gf.status === 'open');
+  
+  if(!openGutFeelings.length){ 
+    container.innerHTML = '<p style="opacity:.7">No gut feelings yet.</p>'; 
+    return;
+  }
+  
+  const table = document.createElement('table');
+  table.className = 'task-table';
+  const head = document.createElement('tr');
+  head.innerHTML = '<th>Name</th><th>Type</th><th>Risk</th><th>Review Date</th><th>Events</th><th>Actions</th>';
+  table.appendChild(head);
+  
+  openGutFeelings.forEach(gf => {
+    const tr = document.createElement('tr');
+    
+    tr.innerHTML = `
+      <td><strong>${gf.name}</strong><br><small style="color:#666;">${gf.desc}</small></td>
+      <td>${gf.type}</td>
+      <td><span style="background:${getRiskColor(gf.risk)};color:white;padding:2px 6px;border-radius:3px;font-size:0.8rem;">${gf.risk ? gf.risk.toUpperCase() : ''}</span></td>
+      <td>${gf.reviewDate ? formatUK(gf.reviewDate) : ''}</td>
+      <td>${gf.events.length} event${gf.events.length !== 1 ? 's' : ''}</td>
+    `;
+    
+    const td = document.createElement('td');
+    td.style.display = 'grid';
+    td.style.gridTemplateColumns = 'repeat(3, 1fr)';
+    td.style.gap = '0.2rem';
+    td.style.padding = '0.5rem';
+    td.style.alignItems = 'center';
+    td.style.justifyItems = 'center';
+    td.style.height = 'auto';
+    td.style.minHeight = '60px';
+    td.style.minWidth = '180px';
+    
+    // Edit button
+    const editBtn = document.createElement('button');
+    editBtn.innerHTML = '<svg width="18" height="18" viewBox="0 0 20 20" fill="none" xmlns="http://www.w3.org/2000/svg"><path d="M15 7l-8 8-4-4 1.5-1.5L7 12l6.5-6.5L15 7z" stroke="#2B2C29" stroke-width="1.5" fill="#81B29A"/><path d="m12 3 5 5-10 10H2v-5L12 3z" stroke="#2B2C29" stroke-width="1.5" fill="none"/></svg>';
+    editBtn.title = 'Edit';
+    editBtn.style.background = 'none';
+    editBtn.style.border = 'none';
+    editBtn.style.cursor = 'pointer';
+    editBtn.style.padding = '2px';
+    editBtn.onclick = () => editGutFeeling(gf.id);
+    
+    // Archive button
+    const archiveBtn = document.createElement('button');
+    archiveBtn.innerHTML = '<svg width="18" height="18" viewBox="0 0 20 20" fill="none" xmlns="http://www.w3.org/2000/svg"><rect x="3" y="4" width="14" height="3" rx="2" fill="#B5A89A"/><rect x="5" y="8" width="10" height="8" rx="2" fill="#C7BBB4"/><rect x="8" y="11" width="4" height="2" rx="1" fill="#2B2C29"/></svg>';
+    archiveBtn.title = 'Archive';
+    archiveBtn.style.background = 'none';
+    archiveBtn.style.border = 'none';
+    archiveBtn.style.cursor = 'pointer';
+    archiveBtn.style.padding = '2px';
+    archiveBtn.onclick = () => archiveGutFeeling(gf.id);
+    
+    // Delete button
+    const deleteBtn = document.createElement('button');
+    deleteBtn.innerHTML = '<svg width="18" height="18" viewBox="0 0 20 20" fill="none" xmlns="http://www.w3.org/2000/svg"><rect x="6" y="8" width="8" height="8" rx="2" fill="#E07A5F"/><rect x="9" y="11" width="2" height="3" rx="1" fill="#fff"/><rect x="8" y="4" width="4" height="2" rx="1" fill="#2B2C29"/></svg>';
+    deleteBtn.title = 'Delete';
+    deleteBtn.style.background = 'none';
+    deleteBtn.style.border = 'none';
+    deleteBtn.style.cursor = 'pointer';
+    deleteBtn.style.padding = '2px';
+    deleteBtn.onclick = () => deleteGutFeeling(gf.id);
+    
+    td.appendChild(editBtn);
+    td.appendChild(archiveBtn);
+    td.appendChild(deleteBtn);
+    tr.appendChild(td);
+    table.appendChild(tr);
+  });
+  
+  container.innerHTML = '';
+  container.appendChild(table);
+}
+
+function getRiskColor(risk) {
+  switch(risk) {
+    case 'low': return '#81B29A';
+    case 'med': return '#F7B300';
+    case 'high': return '#E07A5F';
+    default: return '#666';
+  }
+}
+
+function formatUK(dateStr) {
+  if (!dateStr) return '';
+  const parts = dateStr.split('-');
+  return `${parts[2]}/${parts[1]}/${parts[0]}`;
+}
+
+function editGutFeeling(id) {
+  const gf = gutFeelings.find(x => x.id === id);
+  if (!gf) return;
+  
+  const modal = document.getElementById('modalContainer');
+  const eventsList = gf.events.map((event, index) => `
+    <div class="event-item" style="border:1px solid #ddd;padding:0.5rem;margin:0.5rem 0;border-radius:4px;">
+      <div style="display:flex;justify-content:space-between;align-items:center;">
+        <strong>Event ${index + 1}</strong>
+        <button onclick="deleteEvent(${id}, ${index})" style="background:#E07A5F;color:white;border:none;padding:2px 6px;border-radius:3px;cursor:pointer;">Delete</button>
+      </div>
+      <div><strong>Description:</strong> ${event.description}</div>
+      <div><strong>Emotional Pull:</strong> ${event.emotionalPull}/7</div>
+      <div><strong>Logical Pull:</strong> ${event.logicalPull}/7</div>
+      <div><strong>How Much It Bothers:</strong> ${event.bothersLevel}/10</div>
+    </div>
+  `).join('');
+  
+  modal.innerHTML = `
+    <div class="modal">
+      <div class="modal-content" style="max-width:800px;max-height:90vh;overflow-y:auto;">
+        <div class="modal-header">
+          <h3>Edit: ${gf.name}</h3>
+          <span class="close" onclick="closeModal()">&times;</span>
+        </div>
+        <div class="modal-body">
+          <div class="form-grid">
+            <label>Name<input id="editGutFeelingName" value="${gf.name}"></label>
+            <label>Type<input id="editGutFeelingType" value="${gf.type}"></label>
+            <label>Description<textarea id="editGutFeelingDesc">${gf.desc}</textarea></label>
+            <label>Thoughts<textarea id="editGutFeelingThoughts">${gf.thoughts}</textarea></label>
+            <label>Risk if Wrong
+              <select id="editGutFeelingRisk">
+                <option value="">--Select--</option>
+                <option value="low" ${gf.risk === 'low' ? 'selected' : ''}>Low</option>
+                <option value="med" ${gf.risk === 'med' ? 'selected' : ''}>Medium</option>
+                <option value="high" ${gf.risk === 'high' ? 'selected' : ''}>High</option>
+              </select>
+            </label>
+            <label>Review Date<input type="date" id="editGutFeelingReviewDate" value="${gf.reviewDate || ''}"></label>
+            <label>Actions<textarea id="editGutFeelingActions">${gf.actions}</textarea></label>
+            <label>Theory<textarea id="editGutFeelingTheory">${gf.theory}</textarea></label>
+            <label>Outcome Note<textarea id="editGutFeelingOutcome">${gf.outcomeNote}</textarea></label>
+          </div>
+          
+          <h4 style="margin-top:1.5rem;">Events</h4>
+          <div id="eventsList">${eventsList}</div>
+          
+          <div class="toggle add-toggle" onclick="toggle('addEventForm')" style="margin-top:1rem;">Add Event</div>
+          <div id="addEventForm" class="hidden subtoggle form-grid">
+            <label>Event Description<textarea id="newEventDesc"></textarea></label>
+            <label>Emotional Pull (1-7)<input type="number" id="newEventEmotional" min="1" max="7"></label>
+            <label>Logical Pull (1-7)<input type="number" id="newEventLogical" min="1" max="7"></label>
+            <label>How Much It Bothers (1-10)<input type="number" id="newEventBothers" min="1" max="10"></label>
+            <div style="grid-column:1/-1;text-align:center;">
+              <button class="submit-btn" onclick="addEvent(${id})">Add Event</button>
+            </div>
+          </div>
+        </div>
+        <div class="modal-footer" style="text-align:right;margin-top:1rem;">
+          <button class="btn" onclick="updateGutFeeling(${id})">Save Changes</button>
+        </div>
+      </div>
+    </div>
+  `;
+  modal.classList.remove('hidden');
+}
+
+function addEvent(gutFeelingId) {
+  const desc = document.getElementById('newEventDesc').value.trim();
+  const emotional = parseInt(document.getElementById('newEventEmotional').value);
+  const logical = parseInt(document.getElementById('newEventLogical').value);
+  const bothers = parseInt(document.getElementById('newEventBothers').value);
+  
+  if (!desc || !emotional || !logical || !bothers) return;
+  
+  const gf = gutFeelings.find(x => x.id === gutFeelingId);
+  if (!gf) return;
+  
+  gf.events.push({
+    description: desc,
+    emotionalPull: emotional,
+    logicalPull: logical,
+    bothersLevel: bothers,
+    date: new Date().toISOString().slice(0,10)
+  });
+  
+  document.getElementById('newEventDesc').value = '';
+  document.getElementById('newEventEmotional').value = '';
+  document.getElementById('newEventLogical').value = '';
+  document.getElementById('newEventBothers').value = '';
+  
+  saveSoul();
+  editGutFeeling(gutFeelingId); // Refresh the modal
+}
+
+function deleteEvent(gutFeelingId, eventIndex) {
+  const gf = gutFeelings.find(x => x.id === gutFeelingId);
+  if (!gf) return;
+  
+  gf.events.splice(eventIndex, 1);
+  saveSoul();
+  editGutFeeling(gutFeelingId); // Refresh the modal
+}
+
+function updateGutFeeling(id) {
+  const gf = gutFeelings.find(x => x.id === id);
+  if (!gf) return;
+  
+  gf.name = document.getElementById('editGutFeelingName').value.trim();
+  gf.type = document.getElementById('editGutFeelingType').value.trim();
+  gf.desc = document.getElementById('editGutFeelingDesc').value.trim();
+  gf.thoughts = document.getElementById('editGutFeelingThoughts').value.trim();
+  gf.risk = document.getElementById('editGutFeelingRisk').value;
+  gf.reviewDate = document.getElementById('editGutFeelingReviewDate').value;
+  gf.actions = document.getElementById('editGutFeelingActions').value.trim();
+  gf.theory = document.getElementById('editGutFeelingTheory').value.trim();
+  gf.outcomeNote = document.getElementById('editGutFeelingOutcome').value.trim();
+  
+  renderGutFeelings();
+  updateGutFeelingTypesList();
+  saveSoul();
+  closeModal();
+}
+
+function archiveGutFeeling(id) {
+  const outcomeNote = prompt('Enter outcome note (optional):');
+  const gf = gutFeelings.find(x => x.id === id);
+  if (!gf) return;
+  
+  gf.status = 'archived';
+  gf.archivedDate = new Date().toISOString().slice(0,10);
+  if (outcomeNote) {
+    gf.outcomeNote = outcomeNote;
+  }
+  
+  renderGutFeelings();
+  saveSoul();
+}
+
+function deleteGutFeeling(id) {
+  if (!confirm('Are you sure you want to delete this gut feeling?')) return;
+  
+  gutFeelings = gutFeelings.filter(x => x.id !== id);
+  renderGutFeelings();
+  saveSoul();
+}
+
+function updateGutFeelingTypesList() {
+  const datalist = document.getElementById('gutFeelingTypesList');
+  const types = [...new Set(gutFeelings.map(gf => gf.type))];
+  datalist.innerHTML = types.map(type => `<option value="${type}">`).join('');
+}
+
+async function addReviewTask(gutFeelingName, reviewDate, gutFeelingId) {
+  try {
+    // Add a one-off task to the index page for the review date
+    const taskData = {
+      name: `Review gut feeling: ${gutFeelingName}`,
+      project: 'Personal',
+      dueDate: reviewDate,
+      taskType: 'One-off'
+    };
+    
+    await fetch('/api/add-review-task', {
+      method: 'POST',
+      headers: {'Content-Type': 'application/json'},
+      body: JSON.stringify(taskData)
+    });
+  } catch(e) {
+    console.warn('Could not add review task:', e);
+  }
+}
+
 function closeModal(){
   const modal=document.getElementById('modalContainer');
   modal.classList.add('hidden');
@@ -414,6 +775,8 @@ async function init(){
   renderJournalTypeOptions();
   renderJournals();
   renderMottos();
+  renderGutFeelings();
+  updateGutFeelingTypesList();
   loadPinnedSections();
 }
 document.addEventListener('DOMContentLoaded', init);

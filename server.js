@@ -285,6 +285,7 @@ const WORK_FILE = path.join(DATA_DIR, 'workData.json');
 const DIY_FILE = path.join(DATA_DIR, 'diyData.json');
 const FINANCE_FILE = path.join(DATA_DIR, 'financeData.json');
 const PARENTING_FILE = path.join(DATA_DIR, 'parentingData.json');
+const FAMILY_FRIENDS_FILE = path.join(DATA_DIR, 'familyFriendsData.json');
 const SOUL_FILE = path.join(DATA_DIR, 'soulData.json');
 const RELATIONSHIPS_FILE = path.join(DATA_DIR, 'relationshipsData.json');
 const TIME_TRACKER_FILE = path.join(DATA_DIR, 'timeTrackerData.json');
@@ -310,6 +311,7 @@ function initDb() {
   diyData = loadJson(DIY_FILE, diyData);
   financeData = loadJson(FINANCE_FILE, financeData);
   parentingData = loadJson(PARENTING_FILE, parentingData);
+  familyFriendsData = loadJson(FAMILY_FRIENDS_FILE, familyFriendsData);
   soulData = loadJson(SOUL_FILE, soulData);
   relationshipsData = loadJson(RELATIONSHIPS_FILE, relationshipsData);
   timeTrackerData = loadJson(TIME_TRACKER_FILE, timeTrackerData);
@@ -322,6 +324,8 @@ function initDb() {
   soulData.nextJournalId = soulData.nextJournalId || 1;
   soulData.mottos = soulData.mottos || [];
   soulData.nextMottoId = soulData.nextMottoId || 1;
+  soulData.gutFeelings = soulData.gutFeelings || [];
+  soulData.nextGutFeelingId = soulData.nextGutFeelingId || 1;
   financeData.pots = financeData.pots || [];
   financeData.nextPotId = financeData.nextPotId || 1;
   todayData.adHoc = todayData.adHoc || [];
@@ -464,12 +468,52 @@ app.post('/api/finance-data', (req, res) => {
   res.json({ status: 'ok' });
 });
 
+// Manual backup endpoint
+app.post('/save-backup', (req, res) => {
+  try {
+    const { filename, data } = req.body;
+    
+    if (!filename || !data) {
+      return res.status(400).json({ error: 'Missing filename or data' });
+    }
+    
+    // Ensure filename is safe (no path traversal)
+    const safeFilename = path.basename(filename);
+    const backupPath = path.join(BACKUP_DIR, safeFilename);
+    
+    // Write backup file
+    fs.writeFileSync(backupPath, JSON.stringify(data, null, 2));
+    
+    console.log(`Manual backup created: ${backupPath}`);
+    res.json({ 
+      status: 'ok', 
+      message: 'Backup created successfully',
+      filename: safeFilename 
+    });
+    
+  } catch (error) {
+    console.error('Error creating backup:', error);
+    res.status(500).json({ error: 'Failed to create backup' });
+  }
+});
+
 // parenting page data
 let parentingData = {
   skills: [],
   activities: [],
   nextSkillId: 1,
   nextActivityId: 1
+};
+
+// family-friends merged data (combines parenting + relationships)
+let familyFriendsData = {
+  skills: [],
+  activities: [],
+  nextSkillId: 1,
+  nextActivityId: 1,
+  people: [],
+  entries: [],
+  nextEntryId: 1
 };
 
 app.get('/api/parenting-data', (req, res) => {
@@ -500,7 +544,9 @@ let soulData = {
   journals: [], // each {id,title,date,type,text,media:[]}
   nextJournalId: 1,
   mottos: [],
-  nextMottoId: 1
+  nextMottoId: 1,
+  gutFeelings: [],
+  nextGutFeelingId: 1
 };
 
 // relationships page data
@@ -530,6 +576,35 @@ app.post('/api/soul-data', (req, res) => {
   res.json({ status: 'ok' });
 });
 
+app.post('/api/add-review-task', (req, res) => {
+  try {
+    const { name, project, dueDate, taskType } = req.body;
+    
+    if (!name || !dueDate) {
+      return res.status(400).json({ error: 'Name and dueDate are required' });
+    }
+    
+    const task = {
+      id: nextId++,
+      name,
+      project: project || 'Personal',
+      dueDate,
+      taskType: taskType || 'One-off',
+      status: 'open',
+      completedDates: [],
+      createdDate: new Date().toISOString().slice(0, 10)
+    };
+    
+    oneOffTasks.push(task);
+    saveData();
+    
+    res.json({ status: 'ok', taskId: task.id });
+  } catch (error) {
+    console.error('Error adding review task:', error);
+    res.status(500).json({ error: 'Failed to add review task' });
+  }
+});
+
 app.get('/api/relationships-data', (req, res) => {
   res.json(relationshipsData);
 });
@@ -538,6 +613,26 @@ app.post('/api/relationships-data', (req, res) => {
   relationshipsData = req.body;
   fs.writeFileSync(RELATIONSHIPS_FILE, JSON.stringify(relationshipsData, null, 2));
   res.json({ status: 'ok' });
+});
+
+// family-friends merged data endpoints
+app.get('/api/family-friends-data', (req, res) => {
+  res.json(familyFriendsData);
+});
+
+app.post('/api/family-friends-data', (req, res) => {
+  familyFriendsData = req.body;
+  fs.writeFileSync(FAMILY_FRIENDS_FILE, JSON.stringify(familyFriendsData, null, 2));
+  res.json({ status: 'ok' });
+});
+
+// Family-Friends task completion endpoint with Today propagation
+app.post('/api/family-friends/complete-task', (req, res) => {
+  const { taskId, completed } = req.body;
+  if (!taskId) return res.status(400).json({ error: 'taskId required' });
+  
+  const success = updateFamilyFriendsTaskCompletion(String(taskId), !!completed);
+  res.json({ success, propagated: success });
 });
 
 // time tracker endpoints
@@ -955,6 +1050,27 @@ function completeParentingTask(sourceId) {
   }
 }
 
+function completeFamilyFriendsTask(sourceId) {
+  try {
+    const data = loadJson(FAMILY_FRIENDS_FILE, { activities: [] });
+    const activity = data.activities.find(a => String(a.id) === String(sourceId));
+    
+    if (activity) {
+      activity.status = 'closed';
+      activity.completedDates = activity.completedDates || [];
+      activity.completedDates.push(formatISO(new Date()));
+      
+      fs.writeFileSync(FAMILY_FRIENDS_FILE, JSON.stringify(data, null, 2));
+      familyFriendsData = data; // Update in-memory copy
+      return true;
+    }
+    return false;
+  } catch (e) {
+    console.warn('Failed to complete family-friends task:', e.message);
+    return false;
+  }
+}
+
 // Complete index tasks with proper rules based on task type
 function completeIndexTask(sourceId, taskName) {
   try {
@@ -1150,6 +1266,32 @@ function updateParentingTaskCompletion(sourceId, completed) {
   }
 }
 
+function updateFamilyFriendsTaskCompletion(sourceId, completed) {
+  try {
+    const FAMILY_FRIENDS_FILE = path.join(DATA_DIR, 'familyFriendsData.json');
+    const data = loadJson(FAMILY_FRIENDS_FILE, { skills: [], activities: [], nextSkillId: 1, nextActivityId: 1, people: [], entries: [], nextEntryId: 1 });
+    const idx = (data.activities || []).findIndex(a => String(a.id) === String(sourceId));
+    if (idx !== -1) {
+      const a = data.activities[idx];
+      a.status = completed ? 'closed' : 'open';
+      if (completed) {
+        a.completedDates = a.completedDates || [];
+        a.completedDates.push(new Date().toISOString());
+      }
+      fs.writeFileSync(FAMILY_FRIENDS_FILE, JSON.stringify(data, null, 2));
+      
+      // Propagate back to Today list
+      updateTodayItemCompletion('family-friends', sourceId, completed);
+      
+      return true;
+    }
+    return false;
+  } catch (e) {
+    console.warn('Failed to update Family-Friends activity completion:', e.message);
+    return false;
+  }
+}
+
 function updateTodayCompletionBySource(type, sourceId, completed) {
   let changed = false;
   (indexData.todayList || []).forEach(item => {
@@ -1182,6 +1324,9 @@ app.post('/api/source/complete', (req, res) => {
     case 'parenting':
     case 'dev':
       updated = updateParentingTaskCompletion(String(id), !!completed);
+      break;
+    case 'family-friends':
+      updated = updateFamilyFriendsTaskCompletion(String(id), !!completed);
       break;
     default:
       return res.status(400).json({ error: 'Unknown type' });
@@ -1221,6 +1366,9 @@ app.post('/api/today/complete', (req, res) => {
           break;
         case 'parenting':
           propagated = completeParentingTask(srcId);
+          break;
+        case 'family-friends':
+          propagated = completeFamilyFriendsTask(srcId);
           break;
         case 'index':
         case 'oneoff':

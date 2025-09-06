@@ -45,7 +45,8 @@
         "2025-08-03",
         "2025-08-10",
         "2025-08-20",
-        "2025-08-28"
+        "2025-08-28",
+        "2025-09-05"
       ],
       "missedDates": [
         "2025-08-17",
@@ -55,7 +56,7 @@
       "status": "open",
       "startDate": "2025-07-28",
       "closedDate": "",
-      "dateLastChecked": "2025-09-05"
+      "dateLastChecked": "2025-09-06"
     },
     {
       "id": "00000003",
@@ -80,7 +81,7 @@
       "status": "open",
       "startDate": "2025-07-28",
       "closedDate": "",
-      "dateLastChecked": "2025-09-05"
+      "dateLastChecked": "2025-09-06"
     },
     {
       "id": "00000004",
@@ -108,7 +109,7 @@
       "status": "open",
       "startDate": "2025-07-28",
       "closedDate": "",
-      "dateLastChecked": "2025-09-05"
+      "dateLastChecked": "2025-09-06"
     },
     {
       "id": "00000005",
@@ -134,7 +135,7 @@
       "status": "open",
       "startDate": "2025-07-28",
       "closedDate": "",
-      "dateLastChecked": "2025-09-05"
+      "dateLastChecked": "2025-09-06"
     },
     {
       "id": "00000006",
@@ -159,7 +160,7 @@
       "status": "open",
       "startDate": "2025-07-28",
       "closedDate": "",
-      "dateLastChecked": "2025-09-05"
+      "dateLastChecked": "2025-09-06"
     },
     {
       "id": "00000007",
@@ -183,7 +184,7 @@
       "status": "open",
       "startDate": "2025-07-28",
       "closedDate": "",
-      "dateLastChecked": "2025-09-05"
+      "dateLastChecked": "2025-09-06"
     },
     {
       "id": "00000008",
@@ -203,12 +204,13 @@
       ],
       "missedDates": [
         "2025-08-23",
-        "2025-08-30"
+        "2025-08-30",
+        "2025-09-06"
       ],
       "status": "open",
       "startDate": "2025-07-28",
       "closedDate": "",
-      "dateLastChecked": "2025-09-05"
+      "dateLastChecked": "2025-09-06"
     },
     {
       "id": "00000009",
@@ -233,7 +235,7 @@
       "status": "open",
       "startDate": "2025-07-28",
       "closedDate": "",
-      "dateLastChecked": "2025-09-05"
+      "dateLastChecked": "2025-09-06"
     },
     {
       "id": "00000012",
@@ -272,7 +274,7 @@
       "status": "open",
       "startDate": "2025-07-28",
       "closedDate": "",
-      "dateLastChecked": "2025-09-05"
+      "dateLastChecked": "2025-09-06"
     },
     {
       "id": "00000013",
@@ -297,7 +299,7 @@
       "status": "open",
       "startDate": "2025-07-28",
       "closedDate": "",
-      "dateLastChecked": "2025-09-05"
+      "dateLastChecked": "2025-09-06"
     },
     {
       "id": "00000035",
@@ -323,7 +325,7 @@
       "status": "open",
       "startDate": "2025-07-28",
       "closedDate": "",
-      "dateLastChecked": "2025-09-05"
+      "dateLastChecked": "2025-09-06"
     },
     {
       "id": "00000036",
@@ -382,7 +384,7 @@
       "status": "open",
       "startDate": "2025-07-28",
       "closedDate": "",
-      "dateLastChecked": "2025-09-05"
+      "dateLastChecked": "2025-09-06"
     },
     {
       "id": "00000037",
@@ -424,12 +426,13 @@
         "2025-08-29",
         "2025-08-30",
         "2025-09-03",
-        "2025-09-05"
+        "2025-09-05",
+        "2025-09-06"
       ],
       "status": "open",
       "startDate": "2025-07-28",
       "closedDate": "",
-      "dateLastChecked": "2025-09-05"
+      "dateLastChecked": "2025-09-06"
     },
     {
       "id": "00000060",
@@ -453,7 +456,7 @@
       "status": "open",
       "startDate": "2025-08-02",
       "closedDate": "",
-      "dateLastChecked": "2025-09-05"
+      "dateLastChecked": "2025-09-06"
     },
     {
       "id": "00000069",
@@ -466,7 +469,8 @@
       ],
       "completedDates": [
         "2025-08-03",
-        "2025-08-09"
+        "2025-08-09",
+        "2025-09-06"
       ],
       "missedDates": [
         "2025-08-10",
@@ -477,7 +481,7 @@
       "status": "open",
       "startDate": "2025-08-03",
       "closedDate": "",
-      "dateLastChecked": "2025-09-05"
+      "dateLastChecked": "2025-09-06"
     },
     {
       "id": "00000115",
@@ -505,7 +509,7 @@
       "status": "open",
       "startDate": "2025-08-18",
       "closedDate": "",
-      "dateLastChecked": "2025-09-05"
+      "dateLastChecked": "2025-09-06"
     }
   ],
   "oneOffTasks": [
@@ -1263,6 +1267,22 @@
       "urgency": "High",
       "dueDate": "",
       "startDate": "2025-09-04",
+      "status": "closed",
+      "closedDate": "2025-09-06",
+      "taskType": "One-off",
+      "completedDates": [
+        "2025-09-06"
+      ],
+      "missedDates": []
+    },
+    {
+      "id": "00000153",
+      "name": "Sew the shower curtain shorter",
+      "project": "Chores",
+      "importance": "Medium",
+      "urgency": "Medium",
+      "dueDate": "",
+      "startDate": "2025-09-05",
       "status": "open",
       "closedDate": "",
       "taskType": "One-off",
@@ -1270,9 +1290,9 @@
       "missedDates": []
     },
     {
-      "id": "00000150",
-      "name": "test",
-      "project": "Self Care",
+      "id": "00000154",
+      "name": "Drill the hooks in the walls for clothes... Make nice tho",
+      "project": "Chores",
       "importance": "High",
       "urgency": "High",
       "dueDate": "",
@@ -1573,6 +1593,20 @@
       "taskType": "One-off",
       "completedDates": [],
       "missedDates": []
+    },
+    {
+      "id": "00000150",
+      "name": "test",
+      "project": "Self Care",
+      "importance": "High",
+      "urgency": "High",
+      "dueDate": "",
+      "startDate": "2025-09-05",
+      "status": "open",
+      "closedDate": "",
+      "taskType": "One-off",
+      "completedDates": [],
+      "missedDates": []
     }
   ],
   "shoppingList": [
@@ -1646,7 +1680,7 @@
       "project": "Social",
       "cost": "15",
       "month": "2025-08",
-      "bought": false
+      "bought": true
     },
     {
       "id": "00000119",
@@ -1743,6 +1777,22 @@
       "cost": "",
       "month": "",
       "bought": false
+    },
+    {
+      "id": "00000152",
+      "name": "Shower rail hooks",
+      "project": "Chores",
+      "cost": "",
+      "month": "",
+      "bought": false
+    },
+    {
+      "id": "00000155",
+      "name": "Cover for Karis outdoor toys",
+      "project": "Family",
+      "cost": "",
+      "month": "",
+      "bought": false
     }
   ],
   "longTermList": [
@@ -1789,12 +1839,12 @@
     {
       "id": "00000138",
       "name": "Metal masher",
-      "bought": false
+      "bought": true
     },
     {
       "id": "00000140",
       "name": "Socks for Kari",
-      "bought": false
+      "bought": true
     },
     {
       "id": "00000141",
@@ -1805,25 +1855,14 @@
       "id": "00000149",
       "name": "Mini bin bags",
       "bought": false
+    },
+    {
+      "id": "00000151",
+      "name": "Mini spf for bag",
+      "bought": false
     }
   ],
   "todayList": [
-    {
-      "id": 28,
-      "type": "oneoff",
-      "originalId": "00000146",
-      "name": "Mot",
-      "completed": false,
-      "addedAt": "2025-09-05T08:00:02.233Z"
-    },
-    {
-      "id": 24,
-      "type": "weekly",
-      "originalId": "00000069",
-      "name": "Review spending",
-      "completed": false,
-      "addedAt": "2025-09-05T07:58:00.540Z"
-    },
     {
       "id": 25,
       "type": "oneoff",
@@ -1863,22 +1902,6 @@
       "name": "Clear Emails",
       "completed": false,
       "addedAt": "2025-09-05T08:00:32.932Z"
-    },
-    {
-      "id": 33,
-      "type": "work",
-      "originalId": "00000064",
-      "name": "Arrange the scanning training",
-      "completed": false,
-      "addedAt": "2025-09-05T08:05:15.049Z"
-    },
-    {
-      "id": 35,
-      "type": "work",
-      "originalId": "00000076",
-      "name": "Send stephane part time paper (with reasonable adjustement plan)",
-      "completed": false,
-      "addedAt": "2025-09-05T08:05:30.026Z"
     },
     {
       "id": 1756721674582,
@@ -2296,7 +2319,7 @@
       "done": false
     }
   ],
-  "nextId": 151,
+  "nextId": 156,
   "deletedShoppingItems": [
     {
       "id": "00000137",

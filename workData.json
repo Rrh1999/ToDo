@@ -920,7 +920,7 @@
           "frequency": null,
           "interval": null,
           "from": null,
-          "status": "open",
+          "status": "closed",
           "subtasks": [],
           "name": "Send stephane part time paper (with reasonable adjustement plan)",
           "project": "",
