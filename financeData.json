@@ -152,6 +152,23 @@
       "subType": "Parking"
     },
     {
+      "id": 753,
+      "date": "2025-06-03",
+      "description": "PUT BACK",
+      "amount": 500,
+      "accountType": "Monzo",
+      "accountName": "Monzo",
+      "month": "06 2025",
+      "sourceFile": "Monzo.csv",
+      "uploadedAt": "2025-08-02T17:08:12.407Z",
+      "notes": "",
+      "transfer": true,
+      "duplicate": false,
+      "type": "Internal Transfers",
+      "confirmed": true,
+      "autofill": false
+    },
+    {
       "id": 754,
       "date": "2025-06-03",
       "description": "LAND REGISTRY ECOM CCC LONDON        GBR",
@@ -874,6 +891,23 @@
       "potId": 11
     },
     {
+      "id": 794,
+      "date": "2025-06-20",
+      "description": "Quarterly Bills Pot",
+      "amount": 75,
+      "accountType": "Monzo",
+      "accountName": "Monzo",
+      "month": "06 2025",
+      "sourceFile": "Monzo.csv",
+      "uploadedAt": "2025-08-02T17:08:12.413Z",
+      "notes": "",
+      "transfer": false,
+      "duplicate": false,
+      "type": "Internal Transfers",
+      "confirmed": true,
+      "autofill": false
+    },
+    {
       "id": 795,
       "date": "2025-06-20",
       "description": "tax return Pot",
@@ -1073,6 +1107,23 @@
       "subType": "Snacks"
     },
     {
+      "id": 806,
+      "date": "2025-06-26",
+      "description": "PUT BACK",
+      "amount": 1345,
+      "accountType": "Monzo",
+      "accountName": "Monzo",
+      "month": "07 2025",
+      "sourceFile": "Monzo.csv",
+      "uploadedAt": "2025-08-02T17:08:12.413Z",
+      "notes": "",
+      "transfer": true,
+      "duplicate": false,
+      "type": "Internal Transfers",
+      "confirmed": true,
+      "autofill": false
+    },
+    {
       "id": 807,
       "date": "2025-06-28",
       "description": "BABY STUFF",
@@ -1125,6 +1176,23 @@
       "confirmed": true,
       "autofill": false,
       "subType": "Savings"
+    },
+    {
+      "id": 810,
+      "date": "2025-06-29",
+      "description": "Sent from Monzo",
+      "amount": -150,
+      "accountType": "Monzo",
+      "accountName": "Monzo",
+      "month": "07 2025",
+      "sourceFile": "Monzo.csv",
+      "uploadedAt": "2025-08-02T17:08:12.413Z",
+      "notes": "",
+      "transfer": true,
+      "duplicate": false,
+      "type": "Internal Transfers",
+      "confirmed": true,
+      "autofill": false
     },
     {
       "id": 811,
@@ -2822,6 +2890,23 @@
       "subType": "Electricity"
     },
     {
+      "id": 910,
+      "date": "2025-07-22",
+      "description": "PUT BACK",
+      "amount": 200,
+      "accountType": "Monzo",
+      "accountName": "Monzo",
+      "month": "07 2025",
+      "sourceFile": "Monzo.csv",
+      "uploadedAt": "2025-08-02T17:08:12.424Z",
+      "notes": "",
+      "transfer": true,
+      "duplicate": false,
+      "type": "Internal Transfers",
+      "confirmed": true,
+      "autofill": false
+    },
+    {
       "id": 911,
       "date": "2025-07-22",
       "description": "GRIDSERVE UK OMM LTD   IVER          GBR",
@@ -3074,6 +3159,23 @@
       "subType": "Household Stuff"
     },
     {
+      "id": 926,
+      "date": "2025-07-28",
+      "description": "PUT BACK",
+      "amount": 1200,
+      "accountType": "Monzo",
+      "accountName": "Monzo",
+      "month": "08 2025",
+      "sourceFile": "Monzo.csv",
+      "uploadedAt": "2025-08-02T17:08:12.424Z",
+      "notes": "",
+      "transfer": true,
+      "duplicate": false,
+      "type": "Internal Transfers",
+      "confirmed": true,
+      "autofill": false
+    },
+    {
       "id": 927,
       "date": "2025-07-29",
       "description": "Clara's Corner         High Wycombe  GBR",
@@ -3254,6 +3356,40 @@
       "subType": "Savings"
     },
     {
+      "id": 938,
+      "date": "2025-07-29",
+      "description": "rita monzo PUT BACK",
+      "amount": -1200,
+      "accountType": "TSB",
+      "accountName": "Main TSB",
+      "month": "08 2025",
+      "sourceFile": "exportStatements (13)  - main.csv",
+      "uploadedAt": "2025-08-03T06:26:52.060Z",
+      "notes": "",
+      "transfer": true,
+      "duplicate": false,
+      "type": "Internal Transfers",
+      "confirmed": true,
+      "autofill": false
+    },
+    {
+      "id": 939,
+      "date": "2025-07-29",
+      "description": "TO Spend & Save Account 777402-25971668",
+      "amount": -100,
+      "accountType": "TSB",
+      "accountName": "Main TSB",
+      "month": "08 2025",
+      "sourceFile": "exportStatements (13)  - main.csv",
+      "uploadedAt": "2025-08-03T06:26:52.061Z",
+      "notes": "",
+      "transfer": true,
+      "duplicate": false,
+      "type": "Internal Transfers",
+      "confirmed": true,
+      "autofill": false
+    },
+    {
       "id": 940,
       "date": "2025-07-29",
       "description": "Card ending 9597 ",
@@ -3306,6 +3442,23 @@
       "confirmed": true,
       "autofill": false,
       "subType": "Subscription"
+    },
+    {
+      "id": 944,
+      "date": "2025-07-23",
+      "description": "rita monzo PUT BACK",
+      "amount": -200,
+      "accountType": "TSB",
+      "accountName": "Main TSB",
+      "month": "07 2025",
+      "sourceFile": "exportStatements (13)  - main.csv",
+      "uploadedAt": "2025-08-03T06:26:52.062Z",
+      "notes": "",
+      "transfer": true,
+      "duplicate": false,
+      "type": "Internal Transfers",
+      "confirmed": true,
+      "autofill": false
     },
     {
       "id": 946,
@@ -3379,6 +3532,23 @@
       "autofill": false,
       "subType": "Interest",
       "potId": 7
+    },
+    {
+      "id": 950,
+      "date": "2025-06-27",
+      "description": "rita monzo PUT BACK",
+      "amount": -1345,
+      "accountType": "TSB",
+      "accountName": "Main TSB",
+      "month": "07 2025",
+      "sourceFile": "exportStatements (13)  - main.csv",
+      "uploadedAt": "2025-08-03T06:26:52.063Z",
+      "notes": "",
+      "transfer": true,
+      "duplicate": false,
+      "type": "Internal Transfers",
+      "confirmed": true,
+      "autofill": false
     },
     {
       "id": 951,
@@ -3471,6 +3641,40 @@
       "subType": "Nursery"
     },
     {
+      "id": 956,
+      "date": "2025-06-04",
+      "description": "rita monzo PUT BACK",
+      "amount": -500,
+      "accountType": "TSB",
+      "accountName": "Main TSB",
+      "month": "06 2025",
+      "sourceFile": "exportStatements (13)  - main.csv",
+      "uploadedAt": "2025-08-03T06:26:52.064Z",
+      "notes": "",
+      "transfer": true,
+      "duplicate": false,
+      "type": "Internal Transfers",
+      "confirmed": true,
+      "autofill": false
+    },
+    {
+      "id": 957,
+      "date": "2025-06-04",
+      "description": "TO Spend & Save Account 777402-25971668",
+      "amount": -75,
+      "accountType": "TSB",
+      "accountName": "Main TSB",
+      "month": "06 2025",
+      "sourceFile": "exportStatements (13)  - main.csv",
+      "uploadedAt": "2025-08-03T06:26:52.064Z",
+      "notes": "",
+      "transfer": true,
+      "duplicate": false,
+      "type": "Internal Transfers",
+      "confirmed": true,
+      "autofill": false
+    },
+    {
       "id": 958,
       "date": "2025-06-04",
       "description": "Card ending 9597 ",
@@ -3508,6 +3712,23 @@
       "potId": 7
     },
     {
+      "id": 961,
+      "date": "2025-07-29",
+      "description": "FROM Classic Enhance Account 777402-24612968",
+      "amount": 100,
+      "accountType": "TSB",
+      "accountName": "Bills",
+      "month": "08 2025",
+      "sourceFile": "exportStatements (14) - bills.csv",
+      "uploadedAt": "2025-08-03T06:27:11.654Z",
+      "notes": "",
+      "transfer": true,
+      "duplicate": false,
+      "type": "Internal Transfers",
+      "confirmed": true,
+      "autofill": false
+    },
+    {
       "id": 962,
       "date": "2025-07-02",
       "description": "EE LIMITED REFERENCE: Q27072337633756733",
@@ -3524,6 +3745,23 @@
       "confirmed": true,
       "autofill": false,
       "subType": "Phone"
+    },
+    {
+      "id": 963,
+      "date": "2025-06-04",
+      "description": "FROM Classic Enhance Account 777402-24612968",
+      "amount": 75,
+      "accountType": "TSB",
+      "accountName": "Bills",
+      "month": "06 2025",
+      "sourceFile": "exportStatements (14) - bills.csv",
+      "uploadedAt": "2025-08-03T06:27:11.654Z",
+      "notes": "",
+      "transfer": true,
+      "duplicate": false,
+      "type": "Internal Transfers",
+      "confirmed": true,
+      "autofill": false
     },
     {
       "id": 964,
@@ -4197,7 +4435,7 @@
       "month": "06 2025",
       "sourceFile": "exportStatements (16).csv",
       "uploadedAt": "2025-08-03T06:27:54.771Z",
-      "notes": "Credit Card",
+      "notes": "",
       "transfer": false,
       "duplicate": false,
       "type": "Repayments",
@@ -4283,6 +4521,25 @@
       "subType": "Interest"
     },
     {
+      "id": 1010,
+      "date": "2025-08-31",
+      "description": "rita monzo PUT BACK",
+      "amount": -1000,
+      "accountType": "TSB",
+      "accountName": "Main TSB",
+      "month": "09 2025",
+      "sourceFile": "exportStatements (13).csv",
+      "uploadedAt": "2025-09-06T08:33:50.594Z",
+      "notes": "",
+      "transfer": false,
+      "potId": null,
+      "duplicate": false,
+      "type": "Internal Transfers",
+      "subType": "",
+      "autofill": false,
+      "confirmed": true
+    },
+    {
       "id": 1011,
       "date": "2025-08-29",
       "description": "SAVE THE PENNIES 777402-27123560",
@@ -4300,6 +4557,25 @@
       "subType": "Round Up Stuff",
       "autofill": false,
       "confirmed": true
+    },
+    {
+      "id": 1012,
+      "date": "2025-08-29",
+      "description": "rita monzo PUT BACK",
+      "amount": -100,
+      "accountType": "TSB",
+      "accountName": "Main TSB",
+      "month": "09 2025",
+      "sourceFile": "exportStatements (13).csv",
+      "uploadedAt": "2025-09-06T08:33:50.594Z",
+      "notes": "",
+      "transfer": false,
+      "potId": null,
+      "duplicate": false,
+      "type": "Internal Transfers",
+      "subType": "",
+      "autofill": true,
+      "confirmed": false
     },
     {
       "id": 1013,
@@ -4338,6 +4614,25 @@
       "subType": "Subscription",
       "confirmed": true,
       "autofill": false
+    },
+    {
+      "id": 1015,
+      "date": "2025-08-25",
+      "description": "rita monzo PUT BACK",
+      "amount": -70,
+      "accountType": "TSB",
+      "accountName": "Main TSB",
+      "month": "08 2025",
+      "sourceFile": "exportStatements (13).csv",
+      "uploadedAt": "2025-09-06T08:33:50.594Z",
+      "notes": "",
+      "transfer": false,
+      "potId": null,
+      "duplicate": false,
+      "type": "Internal Transfers",
+      "subType": "",
+      "autofill": true,
+      "confirmed": false
     },
     {
       "id": 1016,
@@ -5271,6 +5566,25 @@
       "autofill": false
     },
     {
+      "id": 1106,
+      "date": "2025-08-28",
+      "description": "PUT BACK",
+      "amount": 100,
+      "accountType": "Monzo",
+      "accountName": "Monzo",
+      "month": "",
+      "sourceFile": "MonzoDataExport_30Jul-6Sept_2025-09-06_093126.csv",
+      "uploadedAt": "2025-09-06T08:40:02.551Z",
+      "notes": "",
+      "transfer": false,
+      "potId": null,
+      "duplicate": false,
+      "type": "Internal Transfers",
+      "subType": "",
+      "autofill": true,
+      "confirmed": false
+    },
+    {
       "id": 1107,
       "date": "2025-08-28",
       "description": "ASDA WHEATLEY          OXFORD        GBR",
@@ -5879,36 +6193,6 @@
       "duplicate": false
     },
     {
-      "id": 1223,
-      "date": "2025-07-05",
-      "description": "Google YouTube London GBR",
-      "amount": 0,
-      "accountType": "TSB",
-      "accountName": "Main TSB",
-      "month": "07 2025",
-      "sourceFile": "exportStatements (14).csv",
-      "uploadedAt": "2025-09-06T11:39:01.150Z",
-      "notes": "",
-      "transfer": false,
-      "potId": null,
-      "duplicate": false
-    },
-    {
-      "id": 1264,
-      "date": "2025-05-30",
-      "description": "mums Pot",
-      "amount": 85,
-      "accountType": "Monzo",
-      "accountName": "Monzo",
-      "month": "06 2025",
-      "sourceFile": "MonzoDataExport_31May-30Aug_2025-09-06_124118.csv",
-      "uploadedAt": "2025-09-06T11:42:20.875Z",
-      "notes": "",
-      "transfer": false,
-      "potId": null,
-      "duplicate": false
-    },
-    {
       "id": 1265,
       "date": "2025-05-30",
       "description": "COUNSELLING SERVICES   +447368524057 GBR",
@@ -5921,7 +6205,11 @@
       "notes": "",
       "transfer": false,
       "potId": null,
-      "duplicate": false
+      "duplicate": false,
+      "type": "Other – Not Budgeted",
+      "subType": "",
+      "confirmed": true,
+      "autofill": false
     },
     {
       "id": 1460,
@@ -6047,10 +6335,14 @@
       "month": "08 2025",
       "sourceFile": "MonzoDataExport_31May-30Aug_2025-09-06_124118.csv",
       "uploadedAt": "2025-09-06T11:42:20.879Z",
-      "notes": "",
+      "notes": "Chat GPT",
       "transfer": false,
       "potId": null,
-      "duplicate": false
+      "duplicate": false,
+      "type": "Subscriptions",
+      "subType": "Work",
+      "autofill": true,
+      "confirmed": false
     },
     {
       "id": 1486,
@@ -6065,7 +6357,11 @@
       "notes": "",
       "transfer": false,
       "potId": null,
-      "duplicate": false
+      "duplicate": false,
+      "type": "Other – Not Budgeted",
+      "subType": "DIY",
+      "confirmed": true,
+      "autofill": false
     },
     {
       "id": 1487,
@@ -6080,7 +6376,11 @@
       "notes": "",
       "transfer": false,
       "potId": null,
-      "duplicate": false
+      "duplicate": false,
+      "type": "Other – Not Budgeted",
+      "subType": "DIY",
+      "confirmed": true,
+      "autofill": false
     },
     {
       "id": 1488,
@@ -6114,7 +6414,11 @@
       "notes": "",
       "transfer": false,
       "potId": null,
-      "duplicate": false
+      "duplicate": false,
+      "type": "Income",
+      "subType": "Fiacra",
+      "confirmed": true,
+      "autofill": false
     },
     {
       "id": 1505,
@@ -6205,7 +6509,11 @@
       "notes": "",
       "transfer": false,
       "potId": null,
-      "duplicate": false
+      "duplicate": false,
+      "type": "Food",
+      "subType": "Snacks",
+      "confirmed": true,
+      "autofill": false
     },
     {
       "id": 1519,
@@ -6239,7 +6547,11 @@
       "notes": "",
       "transfer": false,
       "potId": null,
-      "duplicate": false
+      "duplicate": false,
+      "type": "Food",
+      "subType": "Snacks",
+      "confirmed": true,
+      "autofill": false
     },
     {
       "id": 1521,
@@ -6254,7 +6566,11 @@
       "notes": "",
       "transfer": false,
       "potId": null,
-      "duplicate": false
+      "duplicate": false,
+      "type": "Family Activity",
+      "subType": "Gifts",
+      "confirmed": true,
+      "autofill": false
     },
     {
       "id": 1522,
@@ -6307,7 +6623,11 @@
       "notes": "",
       "transfer": false,
       "potId": null,
-      "duplicate": false
+      "duplicate": false,
+      "type": "Family Activity",
+      "subType": "Gifts",
+      "confirmed": true,
+      "autofill": false
     },
     {
       "id": 1525,
@@ -6322,6 +6642,29 @@
       "notes": "",
       "transfer": false,
       "potId": null,
+      "duplicate": false,
+      "type": "Family Activity",
+      "subType": "Gifts",
+      "confirmed": true,
+      "autofill": false
+    },
+    {
+      "id": 1526,
+      "date": "2025-08-24",
+      "description": "PUT BACK",
+      "amount": 70,
+      "accountType": "Monzo",
+      "accountName": "Monzo",
+      "month": "08 2025",
+      "sourceFile": "MonzoDataExport_31May-30Aug_2025-09-06_124118.csv",
+      "uploadedAt": "2025-09-06T11:42:20.879Z",
+      "notes": "",
+      "transfer": false,
+      "potId": null,
+      "type": "Internal Transfers",
+      "subType": "",
+      "autofill": true,
+      "confirmed": false,
       "duplicate": false
     },
     {
@@ -6337,7 +6680,11 @@
       "notes": "",
       "transfer": false,
       "potId": null,
-      "duplicate": false
+      "duplicate": false,
+      "type": "Treat and Entertainment",
+      "subType": "Social",
+      "confirmed": true,
+      "autofill": false
     },
     {
       "id": 1547,
@@ -6378,21 +6725,6 @@
       "duplicate": false
     },
     {
-      "id": 1564,
-      "date": "2025-07-28",
-      "description": "FROM Classic Enhance Account 777402-24612968",
-      "amount": 100,
-      "accountType": "TSB",
-      "accountName": "Bills",
-      "month": "08 2025",
-      "sourceFile": "Bills.csv",
-      "uploadedAt": "2025-09-06T12:05:51.199Z",
-      "notes": "",
-      "transfer": false,
-      "potId": null,
-      "duplicate": false
-    },
-    {
       "id": 1565,
       "date": "2025-07-01",
       "description": "EE LIMITED REFERENCE: Q27072337633756733",
@@ -6412,21 +6744,6 @@
       "duplicate": false
     },
     {
-      "id": 1566,
-      "date": "2025-06-03",
-      "description": "FROM Classic Enhance Account 777402-24612968",
-      "amount": 75,
-      "accountType": "TSB",
-      "accountName": "Bills",
-      "month": "06 2025",
-      "sourceFile": "Bills.csv",
-      "uploadedAt": "2025-09-06T12:05:51.199Z",
-      "notes": "",
-      "transfer": false,
-      "potId": null,
-      "duplicate": false
-    },
-    {
       "id": 1567,
       "date": "2025-06-01",
       "description": "DEBIT INTEREST ARRANGED O/D",
@@ -6439,7 +6756,11 @@
       "notes": "",
       "transfer": false,
       "potId": null,
-      "duplicate": false
+      "duplicate": false,
+      "type": "Bills",
+      "subType": "Interest",
+      "confirmed": true,
+      "autofill": false
     },
     {
       "id": 1568,
@@ -6473,7 +6794,11 @@
       "notes": "",
       "transfer": false,
       "potId": null,
-      "duplicate": false
+      "duplicate": false,
+      "type": "Subscriptions",
+      "subType": "Other",
+      "confirmed": true,
+      "autofill": false
     },
     {
       "id": 1590,
@@ -6488,7 +6813,11 @@
       "notes": "",
       "transfer": false,
       "potId": null,
-      "duplicate": false
+      "duplicate": false,
+      "type": "Other – Not Budgeted",
+      "subType": "Subscription",
+      "confirmed": true,
+      "autofill": false
     },
     {
       "id": 1591,
@@ -6503,7 +6832,11 @@
       "notes": "",
       "transfer": false,
       "potId": null,
-      "duplicate": false
+      "duplicate": false,
+      "type": "Travel",
+      "subType": "Tube and Bus",
+      "confirmed": true,
+      "autofill": false
     },
     {
       "id": 1592,
@@ -6518,7 +6851,11 @@
       "notes": "",
       "transfer": false,
       "potId": null,
-      "duplicate": false
+      "duplicate": false,
+      "type": "Travel",
+      "subType": "Fast Charge",
+      "confirmed": true,
+      "autofill": false
     },
     {
       "id": 1593,
@@ -6533,7 +6870,11 @@
       "notes": "",
       "transfer": false,
       "potId": null,
-      "duplicate": false
+      "duplicate": false,
+      "type": "Food",
+      "subType": "Snacks",
+      "confirmed": true,
+      "autofill": false
     },
     {
       "id": 1594,
@@ -6548,7 +6889,11 @@
       "notes": "",
       "transfer": false,
       "potId": null,
-      "duplicate": false
+      "duplicate": false,
+      "type": "Travel",
+      "subType": "Tube and Bus",
+      "confirmed": true,
+      "autofill": false
     },
     {
       "id": 1595,
@@ -6563,7 +6908,11 @@
       "notes": "",
       "transfer": false,
       "potId": null,
-      "duplicate": false
+      "duplicate": false,
+      "type": "Other – Not Budgeted",
+      "subType": "",
+      "confirmed": true,
+      "autofill": false
     },
     {
       "id": 1596,
@@ -6578,7 +6927,11 @@
       "notes": "",
       "transfer": false,
       "potId": null,
-      "duplicate": false
+      "duplicate": false,
+      "type": "Food",
+      "subType": "Snacks",
+      "confirmed": true,
+      "autofill": false
     },
     {
       "id": 1597,
@@ -6593,7 +6946,11 @@
       "notes": "",
       "transfer": false,
       "potId": null,
-      "duplicate": false
+      "duplicate": false,
+      "type": "Other – Not Budgeted",
+      "subType": "Hotels",
+      "confirmed": true,
+      "autofill": false
     },
     {
       "id": 1599,
@@ -6608,7 +6965,11 @@
       "notes": "",
       "transfer": false,
       "potId": null,
-      "duplicate": false
+      "duplicate": false,
+      "type": "Subscriptions",
+      "subType": "Other",
+      "confirmed": true,
+      "autofill": false
     },
     {
       "id": 1600,
@@ -6623,7 +6984,11 @@
       "notes": "",
       "transfer": false,
       "potId": null,
-      "duplicate": false
+      "duplicate": false,
+      "type": "Other – Not Budgeted",
+      "subType": "Subscription",
+      "confirmed": true,
+      "autofill": false
     },
     {
       "id": 1601,
@@ -6695,7 +7060,11 @@
       "notes": "",
       "transfer": false,
       "potId": null,
-      "duplicate": false
+      "duplicate": false,
+      "type": "Other – Not Budgeted",
+      "subType": "DIY",
+      "confirmed": true,
+      "autofill": false
     },
     {
       "id": 1605,
@@ -6710,7 +7079,11 @@
       "notes": "",
       "transfer": false,
       "potId": null,
-      "duplicate": false
+      "duplicate": false,
+      "type": "Other – Not Budgeted",
+      "subType": "DIY",
+      "confirmed": true,
+      "autofill": false
     },
     {
       "id": 1606,
@@ -6725,7 +7098,11 @@
       "notes": "",
       "transfer": false,
       "potId": null,
-      "duplicate": false
+      "duplicate": false,
+      "type": "Other – Not Budgeted",
+      "subType": "DIY",
+      "confirmed": true,
+      "autofill": false
     },
     {
       "id": 1607,
@@ -6759,7 +7136,11 @@
       "notes": "",
       "transfer": false,
       "potId": null,
-      "duplicate": false
+      "duplicate": false,
+      "type": "Other – Not Budgeted",
+      "subType": "DIY",
+      "confirmed": true,
+      "autofill": false
     },
     {
       "id": 1609,
@@ -6774,7 +7155,11 @@
       "notes": "",
       "transfer": false,
       "potId": null,
-      "duplicate": false
+      "duplicate": false,
+      "type": "Subscriptions",
+      "subType": "Programmes",
+      "confirmed": true,
+      "autofill": false
     },
     {
       "id": 1610,
@@ -6789,10 +7174,83 @@
       "notes": "",
       "transfer": false,
       "potId": null,
-      "duplicate": false
+      "duplicate": false,
+      "type": "Subscriptions",
+      "subType": "Other",
+      "confirmed": true,
+      "autofill": false
+    },
+    {
+      "id": 1620,
+      "date": "2025-07-28",
+      "description": "Card ending 9597 ",
+      "amount": -100,
+      "accountType": "TSB",
+      "accountName": "Main TSB",
+      "month": "08 2025",
+      "sourceFile": "exportStatements (13).csv",
+      "uploadedAt": "2025-09-07T10:52:47.722Z",
+      "notes": "",
+      "transfer": false,
+      "potId": null,
+      "multipleRules": [
+        1757152335418,
+        1757156003787
+      ],
+      "autofill": false,
+      "confirmed": true,
+      "duplicate": false,
+      "type": "Repayments",
+      "subType": "Credit Card"
+    },
+    {
+      "id": 1621,
+      "date": "2025-06-26",
+      "description": "Card ending 9597 ",
+      "amount": -100,
+      "accountType": "TSB",
+      "accountName": "Main TSB",
+      "month": "07 2025",
+      "sourceFile": "exportStatements (13).csv",
+      "uploadedAt": "2025-09-07T10:52:47.722Z",
+      "notes": "",
+      "transfer": false,
+      "potId": null,
+      "multipleRules": [
+        1757152335418,
+        1757156003787
+      ],
+      "autofill": false,
+      "confirmed": true,
+      "duplicate": false,
+      "type": "Repayments",
+      "subType": "Credit Card"
+    },
+    {
+      "id": 1622,
+      "date": "2025-06-03",
+      "description": "Card ending 9597 ",
+      "amount": -100,
+      "accountType": "TSB",
+      "accountName": "Main TSB",
+      "month": "06 2025",
+      "sourceFile": "exportStatements (13).csv",
+      "uploadedAt": "2025-09-07T10:52:47.722Z",
+      "notes": "",
+      "transfer": false,
+      "potId": null,
+      "multipleRules": [
+        1757152335418,
+        1757156003787
+      ],
+      "autofill": false,
+      "confirmed": true,
+      "duplicate": false,
+      "type": "Repayments",
+      "subType": "Credit Card"
     }
   ],
-  "nextTransactionId": 1620,
+  "nextTransactionId": 1624,
   "budgets": [
     {
       "id": 25,
@@ -6810,7 +7268,8 @@
         }
       ],
       "extras": [],
-      "desc": ""
+      "desc": "",
+      "fixed": false
     },
     {
       "id": 26,
@@ -6828,7 +7287,8 @@
         }
       ],
       "extras": [],
-      "desc": ""
+      "desc": "",
+      "fixed": false
     },
     {
       "id": 27,
@@ -6848,7 +7308,8 @@
       "extras": [],
       "desc": "",
       "amount": 134,
-      "date": "2025-07-01"
+      "date": "2025-07-01",
+      "fixed": true
     },
     {
       "id": 28,
@@ -6876,7 +7337,8 @@
       "extras": [],
       "desc": "",
       "amount": 50,
-      "date": "2025-08-03"
+      "date": "2025-08-03",
+      "fixed": true
     },
     {
       "id": 29,
@@ -6894,7 +7356,8 @@
         }
       ],
       "extras": [],
-      "desc": ""
+      "desc": "",
+      "fixed": false
     },
     {
       "id": 30,
@@ -6912,7 +7375,8 @@
         }
       ],
       "extras": [],
-      "desc": ""
+      "desc": "",
+      "fixed": false
     },
     {
       "id": 31,
@@ -6940,7 +7404,8 @@
       "extras": [],
       "amount": null,
       "date": "2025-08-03",
-      "desc": ""
+      "desc": "",
+      "fixed": false
     },
     {
       "id": 32,
@@ -6960,7 +7425,8 @@
       "extras": [],
       "amount": null,
       "date": "2025-06-01",
-      "desc": ""
+      "desc": "",
+      "fixed": false
     },
     {
       "id": 33,
@@ -6988,7 +7454,8 @@
       "extras": [],
       "amount": 1601,
       "date": "2025-05-31",
-      "desc": ""
+      "desc": "",
+      "fixed": true
     },
     {
       "id": 34,
@@ -7006,7 +7473,8 @@
         }
       ],
       "extras": [],
-      "desc": ""
+      "desc": "",
+      "fixed": false
     },
     {
       "id": 35,
@@ -7024,7 +7492,8 @@
         }
       ],
       "extras": [],
-      "desc": ""
+      "desc": "",
+      "fixed": false
     },
     {
       "id": 36,
@@ -7042,7 +7511,8 @@
         }
       ],
       "extras": [],
-      "desc": ""
+      "desc": "",
+      "fixed": false
     },
     {
       "id": 37,
@@ -7060,7 +7530,8 @@
         }
       ],
       "extras": [],
-      "desc": ""
+      "desc": "",
+      "fixed": false
     },
     {
       "id": 38,
@@ -7078,7 +7549,8 @@
         }
       ],
       "extras": [],
-      "desc": ""
+      "desc": "",
+      "fixed": false
     },
     {
       "id": 39,
@@ -7106,7 +7578,8 @@
       "extras": [],
       "amount": 0,
       "date": "2025-08-01",
-      "desc": ""
+      "desc": "",
+      "fixed": false
     },
     {
       "id": 40,
@@ -7126,7 +7599,8 @@
       "extras": [],
       "desc": "",
       "amount": 0,
-      "date": "2025-08-03"
+      "date": "2025-08-03",
+      "fixed": false
     },
     {
       "id": 41,
@@ -7154,7 +7628,8 @@
       "extras": [],
       "amount": 250,
       "date": "2025-07-31",
-      "desc": ""
+      "desc": "",
+      "fixed": true
     },
     {
       "id": 42,
@@ -7172,7 +7647,8 @@
         }
       ],
       "extras": [],
-      "desc": ""
+      "desc": "",
+      "fixed": false
     },
     {
       "id": 43,
@@ -7200,7 +7676,8 @@
       "extras": [],
       "amount": 55,
       "date": "2025-07-31",
-      "desc": ""
+      "desc": "",
+      "fixed": false
     },
     {
       "id": 44,
@@ -7218,7 +7695,8 @@
         }
       ],
       "extras": [],
-      "desc": ""
+      "desc": "",
+      "fixed": false
     },
     {
       "id": 46,
@@ -7236,7 +7714,8 @@
         }
       ],
       "extras": [],
-      "desc": ""
+      "desc": "",
+      "fixed": false
     },
     {
       "id": 47,
@@ -7264,7 +7743,8 @@
       "extras": [],
       "desc": "",
       "amount": 0,
-      "date": "2025-08-03"
+      "date": "2025-08-03",
+      "fixed": true
     },
     {
       "id": 48,
@@ -7282,7 +7762,8 @@
         }
       ],
       "extras": [],
-      "desc": ""
+      "desc": "",
+      "fixed": false
     },
     {
       "id": 49,
@@ -7300,7 +7781,8 @@
         }
       ],
       "extras": [],
-      "desc": ""
+      "desc": "",
+      "fixed": false
     },
     {
       "id": 50,
@@ -7320,7 +7802,8 @@
       "extras": [],
       "desc": "",
       "amount": 30,
-      "date": "2025-06-01"
+      "date": "2025-06-01",
+      "fixed": false
     },
     {
       "id": 51,
@@ -7340,7 +7823,8 @@
       "extras": [],
       "desc": "This is what I get from child benefit. Its goes straight into the tax though",
       "amount": 0,
-      "date": "2025-08-03"
+      "date": "2025-08-03",
+      "fixed": false
     },
     {
       "id": 53,
@@ -7360,7 +7844,8 @@
       "extras": [],
       "desc": "",
       "amount": 30,
-      "date": "2025-08-03"
+      "date": "2025-08-03",
+      "fixed": false
     },
     {
       "id": 54,
@@ -7388,7 +7873,8 @@
       "extras": [],
       "desc": "",
       "amount": 15,
-      "date": "2025-08-03"
+      "date": "2025-08-03",
+      "fixed": false
     },
     {
       "id": 55,
@@ -7416,7 +7902,8 @@
       "extras": [],
       "desc": "",
       "amount": 0,
-      "date": "2025-08-03"
+      "date": "2025-08-03",
+      "fixed": false
     },
     {
       "id": 56,
@@ -7444,7 +7931,8 @@
       "extras": [],
       "desc": "",
       "amount": 1071,
-      "date": "2025-07-31"
+      "date": "2025-07-31",
+      "fixed": true
     },
     {
       "id": 57,
@@ -7472,7 +7960,8 @@
       "extras": [],
       "desc": "",
       "amount": 0,
-      "date": "2025-08-03"
+      "date": "2025-08-03",
+      "fixed": false
     },
     {
       "id": 58,
@@ -7492,7 +7981,8 @@
       "extras": [],
       "desc": "Water Bill",
       "amount": 180,
-      "date": "2025-07-01"
+      "date": "2025-07-01",
+      "fixed": false
     },
     {
       "id": 59,
@@ -7512,7 +8002,8 @@
       "extras": [],
       "desc": "EE phone bill",
       "amount": 41,
-      "date": "2025-06-01"
+      "date": "2025-06-01",
+      "fixed": true
     },
     {
       "id": 60,
@@ -7540,7 +8031,8 @@
       "extras": [],
       "desc": "",
       "amount": 40,
-      "date": "2025-09-01"
+      "date": "2025-09-01",
+      "fixed": false
     },
     {
       "id": 61,
@@ -7560,7 +8052,8 @@
       "extras": [],
       "desc": "The special type",
       "amount": 30,
-      "date": "2025-06-01"
+      "date": "2025-06-01",
+      "fixed": false
     },
     {
       "id": 62,
@@ -7580,7 +8073,8 @@
       "extras": [],
       "desc": "",
       "amount": 30,
-      "date": "2025-06-01"
+      "date": "2025-06-01",
+      "fixed": false
     },
     {
       "id": 63,
@@ -7600,7 +8094,8 @@
       "extras": [],
       "desc": "Money send to mum for travel",
       "amount": 30,
-      "date": "2025-06-01"
+      "date": "2025-06-01",
+      "fixed": false
     },
     {
       "id": 64,
@@ -7620,7 +8115,8 @@
       "extras": [],
       "desc": "to take them spa",
       "amount": 150,
-      "date": "2025-10-01"
+      "date": "2025-10-01",
+      "fixed": false
     },
     {
       "id": 65,
@@ -7629,26 +8125,19 @@
       "archived": false,
       "versions": [
         {
-          "amount": 150,
-          "start": "2025-08-31",
-          "end": "2025-08-31",
-          "interval": 1,
-          "mode": "within",
-          "version": 1
-        },
-        {
           "amount": 50,
           "start": "2025-09-01",
           "end": "2026-05-31",
           "interval": 1,
           "mode": "within",
-          "version": 2
+          "version": 1
         }
       ],
       "extras": [],
       "desc": "Childcare",
       "amount": 50,
-      "date": "2025-09-01"
+      "date": "2025-09-01",
+      "fixed": false
     },
     {
       "id": 66,
@@ -7668,7 +8157,8 @@
       "extras": [],
       "desc": "when you need fast",
       "amount": 30,
-      "date": "2025-08-29"
+      "date": "2025-08-29",
+      "fixed": false
     },
     {
       "id": 67,
@@ -7688,7 +8178,8 @@
       "extras": [],
       "desc": "For her",
       "amount": 10,
-      "date": "2025-08-09"
+      "date": "2025-08-09",
+      "fixed": false
     },
     {
       "id": 68,
@@ -7708,7 +8199,8 @@
       "extras": [],
       "desc": "Savings",
       "amount": 30,
-      "date": "2025-08-09"
+      "date": "2025-08-09",
+      "fixed": false
     },
     {
       "id": 69,
@@ -7728,7 +8220,8 @@
       "extras": [],
       "desc": "Saving for holiday next year",
       "amount": 50,
-      "date": "2025-08-31"
+      "date": "2025-08-31",
+      "fixed": false
     },
     {
       "id": 70,
@@ -7748,7 +8241,8 @@
       "extras": [],
       "desc": "From TA Work",
       "amount": 960,
-      "date": "2025-09-30"
+      "date": "2025-09-30",
+      "fixed": false
     },
     {
       "id": 71,
@@ -7768,7 +8262,8 @@
       "extras": [],
       "desc": "",
       "amount": 0,
-      "date": "2025-09-01"
+      "date": "2025-09-01",
+      "fixed": false
     },
     {
       "id": 72,
@@ -7788,7 +8283,8 @@
       "extras": [],
       "desc": "This what you put in from your direct debit to say its been paid",
       "amount": 0,
-      "date": "2025-09-01"
+      "date": "2025-09-01",
+      "fixed": false
     },
     {
       "id": 73,
@@ -7808,7 +8304,8 @@
       "extras": [],
       "desc": "",
       "amount": 0,
-      "date": "2025-09-01"
+      "date": "2025-09-01",
+      "fixed": false
     },
     {
       "id": 74,
@@ -7819,24 +8316,17 @@
         {
           "amount": 0,
           "start": "2025-09-01",
-          "end": "2025-08-31",
+          "end": "2125-09-01",
           "interval": 1,
           "mode": "within",
           "version": 1
-        },
-        {
-          "amount": 0,
-          "start": "2025-09-01",
-          "end": "2125-09-20",
-          "interval": 15,
-          "mode": "within",
-          "version": 2
         }
       ],
       "extras": [],
       "desc": "",
       "amount": 0,
-      "date": "2025-09-01"
+      "date": "2025-09-01",
+      "fixed": false
     }
   ],
   "nextBudgetId": 75,
@@ -8101,9 +8591,9 @@
       "notes": "Chat GPT"
     },
     {
-      "id": 1757156003787,
+      "id": 1757242990928,
       "match": "Card ending 9597",
-      "account": null,
+      "account": "Main TSB",
       "amount": null,
       "type": "Repayments",
       "subType": "Credit Card",
@@ -8294,7 +8784,8 @@
     "Repayments": "2025-08-01"
   },
   "backupInfo": {
-    "lastBackup": "2025-09-06T15:15:53.785Z"
+    "lastBackup": "2025-09-06T11:27:45.726Z"
   },
-  "nonDuplicateGroups": []
+  "nonDuplicateGroups": [],
+  "categoryFixed": {}
 }

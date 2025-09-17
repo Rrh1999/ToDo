@@ -1,0 +1,64 @@
+{
+  "settings": {
+    "locations": [
+      {
+        "id": 1,
+        "text": "Inside",
+        "createdAt": "2025-09-08T07:50:32.269Z"
+      },
+      {
+        "id": 2,
+        "text": "Back Garden",
+        "createdAt": "2025-09-08T07:50:37.620Z"
+      },
+      {
+        "id": 3,
+        "text": "Green House",
+        "createdAt": "2025-09-08T07:50:44.980Z"
+      },
+      {
+        "id": 4,
+        "text": "Middle Garden",
+        "createdAt": "2025-09-08T07:50:49.524Z"
+      },
+      {
+        "id": 5,
+        "text": "Patio",
+        "createdAt": "2025-09-08T07:50:51.924Z"
+      },
+      {
+        "id": 6,
+        "text": "Front of House Garden",
+        "createdAt": "2025-09-08T07:50:58.332Z"
+      },
+      {
+        "id": 7,
+        "text": "Herb Section",
+        "createdAt": "2025-09-08T07:51:16.619Z"
+      }
+    ],
+    "nextLocationId": 8,
+    "plantTypes": [
+      {
+        "id": 1,
+        "name": "Rose",
+        "createdAt": "2025-09-08T07:51:09.684Z"
+      },
+      {
+        "id": 2,
+        "name": "Herb",
+        "createdAt": "2025-09-08T07:51:20.075Z"
+      },
+      {
+        "id": 3,
+        "name": "Tree",
+        "createdAt": "2025-09-08T07:51:24.500Z"
+      }
+    ],
+    "nextPlantTypeId": 6
+  },
+  "plants": [],
+  "nextPlantId": 1,
+  "garden": [],
+  "futurePlans": []
+}

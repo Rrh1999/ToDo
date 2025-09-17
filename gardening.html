@@ -7,15 +7,780 @@
 <link rel="stylesheet" href="styles.css">
 <style>
 @media (max-width: 600px) { html { font-size: 14px; } }
+.inline-note{font-size:.9rem;color:#7D7D7D;margin:.25rem 0;}
 </style>
 </head>
 <body>
 <header>
-  <h1>Gardening</h1>
+  <div style="padding-left: 2rem;">
+    <h1>Gardening</h1>
+  </div>
 </header>
 <div id="nav-placeholder"></div>
 <script src="nav-loader.js"></script>
-<p>Content coming soon.</p>
+<div class="container">
+  <div class="surface">
+    <!-- Tabs similar to Finance -->
+    <div style="display:flex; gap:.5rem; flex-wrap:wrap; margin-bottom: .75rem;">
+      <button class="toggle" onclick="showTab('settingsTab')">Settings</button>
+      <button class="toggle" onclick="showTab('plantsTab')">Plants</button>
+      <button class="toggle" onclick="showTab('gardenTab')">Garden</button>
+      <button class="toggle" onclick="showTab('futureTab')">Future Plans</button>
+    </div>
+
+    <!-- Settings Tab -->
+    <section id="settingsTab" class="grid-auto">
+      <div class="toggle section-header" onclick="toggleSection('locationSection')">
+        Location
+        <span class="pin-star" onclick="event.stopPropagation(); togglePin('locationSection')" title="Pin section open">
+          <svg viewBox="0 0 24 24" fill="#2B2C29" stroke="#F7F6F3" stroke-width="1">
+            <polygon points="12,2 15.09,8.26 22,9.27 17,14.14 18.18,21.02 12,17.77 5.82,21.02 7,14.14 2,9.27 8.91,8.26"></polygon>
+          </svg>
+        </span>
+      </div>
+      <div id="locationSection" class="hidden">
+        <div class="form-grid" style="margin:.5rem 0;">
+          <label style="grid-column: 1 / -1;">Add Location
+            <input type="text" id="locationInput" placeholder="e.g., Back garden - raised bed by the shed">
+          </label>
+          <div style="grid-column: 1 / -1; text-align:center;">
+            <button class="submit-btn" onclick="addLocation()">Submit</button>
+          </div>
+        </div>
+        <div id="locationList"></div>
+      </div>
+
+      <div class="toggle section-header" onclick="toggleSection('plantTypeSection')">
+        Plant Types
+        <span class="pin-star" onclick="event.stopPropagation(); togglePin('plantTypeSection')" title="Pin section open">
+          <svg viewBox="0 0 24 24" fill="#2B2C29" stroke="#F7F6F3" stroke-width="1">
+            <polygon points="12,2 15.09,8.26 22,9.27 17,14.14 18.18,21.02 12,17.77 5.82,21.02 7,14.14 2,9.27 8.91,8.26"></polygon>
+          </svg>
+        </span>
+      </div>
+      <div id="plantTypeSection" class="hidden">
+        <div class="form-grid" style="margin:.5rem 0;">
+          <label style="grid-column: 1 / -1;">Add Plant Type
+            <input type="text" id="plantTypeInput" placeholder="e.g., Rose, Shrub, Herb, Bulb">
+          </label>
+          <div style="grid-column: 1 / -1; text-align:center;">
+            <button class="submit-btn" onclick="addPlantType()">Submit</button>
+          </div>
+        </div>
+        <div id="plantTypeList"></div>
+      </div>
+
+      <div class="toggle section-header" onclick="toggleSection('addPlantSection')">
+        Add Plant
+        <span class="pin-star" onclick="event.stopPropagation(); togglePin('addPlantSection')" title="Pin section open">
+          <svg viewBox="0 0 24 24" fill="#2B2C29" stroke="#F7F6F3" stroke-width="1">
+            <polygon points="12,2 15.09,8.26 22,9.27 17,14.14 18.18,21.02 12,17.77 5.82,21.02 7,14.14 2,9.27 8.91,8.26"></polygon>
+          </svg>
+        </span>
+      </div>
+      <div id="addPlantSection" class="hidden">
+        <div class="inline-note">Tip: create Plant Types first. Then add plants using those types.</div>
+        <div class="form-grid" style="margin:.5rem 0;">
+          <label>Name
+            <input type="text" id="plantName" placeholder="e.g., Climbing Rose 'New Dawn'">
+          </label>
+          <label>Plant Type
+            <select id="plantTypeSelect"></select>
+          </label>
+          <label>Location
+            <select id="plantLocationSelect"></select>
+          </label>
+          <label><input type="checkbox" id="plantIsBulb"> Is a bulb?</label>
+          <label><input type="checkbox" id="plantIsClimbing"> Is a climbing plant?</label>
+
+          <div id="climbingFields" class="hidden" style="grid-column: 1 / -1;">
+            <div class="form-grid">
+              <label>Plant height (cm)
+                <input type="number" id="plantHeight" min="0" step="0.1" placeholder="e.g., 250">
+              </label>
+              <label>Height growth rate (cm/year)
+                <input type="number" id="plantHeightGrowth" min="0" step="0.1" placeholder="e.g., 30">
+              </label>
+              <label>Plant width (cm)
+                <input type="number" id="plantWidth" min="0" step="0.1" placeholder="e.g., 150">
+              </label>
+              <label>Width growth rate (cm/year)
+                <input type="number" id="plantWidthGrowth" min="0" step="0.1" placeholder="e.g., 20">
+              </label>
+            </div>
+          </div>
+
+          <label>Root type
+            <select id="plantRootType">
+              <option value="">-- select --</option>
+              <option>Fibrous</option>
+              <option>Taproot</option>
+              <option>Rhizome</option>
+              <option>Tubers</option>
+              <option>Bulbs</option>
+              <option>Corms</option>
+              <option>Adventitious</option>
+            </select>
+          </label>
+          <label>Leaf type
+            <select id="plantLeafType">
+              <option value="">-- select --</option>
+              <option>Evergreen</option>
+              <option>Deciduous</option>
+              <option>Semi-evergreen</option>
+              <option>Needle-like</option>
+              <option>Broadleaf</option>
+            </select>
+          </label>
+          <label>Leaf period (months)
+            <select id="plantLeafMonths" multiple></select>
+          </label>
+          <label style="grid-column: 1 / -1;">Leaf management
+            <input type="text" id="plantLeafManagement" placeholder="e.g., Remove dead leaves in spring">
+          </label>
+
+          <label><input type="checkbox" id="plantHasFlower"> Flower?</label>
+
+          <div id="flowerFields" class="hidden" style="grid-column: 1 / -1;">
+            <div class="form-grid">
+              <label>Flower type
+                <select id="plantFlowerType">
+                  <option value="">-- select --</option>
+                  <option>Single</option>
+                  <option>Double</option>
+                  <option>Cluster</option>
+                  <option>Spike</option>
+                  <option>Bell</option>
+                  <option>Daisy-like</option>
+                  <option>Trumpet</option>
+                </select>
+              </label>
+              <label>Flower months
+                <select id="plantFlowerMonths" multiple></select>
+              </label>
+              <label style="grid-column: 1 / -1;">Flower management
+                <input type="text" id="plantFlowerManagement" placeholder="e.g., Support stems, feed before bloom">
+              </label>
+              <label><input type="checkbox" id="plantDeadHeading"> Dead heading?</label>
+              <label style="grid-column: 1 / -1;" id="deadHeadingNotesWrap" class="hidden">Dead heading notes
+                <input type="text" id="plantDeadHeadNotes" placeholder="When and where to dead head">
+              </label>
+            </div>
+          </div>
+
+          <label>Soil pH preference
+            <select id="plantSoilPh">
+              <option value="">-- select --</option>
+              <option>Acidic</option>
+              <option>Neutral</option>
+              <option>Alkaline</option>
+              <option>Any</option>
+            </select>
+          </label>
+          <label>Soil preference
+            <select id="plantSoil">
+              <option value="">-- select --</option>
+              <option>Clay</option>
+              <option>Loam</option>
+              <option>Sandy</option>
+              <option>Chalky</option>
+              <option>Silty</option>
+              <option>Peaty</option>
+              <option>Well-drained</option>
+              <option>Moist</option>
+            </select>
+          </label>
+          <label>Sun light preference
+            <select id="plantSunlight">
+              <option value="">-- select --</option>
+              <option>Full Sun</option>
+              <option>Partial Shade</option>
+              <option>Shade</option>
+            </select>
+          </label>
+          <label>Sunlight hours needed
+            <input type="number" id="plantSunlightHours" min="0" step="0.1" placeholder="e.g., 6">
+          </label>
+          <label><input type="checkbox" id="plantPruning"> Pruning?</label>
+          <div id="pruningFields" class="hidden" style="grid-column: 1 / -1;">
+            <div class="form-grid">
+              <label>When to prune
+                <input type="text" id="plantPruningWhen" placeholder="e.g., Late winter">
+              </label>
+              <label>Where to prune
+                <input type="text" id="plantPruningWhere" placeholder="e.g., Above outward-facing bud">
+              </label>
+            </div>
+          </div>
+          <label>When seeds show
+            <input type="text" id="plantSeedsWhen" placeholder="e.g., Late summer">
+          </label>
+          <label>Where seeds show from
+            <input type="text" id="plantSeedsWhereFrom" placeholder="e.g., Spent flower heads">
+          </label>
+
+          <div id="bulbFields" class="hidden" style="grid-column: 1 / -1;">
+            <div class="form-grid">
+              <label>Root depth (cm)
+                <input type="number" id="plantRootDepth" min="0" step="0.1" placeholder="e.g., 10">
+              </label>
+              <label>When to take out
+                <input type="text" id="plantBulbLiftWhen" placeholder="e.g., After foliage dies back">
+              </label>
+              <label>Years to split into new bulbs
+                <input type="number" id="plantBulbSplitYears" min="0" step="1" placeholder="e.g., 3">
+              </label>
+            </div>
+          </div>
+
+          <div style="grid-column: 1 / -1; text-align:center;">
+            <button class="submit-btn" onclick="savePlant()" id="savePlantBtn">Add Plant</button>
+            <button class="btn btn-outline hidden" id="cancelEditPlantBtn" onclick="cancelEditPlant()">Cancel Edit</button>
+          </div>
+        </div>
+
+        <div id="plantsList"></div>
+      </div>
+    </section>
+
+    <!-- Plants Tab -->
+  <section id="plantsTab" class="hidden">
+      <div class="toggle section-header" onclick="toggleSection('plantsSection')">
+        Plants
+        <span class="pin-star" onclick="event.stopPropagation(); togglePin('plantsSection')" title="Pin section open">
+          <svg viewBox="0 0 24 24" fill="#2B2C29" stroke="#F7F6F3" stroke-width="1">
+            <polygon points="12,2 15.09,8.26 22,9.27 17,14.14 18.18,21.02 12,17.77 5.82,21.02 7,14.14 2,9.27 8.91,8.26"></polygon>
+          </svg>
+        </span>
+      </div>
+      <div id="plantsSection" class="hidden">
+    <div id="plantsTabList">Loading...</div>
+      </div>
+    </section>
+
+    <!-- Garden Tab -->
+    <section id="gardenTab" class="hidden">
+      <div class="toggle section-header" onclick="toggleSection('gardenSection')">
+        Garden
+        <span class="pin-star" onclick="event.stopPropagation(); togglePin('gardenSection')" title="Pin section open">
+          <svg viewBox="0 0 24 24" fill="#2B2C29" stroke="#F7F6F3" stroke-width="1">
+            <polygon points="12,2 15.09,8.26 22,9.27 17,14.14 18.18,21.02 12,17.77 5.82,21.02 7,14.14 2,9.27 8.91,8.26"></polygon>
+          </svg>
+        </span>
+      </div>
+      <div id="gardenSection" class="hidden">
+        <p style="margin:.5rem 0;">Coming soon.</p>
+      </div>
+    </section>
+
+    <!-- Future Plans Tab -->
+    <section id="futureTab" class="hidden">
+      <div class="toggle section-header" onclick="toggleSection('futureSection')">
+        Future Plans
+        <span class="pin-star" onclick="event.stopPropagation(); togglePin('futureSection')" title="Pin section open">
+          <svg viewBox="0 0 24 24" fill="#2B2C29" stroke="#F7F6F3" stroke-width="1">
+            <polygon points="12,2 15.09,8.26 22,9.27 17,14.14 18.18,21.02 12,17.77 5.82,21.02 7,14.14 2,9.27 8.91,8.26"></polygon>
+          </svg>
+        </span>
+      </div>
+      <div id="futureSection" class="hidden">
+        <p style="margin:.5rem 0;">Coming soon.</p>
+      </div>
+    </section>
+  </div>
+</div>
+
+<script>
+// Data model in-memory
+let gardening = {
+  settings: { locations: [], nextLocationId: 1, plantTypes: [], nextPlantTypeId: 1 },
+  plants: [],
+  nextPlantId: 1,
+  garden: [],
+  futurePlans: []
+};
+let pinnedSections = [];
+let editingPlantId = null;
+
+function showTab(id) {
+  ['settingsTab','plantsTab','gardenTab','futureTab'].forEach(t => {
+    const el = document.getElementById(t);
+    if (!el) return;
+    if (t === id) el.classList.remove('hidden'); else el.classList.add('hidden');
+  });
+  if (id === 'plantsTab') renderPlantsTabList();
+}
+
+function toggleSection(id){
+  const el = document.getElementById(id);
+  if (el) el.classList.toggle('hidden');
+}
+
+function togglePin(sectionId) {
+  const index = pinnedSections.indexOf(sectionId);
+  const starElement = document.querySelector(`[onclick*="togglePin('${sectionId}')"]`);
+  if (index === -1) {
+    pinnedSections.push(sectionId);
+    if (starElement) { starElement.classList.add('pinned'); starElement.title = 'Unpin section'; }
+  } else {
+    pinnedSections.splice(index, 1);
+    if (starElement) { starElement.classList.remove('pinned'); starElement.title = 'Pin section open'; }
+  }
+  localStorage.setItem('gardening_pinned', JSON.stringify(pinnedSections));
+}
+
+function loadPinnedSections() {
+  try {
+    pinnedSections = JSON.parse(localStorage.getItem('gardening_pinned')||'[]');
+  } catch { pinnedSections = []; }
+  pinnedSections.forEach(id => {
+    const el = document.getElementById(id);
+    const star = document.querySelector(`[onclick*="togglePin('${id}')"]`);
+    if (el) el.classList.remove('hidden');
+    if (star) { star.classList.add('pinned'); star.title = 'Unpin section'; }
+  });
+}
+
+async function loadGardening() {
+  const res = await fetch('/api/gardening-data');
+  if (res.ok) {
+    const data = await res.json();
+    gardening = {
+      settings: { locations: [], nextLocationId: 1, plantTypes: [], nextPlantTypeId: 1 },
+      plants: [], nextPlantId: 1, garden: [], futurePlans: [],
+      ...data,
+    };
+    // defensive defaults
+    gardening.settings = gardening.settings || { locations: [], nextLocationId: 1, plantTypes: [], nextPlantTypeId: 1 };
+    gardening.settings.locations = gardening.settings.locations || [];
+    gardening.settings.nextLocationId = gardening.settings.nextLocationId || 1;
+    gardening.settings.plantTypes = gardening.settings.plantTypes || [];
+    gardening.settings.nextPlantTypeId = gardening.settings.nextPlantTypeId || 1;
+    gardening.plants = gardening.plants || [];
+    gardening.nextPlantId = gardening.nextPlantId || 1;
+  }
+}
+
+async function saveGardening() {
+  await fetch('/api/gardening-data', {
+    method: 'POST',
+    headers: { 'Content-Type': 'application/json' },
+    body: JSON.stringify(gardening)
+  });
+}
+
+function renderLocations() {
+  const container = document.getElementById('locationList');
+  container.innerHTML = '';
+  const list = gardening.settings.locations;
+  if (!list.length) {
+    container.textContent = 'No locations yet';
+    return;
+  }
+  const table = document.createElement('table');
+  table.className = 'task-table';
+  const head = document.createElement('tr');
+  head.innerHTML = '<th>ID</th><th>Description</th><th style="min-width:180px;">Action</th>';
+  table.appendChild(head);
+  list.forEach(loc => {
+    const tr = document.createElement('tr');
+    tr.innerHTML = `<td>${loc.id}</td><td>${escapeHtml(loc.text||'')}</td>`;
+    const actions = document.createElement('td');
+    actions.style.display = 'grid';
+    actions.style.gridTemplateColumns = '1fr 1fr';
+    actions.style.gap = '.25rem';
+    actions.style.justifyItems = 'center';
+    const editBtn = document.createElement('button');
+    editBtn.className = 'btn btn-outline';
+    editBtn.textContent = 'Edit';
+    editBtn.onclick = () => editLocation(loc.id);
+    const delBtn = document.createElement('button');
+    delBtn.className = 'btn';
+    delBtn.textContent = 'Delete';
+    delBtn.onclick = () => deleteLocation(loc.id);
+    actions.appendChild(editBtn);
+    actions.appendChild(delBtn);
+    tr.appendChild(actions);
+    table.appendChild(tr);
+  });
+  container.appendChild(table);
+}
+
+function escapeHtml(s){
+  const map = { '&': '&amp;', '<': '&lt;', '>': '&gt;', '"': '&quot;' };
+  return String(s).replace(/[&<>"]/g, c => map[c] || c);
+}
+
+function addLocation() {
+  const input = document.getElementById('locationInput');
+  const text = (input.value||'').trim();
+  if (!text) return;
+  const id = gardening.settings.nextLocationId++;
+  gardening.settings.locations.push({ id, text, createdAt: new Date().toISOString() });
+  input.value='';
+  saveGardening();
+  renderLocations();
+  renderPlantLocationSelects();
+}
+
+function editLocation(id) {
+  const loc = gardening.settings.locations.find(l => Number(l.id) === Number(id));
+  if (!loc) return;
+  const updated = prompt('Edit location:', loc.text || '');
+  if (updated === null) return;
+  loc.text = updated.trim();
+  loc.updatedAt = new Date().toISOString();
+  saveGardening();
+  renderLocations();
+}
+
+function deleteLocation(id) {
+  if (!confirm('Delete this location?')) return;
+  gardening.settings.locations = gardening.settings.locations.filter(l => Number(l.id)!==Number(id));
+  saveGardening();
+  renderLocations();
+  renderPlantLocationSelects();
+}
+
+// Plant Types CRUD
+function renderPlantTypes() {
+  const container = document.getElementById('plantTypeList');
+  container.innerHTML = '';
+  const list = gardening.settings.plantTypes || [];
+  if (!list.length) { container.textContent = 'No plant types yet'; renderPlantTypeSelect(); return; }
+  const table = document.createElement('table');
+  table.className = 'task-table';
+  const head = document.createElement('tr');
+  head.innerHTML = '<th>ID</th><th>Type</th><th style="min-width:180px;">Action</th>';
+  table.appendChild(head);
+  list.forEach(pt => {
+    const tr = document.createElement('tr');
+    tr.innerHTML = `<td>${pt.id}</td><td>${escapeHtml(pt.name||'')}</td>`;
+    const actions = document.createElement('td');
+    actions.style.display = 'grid';
+    actions.style.gridTemplateColumns = '1fr 1fr';
+    actions.style.gap = '.25rem';
+    actions.style.justifyItems = 'center';
+    const editBtn = document.createElement('button');
+    editBtn.className = 'btn btn-outline';
+    editBtn.textContent = 'Edit';
+    editBtn.onclick = () => editPlantType(pt.id);
+    const delBtn = document.createElement('button');
+    delBtn.className = 'btn';
+    delBtn.textContent = 'Delete';
+    delBtn.onclick = () => deletePlantType(pt.id);
+    actions.appendChild(editBtn);
+    actions.appendChild(delBtn);
+    tr.appendChild(actions);
+    table.appendChild(tr);
+  });
+  container.appendChild(table);
+  renderPlantTypeSelect();
+}
+
+function addPlantType() {
+  const input = document.getElementById('plantTypeInput');
+  const name = (input.value||'').trim();
+  if (!name) return;
+  const id = gardening.settings.nextPlantTypeId++;
+  gardening.settings.plantTypes.push({ id, name, createdAt: new Date().toISOString() });
+  input.value = '';
+  saveGardening();
+  renderPlantTypes();
+}
+
+function editPlantType(id) {
+  const pt = (gardening.settings.plantTypes||[]).find(t => Number(t.id)===Number(id));
+  if (!pt) return;
+  const updated = prompt('Edit plant type:', pt.name||'');
+  if (updated===null) return;
+  pt.name = updated.trim();
+  pt.updatedAt = new Date().toISOString();
+  saveGardening();
+  renderPlantTypes();
+  renderPlants();
+}
+
+function deletePlantType(id) {
+  const inUse = (gardening.plants||[]).some(p => Number(p.typeId)===Number(id));
+  if (inUse) { alert('Cannot delete: There are plants using this type.'); return; }
+  if (!confirm('Delete this plant type?')) return;
+  gardening.settings.plantTypes = (gardening.settings.plantTypes||[]).filter(t => Number(t.id)!==Number(id));
+  saveGardening();
+  renderPlantTypes();
+}
+
+function renderPlantTypeSelect() {
+  const sel = document.getElementById('plantTypeSelect');
+  if (!sel) return;
+  sel.innerHTML = '';
+  const optNone = document.createElement('option');
+  optNone.value = '';
+  optNone.textContent = gardening.settings.plantTypes?.length ? '-- select type --' : 'Create plant types first';
+  sel.appendChild(optNone);
+  (gardening.settings.plantTypes||[]).forEach(pt => {
+    const o = document.createElement('option');
+    o.value = pt.id;
+    o.textContent = pt.name;
+    sel.appendChild(o);
+  });
+}
+
+function renderPlantLocationSelects() {
+  const sel = document.getElementById('plantLocationSelect');
+  if (!sel) return;
+  sel.innerHTML = '';
+  const optNone = document.createElement('option'); optNone.value=''; optNone.textContent='-- optional --'; sel.appendChild(optNone);
+  (gardening.settings.locations||[]).forEach(loc => {
+    const o = document.createElement('option'); o.value = loc.id; o.textContent = loc.text; sel.appendChild(o);
+  });
+}
+
+// Plant CRUD
+function monthOptions(selectEl) {
+  const names = ['Jan','Feb','Mar','Apr','May','Jun','Jul','Aug','Sep','Oct','Nov','Dec'];
+  selectEl.innerHTML = '';
+  names.forEach((n,i)=>{
+    const o = document.createElement('option'); o.value=String(i+1); o.textContent=`${i+1} - ${n}`; selectEl.appendChild(o);
+  });
+}
+
+function getMultiSelectValues(sel){ return Array.from(sel.selectedOptions).map(o=>Number(o.value)); }
+function setMultiSelectValues(sel, values){
+  const set = new Set((values||[]).map(Number));
+  Array.from(sel.options).forEach(o=>{ o.selected = set.has(Number(o.value)); });
+}
+
+function resetPlantForm(){
+  editingPlantId = null;
+  document.getElementById('plantName').value = '';
+  document.getElementById('plantTypeSelect').value = '';
+  document.getElementById('plantLocationSelect').value = '';
+  document.getElementById('plantIsBulb').checked = false;
+  document.getElementById('plantIsClimbing').checked = false;
+  document.getElementById('plantHeight').value = '';
+  document.getElementById('plantHeightGrowth').value = '';
+  document.getElementById('plantWidth').value = '';
+  document.getElementById('plantWidthGrowth').value = '';
+  document.getElementById('plantRootType').value = '';
+  document.getElementById('plantLeafType').value = '';
+  setMultiSelectValues(document.getElementById('plantLeafMonths'), []);
+  document.getElementById('plantLeafManagement').value = '';
+  document.getElementById('plantHasFlower').checked = false;
+  document.getElementById('plantFlowerType').value = '';
+  setMultiSelectValues(document.getElementById('plantFlowerMonths'), []);
+  document.getElementById('plantFlowerManagement').value = '';
+  document.getElementById('plantDeadHeading').checked = false;
+  document.getElementById('plantDeadHeadNotes').value = '';
+  document.getElementById('plantSoilPh').value = '';
+  document.getElementById('plantSoil').value = '';
+  document.getElementById('plantSunlight').value = '';
+  document.getElementById('plantSunlightHours').value = '';
+  document.getElementById('plantPruning').checked = false;
+  document.getElementById('plantPruningWhen').value = '';
+  document.getElementById('plantPruningWhere').value = '';
+  document.getElementById('plantSeedsWhen').value = '';
+  document.getElementById('plantSeedsWhereFrom').value = '';
+  document.getElementById('plantRootDepth').value = '';
+  document.getElementById('plantBulbLiftWhen').value = '';
+  document.getElementById('plantBulbSplitYears').value = '';
+  document.getElementById('savePlantBtn').textContent = 'Add Plant';
+  document.getElementById('cancelEditPlantBtn').classList.add('hidden');
+  updateConditionalSections();
+}
+
+function updateConditionalSections(){
+  const isBulb = document.getElementById('plantIsBulb').checked;
+  const isClimb = document.getElementById('plantIsClimbing').checked;
+  const hasFlower = document.getElementById('plantHasFlower').checked;
+  const pruning = document.getElementById('plantPruning').checked;
+  document.getElementById('bulbFields').classList.toggle('hidden', !isBulb);
+  document.getElementById('climbingFields').classList.toggle('hidden', !isClimb);
+  document.getElementById('flowerFields').classList.toggle('hidden', !hasFlower);
+  document.getElementById('deadHeadingNotesWrap').classList.toggle('hidden', !document.getElementById('plantDeadHeading').checked);
+  document.getElementById('pruningFields').classList.toggle('hidden', !pruning);
+}
+
+['plantIsBulb','plantIsClimbing','plantHasFlower','plantDeadHeading','plantPruning'].forEach(id=>{
+  document.addEventListener('change', (e)=>{ if (e.target && e.target.id===id) updateConditionalSections(); });
+});
+
+function savePlant(){
+  const name = (document.getElementById('plantName').value||'').trim();
+  if (!name) { alert('Name is required'); return; }
+  const typeId = document.getElementById('plantTypeSelect').value ? Number(document.getElementById('plantTypeSelect').value) : null;
+  const locationId = document.getElementById('plantLocationSelect').value ? Number(document.getElementById('plantLocationSelect').value) : null;
+  const now = new Date().toISOString();
+  const plantObj = {
+    id: editingPlantId || gardening.nextPlantId++,
+    name,
+    typeId,
+    locationId,
+    isBulb: !!document.getElementById('plantIsBulb').checked,
+    isClimbing: !!document.getElementById('plantIsClimbing').checked,
+    heightCm: numVal('plantHeight'),
+    heightGrowthPerYearCm: numVal('plantHeightGrowth'),
+    widthCm: numVal('plantWidth'),
+    widthGrowthPerYearCm: numVal('plantWidthGrowth'),
+    rootType: val('plantRootType'),
+    leafType: val('plantLeafType'),
+    leafMonths: getMultiSelectValues(document.getElementById('plantLeafMonths')),
+    leafManagement: val('plantLeafManagement'),
+    hasFlower: !!document.getElementById('plantHasFlower').checked,
+    flowerType: val('plantFlowerType'),
+    flowerMonths: getMultiSelectValues(document.getElementById('plantFlowerMonths')),
+    flowerManagement: val('plantFlowerManagement'),
+    deadHeading: !!document.getElementById('plantDeadHeading').checked,
+    deadHeadNotes: val('plantDeadHeadNotes'),
+    soilPh: val('plantSoilPh'),
+    soil: val('plantSoil'),
+    sunlight: val('plantSunlight'),
+    sunlightHours: numVal('plantSunlightHours'),
+    pruning: !!document.getElementById('plantPruning').checked,
+    pruningWhen: val('plantPruningWhen'),
+    pruningWhere: val('plantPruningWhere'),
+    seedsWhen: val('plantSeedsWhen'),
+    seedsWhereFrom: val('plantSeedsWhereFrom'),
+    rootDepthCm: numVal('plantRootDepth'),
+    bulbLiftWhen: val('plantBulbLiftWhen'),
+    bulbSplitYears: numVal('plantBulbSplitYears'),
+    updatedAt: now
+  };
+  if (!editingPlantId) plantObj.createdAt = now;
+
+  const idx = (gardening.plants||[]).findIndex(p => Number(p.id)===Number(plantObj.id));
+  if (idx === -1) {
+    gardening.plants.push(plantObj);
+  } else {
+    gardening.plants[idx] = plantObj;
+  }
+  saveGardening();
+  renderPlants();
+  renderPlantsTabList();
+  resetPlantForm();
+}
+
+function val(id){ return (document.getElementById(id).value||'').trim() || null; }
+function numVal(id){ const v = document.getElementById(id).value; return v===''?null:Number(v); }
+
+function renderPlants(){
+  const container = document.getElementById('plantsList');
+  if (!container) return;
+  container.innerHTML = '';
+  const list = gardening.plants || [];
+  if (!list.length) { container.textContent = 'No plants yet'; return; }
+  const table = document.createElement('table');
+  table.className = 'task-table';
+  const head = document.createElement('tr');
+  head.innerHTML = '<th>ID</th><th>Name</th><th>Type</th><th>Sunlight</th><th>Flower?</th><th style="min-width:180px;">Action</th>';
+  table.appendChild(head);
+  list.forEach(p=>{
+    const tr = document.createElement('tr');
+    const typeName = getPlantTypeName(p.typeId);
+    tr.innerHTML = `<td>${p.id}</td><td>${escapeHtml(p.name||'')}</td><td>${escapeHtml(typeName||'')}</td><td>${escapeHtml(p.sunlight||'')}</td><td>${p.hasFlower?'Yes':'No'}</td>`;
+    const actions = document.createElement('td');
+    actions.style.display = 'grid'; actions.style.gridTemplateColumns = '1fr 1fr'; actions.style.gap = '.25rem'; actions.style.justifyItems='center';
+    const editBtn = document.createElement('button'); editBtn.className='btn btn-outline'; editBtn.textContent='Edit'; editBtn.onclick=()=>editPlant(p.id);
+    const delBtn = document.createElement('button'); delBtn.className='btn'; delBtn.textContent='Delete'; delBtn.onclick=()=>deletePlant(p.id);
+    actions.appendChild(editBtn); actions.appendChild(delBtn); tr.appendChild(actions); table.appendChild(tr);
+  });
+  container.appendChild(table);
+}
+
+function renderPlantsTabList(){
+  const container = document.getElementById('plantsTabList');
+  if (!container) return;
+  const list = gardening.plants || [];
+  if (!list.length) { container.textContent = 'No plants yet'; return; }
+  const table = document.createElement('table'); table.className='task-table';
+  const head = document.createElement('tr'); head.innerHTML = '<th>Name</th><th>Type</th><th>Location</th><th>Leaf months</th><th>Flower months</th>'; table.appendChild(head);
+  list.forEach(p=>{
+    const tr = document.createElement('tr');
+    tr.innerHTML = `<td>${escapeHtml(p.name||'')}</td><td>${escapeHtml(getPlantTypeName(p.typeId)||'')}</td><td>${escapeHtml(getLocationName(p.locationId)||'')}</td><td>${(p.leafMonths||[]).join(',')}</td><td>${(p.flowerMonths||[]).join(',')}</td>`;
+    table.appendChild(tr);
+  });
+  container.innerHTML=''; container.appendChild(table);
+}
+
+function getPlantTypeName(id){
+  const pt = (gardening.settings.plantTypes||[]).find(t => Number(t.id)===Number(id));
+  return pt?pt.name:null;
+}
+function getLocationName(id){
+  const loc = (gardening.settings.locations||[]).find(l => Number(l.id)===Number(id));
+  return loc?loc.text:null;
+}
+
+function editPlant(id){
+  const p = (gardening.plants||[]).find(x => Number(x.id)===Number(id));
+  if (!p) return;
+  editingPlantId = p.id;
+  document.getElementById('plantName').value = p.name || '';
+  document.getElementById('plantTypeSelect').value = p.typeId ?? '';
+  document.getElementById('plantLocationSelect').value = p.locationId ?? '';
+  document.getElementById('plantIsBulb').checked = !!p.isBulb;
+  document.getElementById('plantIsClimbing').checked = !!p.isClimbing;
+  document.getElementById('plantHeight').value = p.heightCm ?? '';
+  document.getElementById('plantHeightGrowth').value = p.heightGrowthPerYearCm ?? '';
+  document.getElementById('plantWidth').value = p.widthCm ?? '';
+  document.getElementById('plantWidthGrowth').value = p.widthGrowthPerYearCm ?? '';
+  document.getElementById('plantRootType').value = p.rootType || '';
+  document.getElementById('plantLeafType').value = p.leafType || '';
+  setMultiSelectValues(document.getElementById('plantLeafMonths'), p.leafMonths||[]);
+  document.getElementById('plantLeafManagement').value = p.leafManagement || '';
+  document.getElementById('plantHasFlower').checked = !!p.hasFlower;
+  document.getElementById('plantFlowerType').value = p.flowerType || '';
+  setMultiSelectValues(document.getElementById('plantFlowerMonths'), p.flowerMonths||[]);
+  document.getElementById('plantFlowerManagement').value = p.flowerManagement || '';
+  document.getElementById('plantDeadHeading').checked = !!p.deadHeading;
+  document.getElementById('plantDeadHeadNotes').value = p.deadHeadNotes || '';
+  document.getElementById('plantSoilPh').value = p.soilPh || '';
+  document.getElementById('plantSoil').value = p.soil || '';
+  document.getElementById('plantSunlight').value = p.sunlight || '';
+  document.getElementById('plantSunlightHours').value = p.sunlightHours ?? '';
+  document.getElementById('plantPruning').checked = !!p.pruning;
+  document.getElementById('plantPruningWhen').value = p.pruningWhen || '';
+  document.getElementById('plantPruningWhere').value = p.pruningWhere || '';
+  document.getElementById('plantSeedsWhen').value = p.seedsWhen || '';
+  document.getElementById('plantSeedsWhereFrom').value = p.seedsWhereFrom || '';
+  document.getElementById('plantRootDepth').value = p.rootDepthCm ?? '';
+  document.getElementById('plantBulbLiftWhen').value = p.bulbLiftWhen || '';
+  document.getElementById('plantBulbSplitYears').value = p.bulbSplitYears ?? '';
+  document.getElementById('savePlantBtn').textContent = 'Save Changes';
+  document.getElementById('cancelEditPlantBtn').classList.remove('hidden');
+  updateConditionalSections();
+  // Ensure Add Plant section is open
+  document.getElementById('addPlantSection').classList.remove('hidden');
+}
+
+function cancelEditPlant(){ resetPlantForm(); }
+
+function deletePlant(id){
+  if (!confirm('Delete this plant?')) return;
+  gardening.plants = (gardening.plants||[]).filter(p => Number(p.id)!==Number(id));
+  saveGardening();
+  renderPlants();
+  renderPlantsTabList();
+}
+
+async function init() {
+  showTab('settingsTab');
+  loadPinnedSections();
+  await loadGardening();
+  // open Location by default
+  document.getElementById('locationSection').classList.remove('hidden');
+  // populate selects and months
+  renderLocations();
+  renderPlantTypes();
+  renderPlantTypeSelect();
+  renderPlantLocationSelects();
+  monthOptions(document.getElementById('plantLeafMonths'));
+  monthOptions(document.getElementById('plantFlowerMonths'));
+  renderPlants();
+}
+
+init();
+</script>
 <!-- Global header styling applied via styles.css -->
 </body>
 </html>

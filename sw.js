@@ -69,9 +69,13 @@ self.addEventListener('notificationshow', (e) => {
 });
 
 self.addEventListener('notificationclick', (e) => {
-  const action = e.action || 'default';
+  let action = e.action || 'default';
   const tag = e?.notification?.tag;
   const data = e?.notification?.data || {};
+  // Backward-compat: map old 'resp-0/resp-1' to 'response-0/response-1'
+  if (action && action.startsWith('resp-')) {
+    action = action.replace('resp-', 'response-');
+  }
   
   try { console.log('SW: notificationclick', action, tag, data); } catch {}
   e.notification.close();
@@ -115,7 +119,7 @@ self.addEventListener('notificationclick', (e) => {
     }
     
     // Report to server if action is yes/no (for regular notifications)
-    if (action === 'open' || action === 'dismiss' || action === 'yes' || action === 'no') {
+  if (action === 'open' || action === 'dismiss' || action === 'yes' || action === 'no') {
       const mapped = action === 'open' ? 'yes' : (action === 'dismiss' ? 'no' : action);
       try {
         await fetch('/api/notification-event', {

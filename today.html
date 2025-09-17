@@ -1651,6 +1651,39 @@ function renderTodayDataList() {
     
     taskDiv.appendChild(nameDiv);
     taskDiv.appendChild(detailDiv);
+
+    // Timer button (clock) – allow starting a time tracker entry directly
+    let timerWrapper = document.createElement('div');
+    timerWrapper.style.display='flex';
+    timerWrapper.style.alignItems='center';
+    timerWrapper.style.gap='4px';
+    // Determine source for time tracker
+    const trackerSource = item.source ? (item.source.page || 'custom') : 'adhoc';
+    const trackerName = nameDiv.textContent;
+    try {
+      if (typeof window.createTimerButton === 'function') {
+        const tBtn = window.createTimerButton(trackerSource, trackerName);
+        tBtn.title = `Start timer: ${trackerName} [${trackerSource}]`;
+        tBtn.style.width='28px';
+        tBtn.style.height='28px';
+        tBtn.style.display='flex';
+        tBtn.style.alignItems='center';
+        tBtn.style.justifyContent='center';
+        tBtn.style.padding='0';
+        tBtn.setAttribute('data-today-id', item.id);
+        if (item.source && item.source.id) {
+          tBtn.setAttribute('data-linked-id', item.source.id);
+          tBtn.setAttribute('data-linked-page', item.source.page||'');
+          if (item.source.type) tBtn.setAttribute('data-linked-type', item.source.type);
+        }
+        timerWrapper.appendChild(tBtn);
+      } else {
+        const placeholder=document.createElement('span');
+        placeholder.textContent='⏱';
+        placeholder.style.opacity='0.4';
+        timerWrapper.appendChild(placeholder);
+      }
+    } catch(e) { /* ignore */ }
     
     // Action buttons
     const actionsDiv = document.createElement('div');
@@ -1702,7 +1735,12 @@ function renderTodayDataList() {
     actionsDiv.appendChild(completeBtn);
     
     itemDiv.appendChild(prioritySpan);
-    itemDiv.appendChild(taskDiv);
+  // Combine task + timer
+  const mainBlock=document.createElement('div');
+  mainBlock.style.cssText='display:flex;align-items:center;gap:0.4rem;flex:1;min-width:0;';
+  mainBlock.appendChild(timerWrapper);
+  mainBlock.appendChild(taskDiv);
+  itemDiv.appendChild(mainBlock);
     itemDiv.appendChild(actionsDiv);
     container.appendChild(itemDiv);
   });

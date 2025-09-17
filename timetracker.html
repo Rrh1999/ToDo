@@ -23,16 +23,21 @@
     <span id="weekLabel"></span>
     <button onclick="changeWeek(1)">&#8594;</button>
   </div>
-  <table id="calendarTable" class="task-table"></table>
+  <div id="calendarGrid" class="calendar-grid"></div>
 </section>
 
 <section>
   <h2>Task Log</h2>
+  <div style="margin: .5rem 0;">
+    <button class="btn" onclick="openAddTimeModal()">+ Add Time</button>
+  </div>
   <div id="timeTable"></div>
 </section>
 
 <script>
 let calendarStart=startOfWeek(new Date());
+// Calendar view config
+const CAL_CONF={ startHour:0, hoursPerDay:24, slotsPerHour:4 }; // 15-minute slots (full day)
 
 function startOfWeek(d){
   const date=new Date(d);
@@ -49,37 +54,443 @@ function changeWeek(offset){
 
 function renderCalendar(){
   const tasks=window.getAllTrackedTasks?window.getAllTrackedTasks():[];
-  const table=document.getElementById('calendarTable');
-  table.innerHTML='';
+  const container=document.getElementById('calendarGrid');
+  if(!container) return;
+  // If a mini popover is open, log and close before re-rendering the grid
+  try{ closeMiniPopover('calendar-rerender', /*clearSel*/true); }catch{}
   const days=['Mon','Tue','Wed','Thu','Fri','Sat','Sun'];
-  const head=document.createElement('tr');
-  head.innerHTML='<th>Time</th>'+days.map(d=>`<th>${d}</th>`).join('');
-  table.appendChild(head);
-  for(let h=0;h<24;h++){
-    const row=document.createElement('tr');
-    row.innerHTML=`<td>${h}:00</td>`+days.map(()=>'<td></td>').join('');
-    table.appendChild(row);
-  }
-  const weekEnd=new Date(calendarStart); weekEnd.setDate(weekEnd.getDate()+7);
-  tasks.forEach(t=>{
-    const s=new Date(t.start);
-    if(s>=calendarStart && s<weekEnd){
-      const dayIdx=(s.getDay()+6)%7;
-      const hour=s.getHours();
-      const row=table.rows[hour+1];
-      if(row){
-        const cell=row.cells[dayIdx+1];
-        const div=document.createElement('div');
-        div.textContent=t.name;
-        div.style.background='#C7BBB4';
-        div.style.margin='2px';
-        cell.appendChild(div);
-      }
-    }
-  });
   const startLabel=new Date(calendarStart);
   const endLabel=new Date(calendarStart); endLabel.setDate(endLabel.getDate()+6);
   document.getElementById('weekLabel').textContent=`${startLabel.toLocaleDateString()} - ${endLabel.toLocaleDateString()}`;
+
+  // Build structure
+  container.innerHTML='';
+  container.classList.add('surface');
+  const header=document.createElement('div');
+  header.className='cal-header-row';
+  header.appendChild(el('div','time-col-header','Time'));
+  for(let d=0; d<7; d++){
+    const date=new Date(calendarStart); date.setDate(calendarStart.getDate()+d);
+    const label=`${days[d]} ${date.toLocaleDateString()}`;
+    const h=el('div','day-col-header', label);
+    header.appendChild(h);
+  }
+  container.appendChild(header);
+
+  const body=document.createElement('div');
+  body.className='cal-body-row';
+
+  // Time column
+  const timeCol=document.createElement('div');
+  timeCol.className='time-col';
+  for(let h=0; h<CAL_CONF.hoursPerDay; h++){
+    const hourBlock=document.createElement('div');
+    hourBlock.className='hour-label-block';
+    const hour=CAL_CONF.startHour+h;
+    const label=((hour%24)+':00').padStart(5,' ');
+    hourBlock.textContent = `${hour.toString().padStart(2,'0')}:00`;
+    timeCol.appendChild(hourBlock);
+  }
+  body.appendChild(timeCol);
+
+  // Day columns
+  for(let d=0; d<7; d++){
+    const dayCol=document.createElement('div');
+    dayCol.className='day-col';
+    dayCol.dataset.dayIndex=String(d);
+    const slotsContainer=document.createElement('div');
+    slotsContainer.className='slots';
+    const totalSlots = CAL_CONF.hoursPerDay * CAL_CONF.slotsPerHour;
+    for(let s=0; s<totalSlots; s++){
+      const slot=document.createElement('div');
+      slot.className='slot';
+      slot.dataset.dayIndex=String(d);
+      slot.dataset.slotIndex=String(s);
+      slotsContainer.appendChild(slot);
+    }
+    const overlay=document.createElement('div');
+    overlay.className='overlay';
+    dayCol.appendChild(slotsContainer);
+    dayCol.appendChild(overlay);
+    body.appendChild(dayCol);
+  }
+  container.appendChild(body);
+
+  wireCalendarInteractions(container);
+  renderCalendarEvents(tasks);
+}
+
+function el(tag, cls, text){ const x=document.createElement(tag); if(cls) x.className=cls; if(text!=null) x.textContent=text; return x; }
+
+function getDayDate(dayIndex){ const d=new Date(calendarStart); d.setDate(calendarStart.getDate()+dayIndex); return d; }
+function minutesToSlot(min){ return Math.round(min/15); }
+function slotToMinutes(slot){ return slot*15; }
+function withinViewMinutes(date){ return date.getHours()*60 + date.getMinutes() - CAL_CONF.startHour*60; }
+
+function renderCalendarEvents(tasks){
+  // Clear overlays and existing event blocks
+  document.querySelectorAll('#calendarGrid .day-col .overlay').forEach(o=>o.innerHTML='');
+  document.querySelectorAll('#calendarGrid .day-col .event-block').forEach(b=>b.remove());
+  const totalSlots = CAL_CONF.hoursPerDay * CAL_CONF.slotsPerHour;
+  const viewStartMin = CAL_CONF.startHour*60;
+  const viewEndMin = viewStartMin + CAL_CONF.hoursPerDay*60;
+  const slotH = getSlotHeight();
+
+  const weekEnd=new Date(calendarStart); weekEnd.setDate(weekEnd.getDate()+7);
+  // Group tasks by day with computed slot bounds
+  const byDay=[0,1,2,3,4,5,6].map(()=>[]);
+  (tasks||[]).forEach(t=>{
+    const s=new Date(t.start);
+    const e=t.end? new Date(t.end) : null;
+    if(!(s>=calendarStart && s<weekEnd)) return;
+    const dayIdx=(s.getDay()+6)%7;
+    const dayStart=new Date(getDayDate(dayIdx)); dayStart.setHours(0,0,0,0);
+    const startMin = Math.max(viewStartMin, Math.min(viewEndMin, (s - dayStart)/60000));
+    const endMinRaw = e? (e - dayStart)/60000 : startMin + 30; // default 30m running
+    const endMin = Math.max(viewStartMin, Math.min(viewEndMin, endMinRaw));
+    if(endMin <= viewStartMin || startMin >= viewEndMin) return; // out of view
+    const startSlot = Math.floor((startMin - viewStartMin)/15);
+    const endSlot = Math.max(startSlot+1, Math.ceil((endMin - viewStartMin)/15));
+    byDay[dayIdx].push({ t, dayIdx, startSlot, endSlot });
+  });
+
+  for(let dayIdx=0; dayIdx<7; dayIdx++){
+    const col=document.querySelector(`#calendarGrid .day-col[data-day-index="${dayIdx}"]`);
+    if(!col) continue;
+    const events=byDay[dayIdx];
+    const groups = buildConflictGroups(events);
+    groups.forEach(group=>{
+      // Assign columns greedily within the group
+      group.sort((a,b)=> a.startSlot - b.startSlot || (b.endSlot - a.endSlot));
+      const cols=[]; // last endSlot per column
+      group.forEach(ev=>{
+        let assigned=-1;
+        for(let i=0;i<cols.length;i++){ if(ev.startSlot>=cols[i]){ assigned=i; break; } }
+        if(assigned===-1){ assigned=cols.length; cols.push(ev.endSlot); } else { cols[assigned]=ev.endSlot; }
+        ev._col=assigned; ev._colCount=Math.max(cols.length, group._maxCols||0); group._maxCols=ev._colCount;
+      });
+      // Render blocks
+      group.forEach(ev=>{
+        const block=document.createElement('div');
+        block.className='event-block';
+        block.dataset.id=String(ev.t.id);
+        block.dataset.dayIndex=String(dayIdx);
+        block.dataset.startSlot=String(ev.startSlot);
+        block.dataset.endSlot=String(ev.endSlot);
+        block.dataset._col=String(ev._col);
+        block.dataset._colCount=String(group._maxCols);
+        const handleTop=document.createElement('div'); handleTop.className='resize-handle top';
+        const handleBot=document.createElement('div'); handleBot.className='resize-handle bottom';
+        const label=document.createElement('div'); label.className='event-label'; label.textContent=ev.t.name||'Untitled';
+        const ctr=document.createElement('div'); ctr.style.display='flex'; ctr.style.gap='.25rem'; ctr.style.alignItems='center';
+        const edit=document.createElement('button'); edit.className='event-edit'; edit.innerHTML='✎'; edit.title='Edit'; edit.onclick=(e)=>{ e.stopPropagation(); if(window.openEditTimeModal) window.openEditTimeModal(ev.t.id); };
+        const del=document.createElement('button'); del.className='event-edit'; del.innerHTML='🗑'; del.title='Delete'; del.onclick=async(e)=>{ e.stopPropagation(); try{ await window.deleteTrackedTask(ev.t.id); }catch{ alert('Delete failed'); } };
+        ctr.appendChild(edit); ctr.appendChild(del);
+        block.appendChild(handleTop);
+        block.appendChild(handleBot);
+        block.appendChild(label);
+        block.appendChild(ctr);
+        positionEventBlock(block, ev.startSlot, ev.endSlot, ev._col, group._maxCols, slotH);
+        enableDragAndResize(block, ev.t);
+        col.appendChild(block);
+      });
+    });
+  }
+}
+
+function getSlotHeight(){ const v = getComputedStyle(document.documentElement).getPropertyValue('--slot-height') || '18'; return parseFloat(v); }
+
+function positionEventBlock(block, startSlot, endSlot, colIndex, colCount, slotH){
+  const totalSlots = CAL_CONF.hoursPerDay * CAL_CONF.slotsPerHour;
+  const top = Math.max(0, startSlot) * slotH;
+  const height = Math.max(slotH, (Math.min(totalSlots, endSlot) - Math.max(0,startSlot)) * slotH);
+  const gutter=2; // px
+  const widthPct = 100/Math.max(1,colCount);
+  const leftPct = widthPct * (colIndex||0);
+  block.style.top = top+'px';
+  block.style.height = height+'px';
+  block.style.left = `calc(${leftPct}% + 4px)`;
+  block.style.width = `calc(${widthPct}% - ${8 + gutter}px)`; // account for left/right padding
+}
+
+function buildConflictGroups(events){
+  const groups=[]; const used=new Set();
+  const overlaps=(a,b)=> !(a.endSlot<=b.startSlot || b.endSlot<=a.startSlot);
+  for(let i=0;i<events.length;i++){
+    if(used.has(i)) continue;
+    const queue=[i]; used.add(i); const group=[];
+    while(queue.length){
+      const idx=queue.shift(); const ev=events[idx]; group.push(ev);
+      for(let j=0;j<events.length;j++){
+        if(used.has(j)) continue;
+        if(overlaps(events[idx], events[j])){ used.add(j); queue.push(j); }
+      }
+    }
+    groups.push(group);
+  }
+  return groups;
+}
+
+function enableDragAndResize(block, task){
+  const slotH=getSlotHeight();
+  const totalSlots = CAL_CONF.hoursPerDay * CAL_CONF.slotsPerHour;
+  let mode=null; // 'move' | 'resize-top' | 'resize-bottom'
+  let startY=0, startX=0;
+  const orig={
+    day: Number(block.dataset.dayIndex),
+    start: Number(block.dataset.startSlot),
+    end: Number(block.dataset.endSlot),
+    col: Number(block.dataset._col||0),
+    colCount: Number(block.dataset._colCount||1)
+  };
+  let duration=orig.end-orig.start;
+
+  const onDown=(e)=>{
+    const target=e.target;
+    if(target.classList.contains('resize-handle')){
+      mode = target.classList.contains('top')? 'resize-top':'resize-bottom';
+    } else {
+      mode='move';
+    }
+    startY=e.clientY; startX=e.clientX;
+    block.classList.add('dragging');
+    document.addEventListener('mousemove', onMove);
+    document.addEventListener('mouseup', onUp);
+    e.preventDefault();
+  };
+
+  const onMove=(e)=>{
+    const dy=e.clientY - startY;
+    const dayIdx=getDayFromClientX(e.clientX) ?? orig.day;
+    if(mode==='move'){
+      const slotDelta = Math.round(dy/slotH);
+      let newStart = Math.min(Math.max(0, orig.start + slotDelta), totalSlots - duration);
+      let newEnd = newStart + duration;
+      positionEventBlock(block, newStart, newEnd, orig.col, orig.colCount, slotH);
+      block.dataset.dayIndex=String(dayIdx);
+      block.dataset.startSlot=String(newStart);
+      block.dataset.endSlot=String(newEnd);
+    } else if(mode==='resize-top'){
+      const slotDelta = Math.round(dy/slotH);
+      let newStart = Math.max(0, Math.min(orig.start + slotDelta, orig.end-1));
+      positionEventBlock(block, newStart, orig.end, orig.col, orig.colCount, slotH);
+      block.dataset.startSlot=String(newStart);
+    } else if(mode==='resize-bottom'){
+      const slotDelta = Math.round(dy/slotH);
+      let newEnd = Math.min(totalSlots, Math.max(orig.start+1, orig.end + slotDelta));
+      positionEventBlock(block, orig.start, newEnd, orig.col, orig.colCount, slotH);
+      block.dataset.endSlot=String(newEnd);
+    }
+  };
+
+  const onUp=async(e)=>{
+    document.removeEventListener('mousemove', onMove);
+    document.removeEventListener('mouseup', onUp);
+    block.classList.remove('dragging');
+    const newDay=Number(block.dataset.dayIndex);
+    const newStart=Number(block.dataset.startSlot);
+    const newEnd=Number(block.dataset.endSlot);
+    if(newDay===orig.day && newStart===orig.start && newEnd===orig.end){ mode=null; return; }
+    try{
+      const d=getDayDate(newDay); const dateStr=d.toISOString().slice(0,10);
+      const viewStartMin = CAL_CONF.startHour*60;
+      const startMin=viewStartMin + slotToMinutes(newStart);
+      const endMin=viewStartMin + slotToMinutes(newEnd);
+      const sH=Math.floor(startMin/60), sM=startMin%60;
+      const eH=Math.floor(endMin/60), eM=endMin%60;
+      const payload={ id: task.id, name: task.name, source: task.source, start: `${dateStr}T${String(sH).padStart(2,'0')}:${String(sM).padStart(2,'0')}:00`, end: `${dateStr}T${String(eH).padStart(2,'0')}:${String(eM).padStart(2,'0')}:00` };
+      await window.updateTrackedTask(payload);
+    }catch(err){ alert('Failed to update time'); }
+    mode=null;
+  };
+
+  block.addEventListener('mousedown', onDown);
+}
+
+function getDayFromClientX(clientX){
+  const cols=[...document.querySelectorAll('#calendarGrid .day-col')];
+  for(let i=0;i<cols.length;i++){
+    const r=cols[i].getBoundingClientRect();
+    if(clientX>=r.left && clientX<=r.right) return i;
+  }
+  return null;
+}
+
+let _dragState=null; // {dayIndex,startSlot,currentSlot}
+function wireCalendarInteractions(root){
+  // Delegate events on slots
+  root.querySelectorAll('.slot').forEach(slot=>{
+    slot.addEventListener('mousedown',(e)=>{
+      e.preventDefault();
+      const dayIndex=Number(slot.dataset.dayIndex);
+      const startSlot=Number(slot.dataset.slotIndex);
+      _dragState={dayIndex,startSlot,currentSlot:startSlot};
+      showSelection(dayIndex,startSlot,startSlot);
+      document.addEventListener('mousemove',onMouseMove);
+      document.addEventListener('mouseup',onMouseUp);
+    });
+    slot.addEventListener('mouseenter',()=>{
+      if(_dragState && Number(slot.dataset.dayIndex)===_dragState.dayIndex){
+        _dragState.currentSlot=Number(slot.dataset.slotIndex);
+        showSelection(_dragState.dayIndex, _dragState.startSlot, _dragState.currentSlot);
+      }
+    });
+  });
+}
+
+function showSelection(dayIndex,slotA,slotB){
+  const overlay=document.querySelector(`#calendarGrid .day-col[data-day-index="${dayIndex}"] .overlay`);
+  if(!overlay) return;
+  overlay.querySelectorAll('.selection').forEach(el=>el.remove());
+  const start=Math.min(slotA,slotB), end=Math.max(slotA,slotB)+1; // inclusive of end slot
+  const slotH=parseFloat(getComputedStyle(document.documentElement).getPropertyValue('--slot-height')||'18');
+  const block=document.createElement('div');
+  block.className='selection';
+  block.style.top=(start*slotH)+'px';
+  block.style.height=((end-start)*slotH)+'px';
+  overlay.appendChild(block);
+}
+
+function onMouseMove(e){ /* handled via mouseenter on slots */ }
+function onMouseUp(e){
+  document.removeEventListener('mousemove',onMouseMove);
+  document.removeEventListener('mouseup',onMouseUp);
+  if(!_dragState) return;
+  const {dayIndex,startSlot,currentSlot}=_dragState; _dragState=null;
+  const start=Math.min(startSlot,currentSlot);
+  const end=Math.max(startSlot,currentSlot)+1;
+  openMiniPopover(dayIndex,start,end);
+}
+
+function openMiniPopover(dayIndex,startSlot,endSlot){
+  closeMiniPopover('open-new');
+  const dayCol=document.querySelector(`#calendarGrid .day-col[data-day-index="${dayIndex}"]`);
+  const overlay=dayCol?.querySelector('.overlay');
+  if(!dayCol||!overlay) return;
+  const slotH=parseFloat(getComputedStyle(document.documentElement).getPropertyValue('--slot-height')||'18');
+  const top=(Math.min(startSlot,endSlot-1)*slotH);
+  const height=((endSlot-startSlot)*slotH);
+  const pop=document.createElement('div');
+  pop.id='slotPopover';
+  pop.className='mini-popover';
+  pop.style.top=(top)+'px';
+  pop.style.left='8px';
+  pop.innerHTML=`
+    <div style="display:flex;flex-direction:column;gap:.4rem;">
+      <div style="display:grid;grid-template-columns:1fr 1fr;gap:.4rem;align-items:end;">
+        <label style="font-size:.8rem;">Source
+          <select id="sp_source">
+            <option value="custom" selected>Custom</option>
+            <option value="todo">Index</option>
+            <option value="work">Work</option>
+            <option value="diy">DIY</option>
+            <option value="parenting">Parenting</option>
+          </select>
+        </label>
+        <label style="font-size:.8rem;">Linked task
+          <select id="sp_linkedSelect"><option value="">(none)</option></select>
+        </label>
+      </div>
+      <input id="sp_name" type="text" placeholder="Task name" style="width:260px;">
+      <div style="display:flex;gap:.4rem;align-items:center;">
+        <span>${getDayDate(dayIndex).toLocaleDateString()}</span>
+      </div>
+      <div style="display:grid;grid-template-columns:1fr 1fr;gap:.4rem;">
+        <label style="font-size:.8rem;">Start<input id="sp_start" type="time"></label>
+        <label style="font-size:.8rem;">End<input id="sp_end" type="time"></label>
+      </div>
+      <div style="display:flex;gap:.5rem;justify-content:flex-end;">
+        <button class="btn-outline" id="sp_cancel">Cancel</button>
+        <button class="btn" id="sp_save">Save</button>
+      </div>
+    </div>`;
+  dayCol.appendChild(pop);
+  // Prefill times
+  const viewStartMin = CAL_CONF.startHour*60;
+  const startMin=viewStartMin + slotToMinutes(Math.min(startSlot,endSlot-1));
+  const endMin=viewStartMin + slotToMinutes(Math.max(startSlot,endSlot));
+  const sH=Math.floor(startMin/60), sM=startMin%60;
+  const eH=Math.floor(endMin/60), eM=endMin%60;
+  pop.querySelector('#sp_start').value = `${String(sH).padStart(2,'0')}:${String(sM).padStart(2,'0')}`;
+  pop.querySelector('#sp_end').value = `${String(eH).padStart(2,'0')}:${String(eM).padStart(2,'0')}`;
+  // Load linked tasks when selecting a source
+  const sourceSel=pop.querySelector('#sp_source');
+  const linkedSel=pop.querySelector('#sp_linkedSelect');
+  const nameInput=pop.querySelector('#sp_name');
+  async function loadLinkedForSource(){
+    const src=sourceSel.value;
+    if(src==='custom'){ linkedSel.innerHTML='<option value="">(none)</option>'; return; }
+    linkedSel.innerHTML='<option value="">Loading…</option>';
+    const tasks=await fetchLinkedTasksForSource(src);
+    if(!tasks.length){ linkedSel.innerHTML='<option value="">No tasks</option>'; }
+    else {
+      linkedSel.innerHTML=tasks.map(t=>`<option value="${t.id}" data-page="${t.page}" data-type="${t.type}" data-project="${t.project}" data-name="${t.name}">${t.name} — [${t.page}/${t.project}]</option>`).join('');
+      linkedSel.insertAdjacentHTML('afterbegin','<option value="">(none)</option>');
+    }
+  }
+  sourceSel.addEventListener('change', loadLinkedForSource);
+  linkedSel.addEventListener('change', ()=>{ const opt=linkedSel.selectedOptions[0]; if(!opt) return; const n=opt.getAttribute('data-name'); if(n && nameInput && !nameInput.value) nameInput.value=n; });
+  loadLinkedForSource();
+  // Wire buttons
+  pop.querySelector('#sp_cancel').onclick=()=>{ closeMiniPopover('cancel-button', true); };
+  pop.querySelector('#sp_save').onclick=async()=>{
+    const name=(pop.querySelector('#sp_name')||{}).value||'';
+    const src=(sourceSel||{}).value||'custom';
+    const opt=linkedSel && linkedSel.selectedOptions ? linkedSel.selectedOptions[0] : null;
+    if(!name && (!opt || !opt.value)){ (pop.querySelector('#sp_name')||{}).focus?.(); return; }
+    const startTime=(pop.querySelector('#sp_start')||{}).value||'';
+    const endTime=(pop.querySelector('#sp_end')||{}).value||'';
+    const d=getDayDate(dayIndex);
+    const startDate=d.toISOString().slice(0,10);
+    const endDate=startDate;
+    try{
+      const payload={ name: name || (opt? opt.getAttribute('data-name'):''), source: src||'custom', activityType:'oneoff', startDate, startTime, endDate, endTime };
+      if(opt && opt.value){ payload.activityType='linked'; payload.link={ id: opt.value, page: opt.getAttribute('data-page'), type: opt.getAttribute('data-type'), project: opt.getAttribute('data-project') }; }
+      const res=await fetch('/api/time-tracker/add-manual',{method:'POST',headers:{'Content-Type':'application/json'},body:JSON.stringify(payload)});
+      if(!res.ok) throw new Error(await res.text());
+      await window.loadTimeTracker();
+      closeMiniPopover('save-success', true);
+    }catch(err){ alert('Failed to save: '+err.message); }
+  };
+  // Close on outside click
+  setTimeout(()=>{
+    const onDoc=(ev)=>{
+      if(!pop.contains(ev.target)){
+        try{ console.log('[mini-popover] closing due to outside click', { target: ev.target?.tagName, id: ev.target?.id, class: ev.target?.className }); }catch{}
+        document.removeEventListener('mousedown',onDoc);
+        closeMiniPopover('outside-click', true);
+      }
+    };
+    document.addEventListener('mousedown',onDoc);
+  },0);
+}
+
+function closeMiniPopover(reason='unknown', clearSel){
+  const pop=document.getElementById('slotPopover');
+  if(pop){
+    try{ console.log('[mini-popover] close', { reason, clearSel: !!clearSel, time: new Date().toISOString() }); }catch{}
+    const parent=pop.parentElement; pop.remove();
+  }
+  if(clearSel){ document.querySelectorAll('#calendarGrid .selection').forEach(s=>s.remove()); }
+}
+
+async function fetchLinkedTasksForSource(src){
+  try{
+    if(src==='todo'){
+      const r=await fetch('/api/index-data'); const d=await r.json();
+      return [...(d.weeklyTasks||[]),...(d.oneOffTasks||[])].map(t=>({id:t.id,name:t.name,project:t.project, page:'index', type:'index'}));
+    } else if(src==='work'){
+      const r=await fetch('/api/work-data'); const d=await r.json();
+      return (d.workTasks||[]).map(t=>({id:t.id,name:t.name,project:t.project, page:'work', type:'work'}));
+    } else if(src==='diy'){
+      const r=await fetch('/api/diy-data'); const d=await r.json();
+      return (d.diyTasks||[]).map(t=>({id:t.id,name:t.name,project:t.project, page:'diy', type:'diy'}));
+    } else if(src==='parenting'){
+      const r=await fetch('/api/family-friends-data'); const d=await r.json();
+      return (d.tasks||[]).map(t=>({id:t.id,name:t.name,project:t.project||'Relationships', page:'family-friends', type:'parenting'}));
+    }
+  }catch{}
+  return [];
 }
 
 function renderTrackerTable(){
@@ -88,9 +499,10 @@ function renderTrackerTable(){
   if(!tasks.length){ container.innerHTML='<p>No tracked tasks.</p>'; return; }
   const table=document.createElement('table');
   table.className='task-table';
-  table.innerHTML='<tr><th>Task</th><th>Source</th><th>Start</th><th>End</th></tr>';
+  table.innerHTML='<tr><th>Task</th><th>Source</th><th>Start</th><th>End</th><th>Actions</th></tr>';
   tasks.forEach(t=>{
-    table.innerHTML+=`<tr><td>${t.name}</td><td>${t.source}</td><td>${t.start}</td><td>${t.end||''}</td></tr>`;
+    const actions = `<button class="btn-outline" onclick="openEditTimeModal(${t.id})">Edit</button> <button class="btn-outline" onclick="deleteTime(${t.id})">Delete</button>`;
+    table.innerHTML+=`<tr><td>${t.name}</td><td>${t.source}</td><td>${t.start}</td><td>${t.end||''}</td><td>${actions}</td></tr>`;
   });
   container.innerHTML='';
   container.appendChild(table);
@@ -98,6 +510,241 @@ function renderTrackerTable(){
 
 renderCalendar();
 renderTrackerTable();
+
+// ---- Add/Edit Modals ----
+function openAddTimeModal(){
+  buildTimeModal({ mode:'add' });
+}
+
+function openEditTimeModal(id){
+  const tasks=window.getAllTrackedTasks?window.getAllTrackedTasks():[];
+  const t=tasks.find(x=>x.id===id);
+  if(!t) return;
+  buildTimeModal({ mode:'edit', task:t });
+}
+
+function closeTimeModal(){
+  const m=document.getElementById('timeModal');
+  if(m){ m.remove(); }
+}
+
+function buildTimeModal({mode, task}){
+  const m=document.createElement('div');
+  m.id='timeModal';
+  m.className='modal';
+  m.style.display='block';
+  const title = mode==='add'? 'Add Time Entry' : 'Edit Time Entry';
+  const nameVal = task?.name||'';
+  const sourceVal = task?.source||'custom';
+  const startVal = task?.start||'';
+  const endVal = task?.end||'';
+  const activityType = task?.activityType||'oneoff';
+
+  m.innerHTML = `
+  <div class="modal-content">
+    <div class="modal-header">
+      <h3>${title}</h3>
+      <span class="close" onclick="closeTimeModal()">&times;</span>
+    </div>
+    <div class="modal-body">
+      <div class="form-grid" style="display:grid;grid-template-columns:repeat(2,minmax(140px,1fr));gap:.5rem;align-items:end;">
+        <label style="grid-column:1/-1">What<input id="tm_name" type="text" value="${nameVal}" placeholder="Activity name"></label>
+        <label>Source<select id="tm_source">
+          <option value="custom" ${sourceVal==='custom'?'selected':''}>Custom</option>
+          <option value="todo" ${sourceVal==='todo'?'selected':''}>Index</option>
+          <option value="work" ${sourceVal==='work'?'selected':''}>Work</option>
+          <option value="diy" ${sourceVal==='diy'?'selected':''}>DIY</option>
+          <option value="parenting" ${sourceVal==='parenting'?'selected':''}>Parenting</option>
+        </select></label>
+        <label>Type<select id="tm_activityType">
+          <option value="linked" ${activityType==='linked'?'selected':''}>Linked task</option>
+          <option value="reusable" ${activityType==='reusable'?'selected':''}>Reusable activity</option>
+          <option value="oneoff" ${activityType==='oneoff'?'selected':''}>One-off</option>
+        </select></label>
+      </div>
+      <div id="tm_linked" class="hidden" style="margin-top:.5rem;">
+        <div>Pick a task from the selected source:</div>
+        <select id="tm_linkedSelect"></select>
+      </div>
+      <div id="tm_reusable" class="hidden" style="margin-top:.5rem;">
+        <div style="display:flex;gap:.5rem;align-items:end;">
+          <select id="tm_reusableSelect"></select>
+          <input id="tm_newReusable" type="text" placeholder="New reusable (e.g., Commute)">
+          <button class="btn-outline" onclick="createReusableActivity()">Add</button>
+        </div>
+      </div>
+      <div style="margin-top:.75rem;">
+        <div style="margin-bottom:.25rem;">When</div>
+        <div class="form-grid" style="display:grid;grid-template-columns:repeat(2,minmax(120px,1fr));gap:.5rem;">
+          <label>Start Date<input id="tm_startDate" type="date"></label>
+          <label>Start Time<input id="tm_startTime" type="time"></label>
+          <label>End Date<input id="tm_endDate" type="date"></label>
+          <label>End Time<input id="tm_endTime" type="time"></label>
+          <label style="grid-column:1/-1">Or duration (minutes)<input id="tm_duration" type="number" min="1" placeholder="60"></label>
+          <div style="grid-column:1/-1;opacity:.75;">Tip: set start and duration, or start and end.</div>
+        </div>
+      </div>
+    </div>
+    <div class="modal-footer" style="display:flex;justify-content:space-between;align-items:center;gap:.5rem;">
+      ${mode==='edit'? `<button class="btn-outline" style="color:var(--color-error);border-color:var(--color-error)" onclick="(async()=>{ try{ await window.deleteTrackedTask(${task?task.id:'null'}); closeTimeModal(); }catch(e){ alert('Failed to delete'); } })()">Delete</button>`:''}
+      <div style="margin-left:auto;display:flex;gap:.5rem;">
+        <button class="btn" onclick="saveTimeModal('${mode}', ${task?task.id:'null'})">Save</button>
+        <button class="cancel-btn" onclick="closeTimeModal()">Cancel</button>
+      </div>
+    </div>
+  </div>`;
+  document.body.appendChild(m);
+  // After attaching, populate lists and show sections
+  wireTimeModalSections({mode, task});
+  // Robust prefill when editing (includes async-loaded selects)
+  if(mode==='edit' && task){ prefillEditFields(task); }
+}
+
+function prefillEditFields(task){
+  try{
+    // Basic fields
+    const nameInput=document.getElementById('tm_name'); if(nameInput && !nameInput.value) nameInput.value = task.name || '';
+    const srcSel=document.getElementById('tm_source'); if(srcSel) srcSel.value = task.source || 'custom';
+    const typeSel=document.getElementById('tm_activityType'); if(typeSel && task.activityType) typeSel.value=task.activityType;
+    // Times
+    if(task.start){ const [sd, stFull] = String(task.start).split('T'); const st=(stFull||'').slice(0,5); const d1=document.getElementById('tm_startDate'); const t1=document.getElementById('tm_startTime'); if(d1) d1.value=sd; if(t1) t1.value=st; }
+    if(task.end){ const [ed, etFull] = String(task.end).split('T'); const et=(etFull||'').slice(0,5); const d2=document.getElementById('tm_endDate'); const t2=document.getElementById('tm_endTime'); if(d2) d2.value=ed; if(t2) t2.value=et; }
+    // Duration hint (non-binding)
+    const dur=document.getElementById('tm_duration');
+    if(dur && task.start && task.end){ const ms=(new Date(task.end)-new Date(task.start)); if(ms>0) dur.value = Math.round(ms/60000); }
+    // Wait a tick for async dropdowns (linked/reusable)
+    let tries=0; const max=10;
+    const iv=setInterval(()=>{
+      tries++;
+      const typeSel=document.getElementById('tm_activityType');
+      const linked=document.getElementById('tm_linkedSelect');
+      const reuse=document.getElementById('tm_reusableSelect');
+      if(typeSel && typeSel.value==='linked' && task.link && linked && linked.options.length){ linked.value = String(task.link.id||''); }
+      if(typeSel && typeSel.value==='reusable' && Number.isFinite(task.reusableActivityId) && reuse && reuse.options.length){ reuse.value = String(task.reusableActivityId); }
+      if(tries>=max) clearInterval(iv);
+    }, 150);
+  }catch{}
+}
+
+function wireTimeModalSections({mode, task}){
+  const srcSel=document.getElementById('tm_source');
+  const typeSel=document.getElementById('tm_activityType');
+  const linked=document.getElementById('tm_linked');
+  const reusable=document.getElementById('tm_reusable');
+  const nameInput=document.getElementById('tm_name');
+  async function refreshLinked(){
+    const src=srcSel.value;
+    const sel=document.getElementById('tm_linkedSelect');
+    sel.innerHTML='';
+    let tasks=[];
+    try{
+      if(src==='todo'){
+        const r=await fetch('/api/index-data'); const d=await r.json();
+        tasks=[...(d.weeklyTasks||[]),...(d.oneOffTasks||[])].map(t=>({id:t.id,name:t.name,project:t.project, page:'index', type:'index'}));
+      } else if(src==='work'){
+        const r=await fetch('/api/work-data'); const d=await r.json();
+        tasks=(d.workTasks||[]).map(t=>({id:t.id,name:t.name,project:t.project, page:'work', type:'work'}));
+      } else if(src==='diy'){
+        const r=await fetch('/api/diy-data'); const d=await r.json();
+        tasks=(d.diyTasks||[]).map(t=>({id:t.id,name:t.name,project:t.project, page:'diy', type:'diy'}));
+      } else if(src==='parenting'){
+        const r=await fetch('/api/family-friends-data'); const d=await r.json();
+        tasks=(d.tasks||[]).map(t=>({id:t.id,name:t.name,project:t.project||'Relationships', page:'family-friends', type:'parenting'}));
+      }
+    }catch{}
+    if(!tasks.length){ sel.innerHTML='<option value="">No tasks found</option>'; }
+    else {
+      sel.innerHTML = tasks.map(t=>`<option value="${t.id}" data-page="${t.page}" data-type="${t.type}" data-project="${t.project}">${t.name} — [${t.page}/${t.project}]</option>`).join('');
+      if(mode==='edit' && task?.link?.id){ sel.value = String(task.link.id); }
+      if(mode==='edit' && task?.name && nameInput && !nameInput.value){ nameInput.value = task.name; }
+    }
+  }
+  async function refreshReusable(){
+    try{
+      const r=await fetch('/api/time-tracker/activities'); const d=await r.json();
+      const sel=document.getElementById('tm_reusableSelect');
+      const list=d.activities||[];
+      sel.innerHTML = (list.length? list.map(a=>`<option value="${a.id}">${a.name}</option>`).join('') : '<option value="">No reusable activities</option>');
+      if(mode==='edit' && Number.isFinite(task?.reusableActivityId)) sel.value=String(task.reusableActivityId);
+    }catch{}
+  }
+  function toggleSections(){
+    const type=typeSel.value;
+    linked.classList.toggle('hidden', type!=='linked');
+    reusable.classList.toggle('hidden', type!=='reusable');
+  }
+  srcSel.addEventListener('change', refreshLinked);
+  typeSel.addEventListener('change', toggleSections);
+  toggleSections();
+  refreshLinked();
+  refreshReusable();
+}
+
+async function createReusableActivity(){
+  try{
+    const name=(document.getElementById('tm_newReusable')||{}).value||'';
+    if(!name) return;
+    await fetch('/api/time-tracker/activities',{method:'POST',headers:{'Content-Type':'application/json'},body:JSON.stringify({name})});
+    (document.getElementById('tm_newReusable')||{}).value='';
+    // reload list
+    const sel=document.getElementById('tm_reusableSelect'); if(sel){
+      const r=await fetch('/api/time-tracker/activities'); const d=await r.json();
+      sel.innerHTML = (d.activities||[]).map(a=>`<option value="${a.id}">${a.name}</option>`).join('');
+    }
+  }catch(e){ alert('Failed to add reusable'); }
+}
+
+async function saveTimeModal(mode,id){
+  try{
+    const name=(document.getElementById('tm_name')||{}).value||'';
+    const source=(document.getElementById('tm_source')||{}).value||'custom';
+    const activityType=(document.getElementById('tm_activityType')||{}).value||'oneoff';
+    const startDate=(document.getElementById('tm_startDate')||{}).value||'';
+    const startTime=(document.getElementById('tm_startTime')||{}).value||'';
+    const endDate=(document.getElementById('tm_endDate')||{}).value||'';
+    const endTime=(document.getElementById('tm_endTime')||{}).value||'';
+    const durationMinutes=Number((document.getElementById('tm_duration')||{}).value||0)||undefined;
+    if(!name){ alert('Please enter a name'); return; }
+    if(mode==='add'){
+      const payload={ name, source, activityType, startDate, startTime, endDate, endTime, durationMinutes };
+      if(activityType==='linked'){
+        const sel=document.getElementById('tm_linkedSelect');
+        const opt=sel && sel.selectedOptions && sel.selectedOptions[0];
+        if(opt){ payload.link={ id: opt.value, page: opt.getAttribute('data-page'), type: opt.getAttribute('data-type'), project: opt.getAttribute('data-project') }; }
+      } else if(activityType==='reusable'){
+        const sel=document.getElementById('tm_reusableSelect');
+        payload.reusableActivityId = sel? Number(sel.value) : undefined;
+      }
+      const res=await fetch('/api/time-tracker/add-manual',{method:'POST',headers:{'Content-Type':'application/json'},body:JSON.stringify(payload)});
+      if(!res.ok) throw new Error(await res.text());
+      await window.loadTimeTracker();
+      closeTimeModal();
+    } else {
+      const payload={ id, name, source };
+      // compute iso from date/time if provided
+      if(startDate && startTime) payload.start=`${startDate}T${startTime}`;
+      if(endDate && endTime) payload.end=`${endDate}T${endTime}`;
+      payload.activityType = activityType;
+      if(activityType==='linked'){
+        const sel=document.getElementById('tm_linkedSelect');
+        const opt=sel && sel.selectedOptions && sel.selectedOptions[0];
+        payload.link = opt? { id: opt.value, page: opt.getAttribute('data-page'), type: opt.getAttribute('data-type'), project: opt.getAttribute('data-project') } : null;
+        payload.reusableActivityId = undefined;
+      } else if(activityType==='reusable'){
+        const sel=document.getElementById('tm_reusableSelect');
+        payload.reusableActivityId = sel? Number(sel.value) : undefined;
+        payload.link = undefined;
+      } else {
+        payload.link = undefined; payload.reusableActivityId = undefined;
+      }
+      await window.updateTrackedTask(payload);
+      closeTimeModal();
+    }
+  }catch(e){ alert('Failed to save: '+e.message); }
+}
+window.openAddTimeModal=openAddTimeModal;
+window.openEditTimeModal=openEditTimeModal;
+window.deleteTime=async(id)=>{ try{ await window.deleteTrackedTask(id); }catch(e){ alert('Failed to delete'); } };
 </script>
 </body>
 </html>

@@ -1,0 +1,1451 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+  <title>Work</title>
+  <link rel="stylesheet" href="styles.css">
+  <link href="https://cdn.jsdelivr.net/npm/fullcalendar@5.11.3/main.min.css" rel="stylesheet">
+  <style>
+    /* Tabs UI (KEEP when merge happens) */
+    .tabs{display:flex;gap:0;padding:0;background:#B5A89A;justify-content:center;width:100%;border-radius:0;margin:0;font-weight:bold;}
+    .tabs button{padding:0.7rem 1rem;border:none;cursor:pointer;background:transparent;color:#2B2C29;font-weight:bold;border-radius:0;transition:background .18s,color .18s;}
+    .tabs button:hover,.tabs button.active{background:#2B2C29;color:#E7E4D6;}
+    .tab-content{display:none;padding:1rem;}
+    .tab-content.active{display:block;}
+    /* Calendar + Meetings styles copied and trimmed from work.html (KEEP when merge happens) */
+    .calendar-container{display:flex;gap:1rem;flex-wrap:wrap;}
+    #workCalendar{flex:1 1 300px;min-width:300px;}
+    #calendarTaskList{flex:1 1 200px;min-width:200px;border:1px solid #ccc;padding:0.5rem;max-height:400px;overflow-y:auto;}
+    .fc-task{background:#C7BBB4;margin:0.25rem 0;padding:0.25rem;border:1px solid #ccc;cursor:grab;}
+    .meeting-grid{display:flex;gap:1rem;flex-wrap:wrap;align-items:flex-start;}
+    .meeting-col{flex:1 1 200px;min-width:200px;}
+    .meeting-card{border:1px solid #ccc;padding:0.5rem;margin:0.25rem 0;border-radius:4px;cursor:pointer;}
+    .meeting-past{background:#f0f0f0;}
+    .meeting-today{background:#d0ffd0;}
+    .meeting-upcoming{background:#f0f8ff;}
+    .modal{position:fixed;top:0;left:0;width:100%;height:100%;display:flex;align-items:center;justify-content:center;background:rgba(43,44,41,0.5);z-index:9999;}
+    .modal-content{background:#fff;padding:1rem;border-radius:8px;max-width:90vw;width:520px;box-shadow:0 4px 20px rgba(43,44,41,0.3);} 
+    #meetingModal .modal-content{width:75vw;max-width:95vw;max-height:90vh;overflow-y:auto;}
+    .modal-content input,.modal-content textarea,.modal-content select{width:100%;margin-bottom:0.5rem;}
+    .rte-toolbar{display:flex;flex-wrap:wrap;gap:6px;margin:0.25rem 0;align-items:center;}
+    .rte-toolbar button{background:#C7BBB4;color:#2B2C29;border:none;border-radius:8px;padding:4px 8px;font-size:0.85rem;cursor:pointer;}
+    .rte-toolbar button:hover{background:#B5A89A;color:#E7E4D6;}
+    .rte-toolbar input[type="color"]{width:28px;height:28px;border:none;padding:0;background:transparent;cursor:pointer;border-radius:6px;}
+    .rte{min-height:100px;border:1px solid #ccc;border-radius:6px;padding:0.5rem;background:#fff;}
+    .rte:focus{outline:2px solid #C7BBB4;}
+  /* Projects table (KEEP when merge happens) */
+  .projects-layout{display:flex;gap:1rem;}
+  .projects-sidebar{flex:0 0 220px;border:1px solid var(--color-border);border-radius:4px;background:var(--color-surface);padding:0.5rem;max-height:70vh;overflow:auto;}
+  .projects-main{flex:1 1 auto;min-width:300px;}
+  .views-bar{display:flex;gap:0.5rem;align-items:center;justify-content:space-between;margin-bottom:0.5rem;}
+  .col-header{position:relative;user-select:none;cursor:grab;background:#C7BBB4;color:#2B2C29;font-weight:600;padding:0.35rem;border-right:1px solid #EDEAE3;}
+  .col-header.dragging{opacity:0.6;}
+  .col-resizer{position:absolute;top:0;right:-3px;width:6px;height:100%;cursor:col-resize;background:transparent;}
+  .col-resizer:hover{background:#B5A89A55;}
+  .header-menu-btn{position:absolute;top:2px;left:4px;font-size:12px;cursor:pointer;opacity:0.7;}
+  .header-menu{position:absolute;z-index:1000;background:#fff;border:1px solid #ccc;border-radius:6px;box-shadow:0 2px 10px rgba(0,0,0,.12);padding:4px;display:none;}
+  .header-menu button{display:block;width:100%;text-align:left;border:none;background:transparent;padding:6px 10px;cursor:pointer;}
+  .header-menu button:hover{background:#f0f0f0;}
+  .grid{border:1px solid var(--color-border);border-radius:6px;overflow:hidden;}
+  .grid-head{display:flex;}
+  .grid-body{max-height:60vh;overflow:auto;}
+  .grid-row{display:flex;border-bottom:1px solid #EEEDE7;}
+  .grid-cell{padding:0.3rem 0.4rem;border-right:1px solid #F0EFE9;overflow:hidden;white-space:nowrap;text-overflow:ellipsis;height:36px;line-height:36px;}
+  .grid-cell input, .grid-cell select{font:inherit;}
+  .grid-row.draft{background:#FFF8E6;}
+  .grid-row.dragging{opacity:0.6;}
+  .group-header{background:#F7F6F3;color:#2B2C29;font-weight:600;padding:0.3rem 0.4rem;border-top:1px solid #EDEAE3;}
+  .pill{display:inline-block;padding:2px 8px;border-radius:999px;font-size:12px;}
+  .pill-high{background:#ffe3e3;color:#b00000;}
+  .pill-medium{background:#fff5cc;color:#925c00;}
+  .pill-low{background:#e7f7de;color:#0b6b28;}
+  .grid-row.is-closed{color:#7a0b0b;}
+  .grid-row.is-closed .pill{opacity:0.9}
+  .projects-actions{display:flex;gap:0.25rem;}
+  .projects-actions button{border:none;background:#C7BBB4;color:#2B2C29;border-radius:10px;padding:4px 8px;cursor:pointer;}
+  .projects-actions button:hover{background:#B5A89A;color:#E7E4D6;}
+  .modal-dlg{position:fixed;inset:0;background:rgba(0,0,0,.35);display:none;align-items:center;justify-content:center;z-index:2000;}
+  .modal-panel{background:#fff;border-radius:8px;min-width:320px;max-width:90vw;padding:1rem;box-shadow:0 8px 24px rgba(0,0,0,.2);} 
+  /* Small icon buttons for status actions */
+  .icon-btn{border:none;background:transparent;cursor:pointer;padding:0;margin:0 4px;vertical-align:middle;}
+  .icon-btn svg{display:block}
+  .icon-row{display:flex;align-items:center;gap:6px;}
+  .icon-btn:hover{filter:brightness(0.9)}
+  /* Drop zone for un-nesting */
+  #taskDropZone{border:1px dashed #C7BBB4;border-radius:6px;margin:0 0 8px 0;padding:6px;color:#7a6f67;text-align:center;font-size:0.9rem;}
+  #taskDropZone.drag-over{background:#f6f1ec;}
+  </style>
+  <link rel="icon" href="data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 16 16'%3E%3Crect width='16' height='16' rx='3' ry='3' fill='%232B2C29'/%3E%3Ctext x='8' y='12' font-size='10' text-anchor='middle' fill='white'%3EW%3C/text%3E%3C/svg%3E">
+  <meta name="theme-color" content="#2B2C29">
+  <script src="nav-loader.js" defer></script>
+  <script src="https://cdn.jsdelivr.net/npm/fullcalendar@5.11.3/main.min.js" defer></script>
+  <script src="https://cdn.jsdelivr.net/npm/@fullcalendar/interaction@5.11.3/main.min.js" defer></script>
+  <script src="time-tracker.js" defer></script>
+  <script>
+    // Work Test page script (KEEP when merge happens)
+  let workProjects = [];
+  let workTasks = [];
+  let workNextId = 1;
+    let calendarEvents = [];
+    let meetings = [];
+    let calendar = null;
+    let calendarNextId = 1;
+    let meetingNextId = 1;
+    let currentMeeting = null;
+
+    function showTab(id){
+      document.querySelectorAll('.tabs button').forEach(b=>b.classList.remove('active'));
+      document.querySelectorAll('.tab-content').forEach(c=>c.classList.remove('active'));
+      const btn=document.querySelector(`[data-tab='${id}']`); if(btn) btn.classList.add('active');
+      const sec=document.getElementById(id); if(sec) sec.classList.add('active');
+      if(id==='tab-calendar' && calendar) { calendar.updateSize(); }
+    }
+
+  async function loadWork(){
+      try{
+        const res=await fetch('/api/work-data');
+        if(!res.ok) return;
+        const data=await res.json();
+  workProjects = data.workProjects||[];
+    workTasks = data.workTasks||[]; // NEW: include tasks for Projects tab (KEEP when merge happens)
+  calendarEvents = data.calendarEvents||[];
+        calendarNextId = data.calendarNextId||1;
+        meetings = data.meetings||[];
+        meetingNextId = data.meetingNextId||1;
+  workNextId = data.workNextId||1;
+  window.maxSubDepth = data.maxSubDepth || 7; // load current setting
+    renderCalendarTasks();
+        initCalendar();
+        renderMeetings();
+    // Projects tab setup
+    initProjectsTab();
+    renderProjectsSidebar();
+    applyViewAndRender();
+      }catch(e){ console.error('Work test load failed', e); }
+    }
+
+  async function saveWorkPartial(patch = {}){
+      // TEMP: persist calendar, meetings, and any provided fields (KEEP when merge happens)
+      try{
+        const res0 = await fetch('/api/work-data');
+        const base = res0.ok ? await res0.json() : {};
+    const payload = { ...base, calendarEvents, calendarNextId, meetings, meetingNextId, workTasks, workProjects, workNextId, ...patch };
+        await fetch('/api/work-data',{method:'POST',headers:{'Content-Type':'application/json'},body:JSON.stringify(payload)});
+      }catch(e){ console.error('Work test save failed', e); }
+    }
+
+    function renderCalendarTasks(){
+      const cont=document.getElementById('calendarTaskList');
+      if(!cont) return;
+      cont.innerHTML='';
+      // No tasks list copy here yet; placeholder for future smaller UI
+      const info=document.createElement('div');
+      info.style.color='var(--color-text-muted)';
+      info.style.fontStyle='italic';
+      info.textContent='Drag tasks here coming soon';
+      cont.appendChild(info);
+    }
+
+    function initCalendar(){
+      const el=document.getElementById('workCalendar');
+      if(!el) return;
+      if(calendar){ calendar.destroy(); calendar=null; }
+      calendar=new FullCalendar.Calendar(el,{
+        initialView:'dayGridMonth',
+        height:'auto',
+        editable:true,
+        droppable:true,
+        eventDurationEditable:true,
+        events:calendarEvents,
+        eventReceive:info=>{
+          info.event.setProp('id',String(calendarNextId++));
+          saveCalendar();
+        },
+        eventDrop:saveCalendar,
+        eventResize:saveCalendar,
+        eventClick:info=>{ if(confirm('Remove this scheduled task?')){ info.event.remove(); saveCalendar(); } }
+      });
+      calendar.render();
+    }
+
+    function saveCalendar(){
+      calendarEvents=calendar.getEvents().map(ev=>({id:ev.id,title:ev.title,start:ev.startStr,end:ev.endStr,taskId:ev.extendedProps.taskId||''}));
+      saveWorkPartial();
+    }
+
+    function meetingStatus(date){
+      const today=new Date().toISOString().slice(0,10);
+      if(!date) return 'meeting-upcoming';
+      if(date<today) return 'meeting-past';
+      if(date===today) return 'meeting-today';
+      return 'meeting-upcoming';
+    }
+
+    function formatShortUK(date){
+      const d=new Date(date);
+      if(isNaN(d)) return '';
+      return d.toLocaleDateString('en-GB',{day:'2-digit',month:'short',year:'2-digit'});
+    }
+
+    function formatDateDDMMYY(iso){
+      if(!iso) return '';
+      // Expect yyyy-mm-dd
+      const m = /^([0-9]{4})-([0-9]{2})-([0-9]{2})$/.exec(iso);
+      if(!m) return iso;
+      return `${m[3]} ${m[2]} ${m[1].slice(-2)}`;
+    }
+
+    function renderMeetings(){
+      const colsCont=document.getElementById('meetingColumns');
+      const allCont=document.getElementById('allMeetings');
+      if(colsCont) colsCont.innerHTML='';
+      if(allCont) allCont.innerHTML='';
+      const projects=[...new Set((meetings||[]).map(m=>m.project||'Ad Hoc'))];
+      projects.forEach(name=>{
+        const projectMeetings=(meetings||[]).filter(m=>(m.project||'Ad Hoc')===name);
+        if(projectMeetings.length===0) return;
+        const col=document.createElement('div');
+        col.className='meeting-col';
+        col.innerHTML='<h3>'+name+'</h3>';
+        projectMeetings.forEach(m=>{
+          const card=document.createElement('div');
+          card.className='meeting-card '+meetingStatus(m.date);
+          const title=document.createElement('span');
+          const date=formatShortUK(m.date);
+          title.textContent=date?`${m.title} - ${date}`:m.title;
+          card.appendChild(title);
+          const timerBtn=window.createTimerButton?createTimerButton('work', m.title):null;
+          if(timerBtn){ timerBtn.style.marginLeft='0.25rem'; timerBtn.addEventListener('click',e=>e.stopPropagation()); card.appendChild(timerBtn); }
+          card.onclick=()=>openMeetingModal(m.id);
+          col.appendChild(card);
+          const clone=card.cloneNode(true);
+          clone.onclick=()=>openMeetingModal(m.id);
+          if(allCont) allCont.appendChild(clone);
+        });
+        if(colsCont) colsCont.appendChild(col);
+      });
+    }
+
+    function openMeetingModal(id, data){
+      if(id){ currentMeeting=meetings.find(m=>m.id===id); }
+      else { currentMeeting=data||{id:String(meetingNextId++),title:'',project:'',date:'',attendees:'',content:'',outcomes:'',attachments:[],followupOf:null}; }
+      const projSel=document.getElementById('meetProject');
+      if(projSel){
+        projSel.innerHTML='<option value="">Ad Hoc</option>';
+        workProjects.forEach(p=>{const o=document.createElement('option');o.value=p.name;o.textContent=p.name;projSel.appendChild(o);});
+      }
+      document.getElementById('meetTitle').value=currentMeeting.title;
+      document.getElementById('meetProject').value=currentMeeting.project;
+      document.getElementById('meetDate').value=currentMeeting.date;
+      const oldBtn=document.getElementById('meetTimerBtn'); if(oldBtn) oldBtn.remove();
+      if(currentMeeting.title){
+        const titleInput=document.getElementById('meetTitle');
+        const titleLabel=titleInput.parentElement;
+        const timerBtn=window.createTimerButton?createTimerButton('work', currentMeeting.title):null;
+        if(timerBtn){ timerBtn.id='meetTimerBtn'; timerBtn.onclick=(e)=>{e.stopPropagation(); window.startTask&&startTask('work', currentMeeting.title);}; titleLabel.appendChild(timerBtn); }
+      }
+      document.getElementById('meetAttendees').innerHTML = currentMeeting.attendees || '';
+      document.getElementById('meetContent').innerHTML = currentMeeting.content || '';
+      document.getElementById('meetOutcomes').innerHTML = currentMeeting.outcomes || '';
+      renderAttachments();
+      document.getElementById('meetingModal').classList.remove('hidden');
+    }
+
+    function closeMeetingModal(){ document.getElementById('meetingModal').classList.add('hidden'); currentMeeting=null; }
+
+    function renderAttachments(){
+      const list=document.getElementById('attachList');
+      list.innerHTML='';
+      if(!currentMeeting.attachments) currentMeeting.attachments=[];
+      currentMeeting.attachments.forEach((a,i)=>{
+        const div=document.createElement('div');
+        const link=document.createElement('a'); link.href=a; link.textContent=a; link.target='_blank';
+        const del=document.createElement('button'); del.textContent='x'; del.style.marginLeft='0.25rem'; del.onclick=()=>{currentMeeting.attachments.splice(i,1);renderAttachments();};
+        div.appendChild(link); div.appendChild(del); list.appendChild(div);
+      });
+    }
+
+    function addAttachment(){
+      const url=document.getElementById('attachInput').value.trim();
+      if(url){ currentMeeting.attachments.push(url); document.getElementById('attachInput').value=''; renderAttachments(); }
+    }
+
+    function saveMeeting(){
+      currentMeeting.title=document.getElementById('meetTitle').value.trim();
+      currentMeeting.project=document.getElementById('meetProject').value;
+      currentMeeting.date=document.getElementById('meetDate').value;
+      currentMeeting.attendees=document.getElementById('meetAttendees').innerHTML;
+      currentMeeting.content=document.getElementById('meetContent').innerHTML;
+      currentMeeting.outcomes=document.getElementById('meetOutcomes').innerHTML;
+      if(!meetings.find(m=>m.id===currentMeeting.id)) meetings.push(currentMeeting);
+      saveWorkPartial();
+      renderMeetings();
+      closeMeetingModal();
+    }
+
+    function deleteMeeting(){
+      if(!currentMeeting) return;
+      if(confirm('Delete meeting?')){
+        meetings=meetings.filter(m=>m!==currentMeeting);
+        saveWorkPartial();
+        renderMeetings();
+        closeMeetingModal();
+      }
+    }
+
+    function addFollowUp(){
+      const follow={id:String(meetingNextId++),title:currentMeeting.title,project:currentMeeting.project,date:'',attendees:currentMeeting.attendees,content:currentMeeting.outcomes, outcomes:'',attachments:[],followupOf:currentMeeting.id};
+      openMeetingModal(null, follow);
+    }
+
+    // Simple RTE helpers
+    function applyRTECommand(id, cmd, value=null){
+      const el=document.getElementById(id); if(!el) return;
+      const range=document.createRange(); range.selectNodeContents(el);
+      const sel=window.getSelection(); if(sel && sel.rangeCount===0){ sel.removeAllRanges(); sel.addRange(range); }
+      try{ document.execCommand(cmd,false,value); el.focus(); }catch(e){ /* ignore */ }
+    }
+    window.applyRTECommand=applyRTECommand;
+
+    document.addEventListener('DOMContentLoaded', ()=>{
+      showTab('tab-overview');
+      loadWork();
+      // Try to apply default view after initial render
+      setTimeout(()=>{
+        const defName = localStorage.getItem('workTest.defaultView');
+        if(defName){ const v = (getViews().find(x=>x.name===defName)); if(v){ applyView(v); } }
+      }, 500);
+    });
+
+    // ===== Projects Tab Logic (KEEP when merge happens) =====
+    const ALL_FIELDS = [
+      { key:'name', label:'Task', min:120 },
+      { key:'project', label:'Project', min:100 },
+      { key:'dueDate', label:'Due', min:90 },
+      { key:'importance', label:'Importance', min:110 },
+      { key:'urgency', label:'Urgency', min:100 },
+      { key:'recurring', label:'Recurring', min:100 },
+      { key:'frequency', label:'Frequency', min:110 },
+      { key:'interval', label:'Every', min:80 },
+      { key:'closedDate', label:'Closed', min:100 },
+      { key:'status', label:'Status', min:90 },
+    ];
+    let columnsCfg = [];
+    let selectedProjects = new Set();
+  let filters = []; // { field, op, value }
+    let groupBy = []; // array of field keys, max 2
+    let dragColKey = null;
+    let currentHeaderKey = null; // for header menu actions
+  // Multi-sort (priority order). Ctrl+Click to add/remove; Click without Ctrl to reset
+  let sortBy = []; // [{ field:'dueDate', dir:'asc' } ...]
+  // Show closed tasks toggle
+  let showClosed = false;
+  // Track expanded rows for nested subtasks
+  const expandedTasks = new Set();
+  // Draft task state for inline creation
+  let draftTask = null;
+
+    function initProjectsTab(){
+      // Default columns: ensure Task always present
+      const savedCfg = JSON.parse(localStorage.getItem('workTest.columns')||'null');
+      columnsCfg = savedCfg || [
+        { key:'name', label:'Task', width:220, visible:true },
+        { key:'project', label:'Project', width:140, visible:true },
+        { key:'dueDate', label:'Due', width:110, visible:true },
+        { key:'importance', label:'Importance', width:120, visible:true },
+        { key:'urgency', label:'Urgency', width:110, visible:true },
+        { key:'recurring', label:'Recurring', width:110, visible:true },
+        { key:'frequency', label:'Frequency', width:120, visible:false },
+        { key:'interval', label:'Every', width:90, visible:false },
+        { key:'closedDate', label:'Closed', width:110, visible:false },
+        { key:'status', label:'Status', width:110, visible:true },
+      ];
+      // Selected projects default: all
+      selectedProjects = new Set((workProjects||[]).map(p=>p.name));
+
+      // Wire Add Task button
+      const addBtn = document.getElementById('addTaskBtn');
+      if(addBtn){
+        addBtn.onclick = ()=>{
+          if(draftTask) return; // one at a time
+          const firstProject = (workProjects[0]?.name)||'';
+          draftTask = { id: 'draft', name:'', project:firstProject, dueDate:'', importance:'', urgency:'', recurring:false, frequency:'', interval:null, status:'open', subtasks:[] };
+          if(groupBy && groupBy.length){ groupBy=[]; }
+          // Show all projects if none selected so the draft is visible
+          if(!selectedProjects || selectedProjects.size===0){ selectedProjects = new Set((workProjects||[]).map(p=>p.name)); renderProjectsSidebar(); }
+          applyViewAndRender();
+          // Focus name input after render
+          setTimeout(()=>{
+            const el = document.querySelector('.grid-row.draft input[name="name"]');
+            if(el){ el.focus(); }
+          }, 0);
+        };
+      }
+
+      // Views modal wiring
+      const viewsBtn = document.getElementById('viewsBtn');
+      const viewsModal = document.getElementById('viewsModal');
+      const closeViewsBtn = document.getElementById('closeViewsBtn');
+      const saveViewBtn = document.getElementById('saveViewBtn');
+      if(viewsBtn){ viewsBtn.onclick=()=>{ renderViewsList(); viewsModal.style.display='flex'; }; }
+      if(closeViewsBtn){ closeViewsBtn.onclick=()=>{ viewsModal.style.display='none'; }; }
+      if(saveViewBtn){ saveViewBtn.onclick=saveCurrentView; }
+
+      // Show closed checkbox
+      const chk=document.getElementById('showClosedChk');
+      if(chk){
+        try{ showClosed = JSON.parse(localStorage.getItem('workTest.showClosed')||'false'); }catch{ showClosed=false; }
+        chk.checked = !!showClosed;
+        chk.onchange = ()=>{ showClosed = chk.checked; localStorage.setItem('workTest.showClosed', JSON.stringify(showClosed)); applyViewAndRender(); };
+      }
+
+      // Header menu
+      const headerMenu = document.getElementById('headerMenu');
+      headerMenu.addEventListener('click', (e)=>{
+        const btn = e.target.closest('button'); if(!btn) return;
+        const action = btn.getAttribute('data-action');
+        headerMenu.style.display='none';
+  if(action==='filter'){ openFilterModal(); }
+  if(action==='group'){ openGroupModal(); }
+        if(action==='amend'){ openColumnsModal(); }
+      });
+      document.addEventListener('click', (e)=>{
+        if(!headerMenu.contains(e.target)) headerMenu.style.display='none';
+      });
+
+      // Filters modal
+      document.getElementById('closeFilterBtn').onclick=()=>{ document.getElementById('filterModal').style.display='none'; };
+      document.getElementById('addFilterBtn').onclick=applyNewFilter;
+
+      // Columns modal
+      document.getElementById('closeColumnsBtn').onclick=()=>{ document.getElementById('columnsModal').style.display='none'; };
+      document.getElementById('applyColumnsBtn').onclick=applyColumnsSelection;
+
+      // Group modal
+      const gm=document.getElementById('groupModal');
+      if(gm){
+        document.getElementById('closeGroupBtn').onclick=()=>{ gm.style.display='none'; };
+        document.getElementById('applyGroupBtn').onclick=applyGroupSelection;
+        document.getElementById('clearGroupBtn').onclick=clearGroupSelection;
+        gm.addEventListener('click', (e)=>{ if(e.target===gm) gm.style.display='none'; });
+      }
+
+      // Views modal close on backdrop
+      [viewsModal, document.getElementById('filterModal'), document.getElementById('columnsModal')].forEach(mod=>{
+        mod.addEventListener('click', (e)=>{ if(e.target===mod) mod.style.display='none'; });
+      });
+
+      // Toggle all projects
+      const toggleAll = document.getElementById('toggleAllProjects');
+      if(toggleAll){
+        toggleAll.onclick=()=>{
+          const all = workProjects.map(p=>p.name);
+          const allSelected = all.every(n=>selectedProjects.has(n));
+          if(allSelected){ selectedProjects.clear(); }
+          else { selectedProjects = new Set(all); }
+          renderProjectsSidebar();
+          applyViewAndRender();
+        };
+      }
+      // Wire top drop zone for un-nesting
+      const dz=document.getElementById('taskDropZone');
+      if(dz){
+        dz.addEventListener('dragover', (e)=>{ e.preventDefault(); dz.classList.add('drag-over'); });
+        dz.addEventListener('dragleave', ()=>dz.classList.remove('drag-over'));
+        dz.addEventListener('drop', (e)=>{ e.preventDefault(); dz.classList.remove('drag-over'); const srcId=e.dataTransfer.getData('text/plain'); if(!srcId) return; if(moveTaskToParent(srcId, null)){ saveWorkPartial({ workTasks }); applyViewAndRender(); } });
+      }
+    }
+
+    function renderProjectsSidebar(){
+      const list = document.getElementById('projectsList');
+      if(!list) return;
+      list.innerHTML='';
+      (workProjects||[]).forEach(p=>{
+        const id = 'proj_'+btoa(p.name).replace(/=/g,'');
+        const wrap=document.createElement('div');
+        wrap.style.display='flex'; wrap.style.alignItems='center'; wrap.style.gap='6px'; wrap.style.margin='4px 0';
+        const cb=document.createElement('input'); cb.type='checkbox'; cb.id=id; cb.checked=selectedProjects.has(p.name);
+        cb.onchange=()=>{ if(cb.checked) selectedProjects.add(p.name); else selectedProjects.delete(p.name); applyViewAndRender(); };
+        const lab=document.createElement('label'); lab.setAttribute('for', id); lab.textContent=p.name; lab.style.color=p.color||'#333';
+        wrap.appendChild(cb); wrap.appendChild(lab);
+        list.appendChild(wrap);
+      });
+    }
+
+    function applyViewAndRender(){
+      normalizeColumnsOrder();
+      localStorage.setItem('workTest.columns', JSON.stringify(columnsCfg));
+      renderGridHead();
+      renderGridBody();
+    }
+
+    function normalizeColumnsOrder(){
+      // Keep 'Task' (name) always first among visible columns
+      const visible = columnsCfg.filter(c=>c.visible!==false);
+      const hidden = columnsCfg.filter(c=>c.visible===false);
+      const idx = visible.findIndex(c=>c.key==='name');
+      if(idx>0){ const [taskCol]=visible.splice(idx,1); visible.unshift(taskCol); columnsCfg = [...visible, ...hidden]; }
+      // Ensure name column exists at least once
+      if(!columnsCfg.find(c=>c.key==='name')){
+        columnsCfg.unshift({ key:'name', label:'Task', width:220, visible:true });
+      }
+    }
+
+    function getVisibleColumns(){ return columnsCfg.filter(c=>c.visible!==false); }
+
+  function renderGridHead(){
+      const head=document.getElementById('gridHead'); if(!head) return; head.innerHTML='';
+      const headerMenu = document.getElementById('headerMenu');
+      getVisibleColumns().forEach((col, idx)=>{
+        const h=document.createElement('div');
+        h.className='col-header';
+        h.draggable=true;
+        h.dataset.key=col.key; h.dataset.index=String(idx);
+        h.style.flex=`0 0 ${col.width||col.min||120}px`;
+        // Label + sort indicator(s)
+        const label=document.createElement('span');
+        label.textContent=col.label;
+        const pos = sortBy.findIndex(s=>s.field===col.key);
+        if(pos>=0){
+          const s=sortBy[pos];
+          const ind=document.createElement('span');
+          ind.textContent = s.dir==='asc' ? ' ▲' : ' ▼';
+          const idxBadge=document.createElement('sup'); idxBadge.textContent= String(pos+1); idxBadge.style.marginLeft='2px';
+          label.appendChild(ind); label.appendChild(idxBadge);
+        }
+        h.appendChild(label);
+        // menu button (for right-click alternative)
+        const menuBtn=document.createElement('span'); menuBtn.className='header-menu-btn'; menuBtn.textContent='⋮';
+        menuBtn.title='Menu';
+        menuBtn.onclick=(e)=>{ e.stopPropagation(); currentHeaderKey=col.key; const r=h.getBoundingClientRect(); headerMenu.style.left=(r.left+4)+'px'; headerMenu.style.top=(r.bottom)+'px'; headerMenu.style.display='block'; };
+        h.appendChild(menuBtn);
+        // resizer
+        const res=document.createElement('div'); res.className='col-resizer';
+        attachColumnResize(res, col);
+        h.appendChild(res);
+        // dnd reorder
+        h.addEventListener('dragstart', (e)=>{ if(col.key==='name'){ e.preventDefault(); return; } dragColKey=col.key; h.classList.add('dragging'); });
+        h.addEventListener('dragend', ()=>{ dragColKey=null; h.classList.remove('dragging'); });
+        h.addEventListener('dragover', (e)=>{ e.preventDefault(); });
+        h.addEventListener('drop', (e)=>{
+          e.preventDefault(); if(!dragColKey || dragColKey===col.key) return;
+          const order = getVisibleColumns().map(c=>c.key);
+          const fromIdx = order.indexOf(dragColKey);
+          const toIdx = order.indexOf(col.key);
+          if(fromIdx<0||toIdx<0) return;
+          const visibleCols = columnsCfg.filter(c=>c.visible!==false);
+          const hiddenCols = columnsCfg.filter(c=>c.visible===false);
+          const moved = visibleCols.splice(fromIdx,1)[0];
+          // Prevent dropping before 'name' (index 0)
+          const safeToIdx = Math.max(1, toIdx);
+          visibleCols.splice(safeToIdx,0,moved);
+          columnsCfg = [...visibleCols, ...hiddenCols];
+          applyViewAndRender();
+        });
+        // context menu
+        h.addEventListener('contextmenu', (e)=>{
+          e.preventDefault(); currentHeaderKey=col.key; headerMenu.style.display='block'; headerMenu.style.left=e.pageX+'px'; headerMenu.style.top=e.pageY+'px';
+        });
+        // click to toggle sort; Ctrl+Click adds/removes as additional sort level
+        h.addEventListener('click', (e)=>{
+          const target=e.target;
+          if(target.closest('.col-resizer') || target.closest('.header-menu-btn')) return;
+          const isCtrl = e.ctrlKey || e.metaKey; // support Cmd on Mac
+          const idx = sortBy.findIndex(s=>s.field===col.key);
+          if(!isCtrl){
+            // Reset to single sort cycling asc -> desc -> none
+            if(idx===0){
+              if(sortBy[0].dir==='asc') sortBy[0].dir='desc';
+              else { sortBy=[]; }
+            }else{
+              sortBy = [{ field:col.key, dir:'asc' }];
+            }
+          }else{
+            // Multi-sort: toggle within list asc -> desc -> remove
+            if(idx===-1){ sortBy.push({ field:col.key, dir:'asc' }); }
+            else if(sortBy[idx].dir==='asc'){ sortBy[idx].dir='desc'; }
+            else { sortBy.splice(idx,1); }
+          }
+          applyViewAndRender();
+        });
+        head.appendChild(h);
+      });
+    }
+
+    function attachColumnResize(handle, col){
+      let startX=0, startW=0;
+      const onMove=(e)=>{
+        const dx = e.clientX - startX; const w = Math.max(col.min||90, startW + dx);
+        col.width = w; applyViewAndRender();
+      };
+      const onUp=()=>{ document.removeEventListener('mousemove', onMove); document.removeEventListener('mouseup', onUp); };
+      handle.addEventListener('mousedown', (e)=>{ e.stopPropagation(); startX=e.clientX; startW=col.width||col.min||120; document.addEventListener('mousemove', onMove); document.addEventListener('mouseup', onUp); });
+    }
+
+    function taskMatchesFilters(t){
+      return filters.every(f=>{
+        const v = (t[f.field]||'').toString().toLowerCase();
+        const raw = (t[f.field]||'');
+        const val = (f.value||'').toString().toLowerCase();
+        switch(f.op){
+          case 'contains': return v.includes(val);
+          case 'equals': return v===val;
+          case 'not_equals': return v!==val;
+          case 'before': { const d1=new Date(raw); const d2=new Date(f.value); return isFinite(d1) && isFinite(d2) && d1<d2; }
+          case 'after': { const d1=new Date(raw); const d2=new Date(f.value); return isFinite(d1) && isFinite(d2) && d1>d2; }
+          case 'empty': return !raw;
+          case 'not_empty': return !!raw;
+          default: return true;
+        }
+      });
+    }
+
+    function renderGridBody(){
+      const body=document.getElementById('gridBody'); if(!body) return; body.innerHTML='';
+      const visibleCols=getVisibleColumns();
+      // Global row context menu element
+      let rowMenu = document.getElementById('rowMenu');
+      if(!rowMenu){
+        rowMenu=document.createElement('div'); rowMenu.id='rowMenu'; rowMenu.className='header-menu'; rowMenu.style.minWidth='140px';
+        rowMenu.innerHTML='<button data-act="addSub">Add subtask</button><button data-act="delete">Delete</button>';
+        document.body.appendChild(rowMenu);
+        rowMenu.addEventListener('click', (e)=>{
+          const btn=e.target.closest('button'); if(!btn) return;
+          const act=btn.getAttribute('data-act'); const id=rowMenu.getAttribute('data-id');
+          rowMenu.style.display='none';
+          if(act==='delete'){ deleteTaskRow(id); }
+          if(act==='addSub'){ addSubtaskRow(id); }
+        });
+        document.addEventListener('click', (e)=>{ if(!rowMenu.contains(e.target)) rowMenu.style.display='none'; });
+      }
+      // When grouped, use previous flat grouping pipeline
+      if(groupBy.length){
+        const rowsFlat = getFlatRowsForGrouping();
+        const groups = groupRows(rowsFlat, groupBy);
+        renderGroups(groups, body, visibleCols, 0);
+        return;
+      }
+      // Otherwise render hierarchical with expanders
+      // First, if a draft task exists, render it at the top
+      if(draftTask){
+        body.appendChild(renderDraftRow(draftTask, visibleCols));
+      }
+      const tree = getFilteredTaskTree();
+      const sortedTree = sortTasksRecursively(tree);
+      const flat = flattenForRendering(sortedTree);
+      flat.forEach(({task, level, hasChildren})=>{
+        const el=renderRow(task, visibleCols, level, hasChildren);
+        // Right-click context menu
+        el.addEventListener('contextmenu', (e)=>{
+          e.preventDefault();
+          const rm=document.getElementById('rowMenu');
+          rm.style.left = e.pageX+'px'; rm.style.top = e.pageY+'px'; rm.style.display='block';
+          rm.setAttribute('data-id', task.id);
+        });
+        body.appendChild(el);
+      });
+    }
+
+    function deleteTaskRow(id){
+      const info = getTaskInfoById(id);
+      if(!info) return;
+      if(!confirm('Delete task?')) return;
+      if(info.parent){ info.parent.subtasks = info.parent.subtasks.filter(x=>x.id!==id); }
+      else { workTasks = workTasks.filter(x=>x.id!==id); }
+      saveWorkPartial({ workTasks });
+      applyViewAndRender();
+    }
+
+    function addSubtaskRow(parentId){
+      const info=getTaskInfoById(parentId); if(!info) return;
+      const nid=String(workNextId).padStart(8,'0'); workNextId++;
+      const child={ id:nid, parent:parentId, name:'', project:'', dueDate:'', importance:'', urgency:'', recurring:false, frequency:null, interval:null, from:null, status:'open', closedDate:'', subtasks:[], notes:'' };
+      if(!Array.isArray(info.task.subtasks)) info.task.subtasks=[];
+      info.task.subtasks.unshift(child);
+      expandedTasks.add(parentId);
+      saveWorkPartial({ workTasks, workNextId });
+      applyViewAndRender();
+      // Focus new child name
+      setTimeout(()=>{
+        const row=document.querySelector(`.grid-row[data-id='${nid}'] .grid-cell:first-child span[title]`);
+        if(row){ row.click(); }
+      }, 0);
+    }
+
+    function renderDraftRow(task, cols){
+      const row=document.createElement('div'); row.className='grid-row draft'; row.dataset.id='draft';
+      let placedActions=false;
+      cols.forEach((c, idx)=>{
+        const cell=document.createElement('div'); cell.className='grid-cell'; cell.style.flex=`0 0 ${c.width||120}px`;
+        if(c.key==='name'){
+          const inp=document.createElement('input'); inp.type='text'; inp.name='name'; inp.placeholder='Task name'; inp.value=task.name||''; inp.style.width='100%'; inp.style.height='28px';
+          inp.oninput=()=>{ task.name=inp.value; };
+          cell.appendChild(inp);
+        }else if(c.key==='project'){
+          const sel=document.createElement('select'); sel.name='project'; sel.style.width='100%'; sel.style.height='30px';
+          (workProjects||[]).forEach(p=>{ const o=document.createElement('option'); o.value=p.name; o.textContent=p.name; sel.appendChild(o); });
+          sel.value=task.project||''; sel.onchange=()=>{ task.project=sel.value; };
+          cell.appendChild(sel);
+        }else if(c.key==='dueDate'){
+          const inp=document.createElement('input'); inp.type='date'; inp.name='dueDate'; inp.style.width='100%'; inp.style.height='28px'; inp.value=task.dueDate||''; inp.onchange=()=>{ task.dueDate=inp.value; };
+          cell.appendChild(inp);
+        }else if(c.key==='importance' || c.key==='urgency'){
+          const sel=document.createElement('select'); sel.name=c.key; sel.style.width='100%'; sel.style.height='30px';
+          ['High','High/Medium','Medium','Medium/Low','Low'].forEach(v=>{ const o=document.createElement('option'); o.value=v; o.textContent=v; sel.appendChild(o); });
+          sel.value=task[c.key]||''; sel.onchange=()=>{ task[c.key]=sel.value; };
+          cell.appendChild(sel);
+        }else if(c.key==='recurring'){
+          const sel=document.createElement('select'); sel.name='recurring'; sel.style.width='100%'; sel.style.height='30px';
+          [{v:false,l:'No'},{v:true,l:'Yes'}].forEach(o=>{ const opt=document.createElement('option'); opt.value=String(o.v); opt.textContent=o.l; sel.appendChild(opt); });
+          sel.value=String(!!task.recurring); sel.onchange=()=>{ task.recurring = (sel.value==='true'); };
+          cell.appendChild(sel);
+        }else if(c.key==='frequency'){
+          const sel=document.createElement('select'); sel.name='frequency'; sel.style.width='100%'; sel.style.height='30px';
+          ['', 'daily','weekly','monthly','yearly'].forEach(v=>{ const o=document.createElement('option'); o.value=v; o.textContent=v; sel.appendChild(o); });
+          sel.value=task.frequency||''; sel.onchange=()=>{ task.frequency=sel.value; };
+          cell.appendChild(sel);
+        }else if(c.key==='interval'){
+          const inp=document.createElement('input'); inp.type='number'; inp.min='0'; inp.step='1'; inp.name='interval'; inp.style.width='100%'; inp.style.height='28px'; inp.value=(task.interval==null?'':String(task.interval)); inp.onchange=()=>{ task.interval = (inp.value===''? null : parseInt(inp.value,10)); };
+          cell.appendChild(inp);
+        }else if(c.key==='closedDate' || c.key==='status'){
+          // Place Save/Cancel in status column (or skip for closedDate)
+          if(c.key==='status' && !placedActions){
+            const wrap=document.createElement('div'); wrap.style.display='flex'; wrap.style.gap='6px';
+            const saveBtn=document.createElement('button'); saveBtn.textContent='Save'; saveBtn.className='submit-btn'; saveBtn.style.padding='4px 8px';
+            saveBtn.onclick=()=>saveDraftTask();
+            const cancelBtn=document.createElement('button'); cancelBtn.textContent='Cancel'; cancelBtn.style.border='none'; cancelBtn.style.background='transparent'; cancelBtn.style.cursor='pointer';
+            cancelBtn.onclick=()=>{ draftTask=null; applyViewAndRender(); };
+            wrap.appendChild(saveBtn); wrap.appendChild(cancelBtn); cell.appendChild(wrap);
+            placedActions=true;
+          }
+        }else{
+          const inp=document.createElement('input'); inp.type='text'; inp.name=c.key; inp.style.width='100%'; inp.style.height='28px'; inp.value=task[c.key]||''; inp.oninput=()=>{ task[c.key]=inp.value; };
+          cell.appendChild(inp);
+        }
+        row.appendChild(cell);
+      });
+      // If no status column, append actions to the last cell
+      if(!placedActions && row.children.length){
+        const lastCell=row.children[row.children.length-1];
+        const wrap=document.createElement('span'); wrap.style.marginLeft='8px';
+        const saveBtn=document.createElement('button'); saveBtn.textContent='Save'; saveBtn.className='submit-btn'; saveBtn.style.padding='2px 6px'; saveBtn.style.marginRight='6px';
+        saveBtn.onclick=()=>saveDraftTask();
+        const cancelBtn=document.createElement('button'); cancelBtn.textContent='Cancel'; cancelBtn.style.border='none'; cancelBtn.style.background='transparent'; cancelBtn.style.cursor='pointer';
+        cancelBtn.onclick=()=>{ draftTask=null; applyViewAndRender(); };
+        wrap.appendChild(saveBtn); wrap.appendChild(cancelBtn); lastCell.appendChild(wrap);
+      }
+      return row;
+    }
+
+    function getFlatRowsForGrouping(){
+      // Used only for the grouping mode (no hierarchy UI there)
+      const selected = Array.from(selectedProjects);
+      let rows=(workTasks||[]).filter(t=> (showClosed || (t.status!=='closed')) && (selected.length===0 || selected.includes(t.project)));
+      if(filters.length){ rows = rows.filter(taskMatchesFilters); }
+      // Apply multi-sort
+      if(sortBy.length){ rows.sort((a,b)=>multiCompare(a,b)); }
+      return rows;
+    }
+
+    function getFilteredTaskTree(){
+      const selected = Array.from(selectedProjects);
+      const filterTask = (t)=>{
+        const statusOk = showClosed || (t.status!=='closed');
+        const projOk = (selected.length===0 || selected.includes(t.project));
+        const filtOk = !filters.length || taskMatchesFilters(t);
+        return statusOk && projOk && filtOk;
+      };
+      const deepCloneAndFilter=(t)=>{
+        const copy={...t};
+        if(Array.isArray(t.subtasks) && t.subtasks.length){
+          copy.subtasks = t.subtasks.map(st=>deepCloneAndFilter(st)).filter(filterTask);
+        }else{ copy.subtasks = []; }
+        return copy;
+      };
+      return (workTasks||[]).filter(filterTask).map(deepCloneAndFilter);
+    }
+
+    function sortTasksRecursively(tasks){
+      const arr = [...tasks];
+      if(sortBy.length){ arr.sort((a,b)=>multiCompare(a,b)); }
+      arr.forEach(t=>{ if(t.subtasks && t.subtasks.length){ t.subtasks = sortTasksRecursively(t.subtasks); } });
+      return arr;
+    }
+
+    function flattenForRendering(tasks, level=0){
+      const out=[];
+      tasks.forEach(t=>{
+        const hasChildren = Array.isArray(t.subtasks) && t.subtasks.length>0;
+        out.push({ task:t, level, hasChildren });
+        if(hasChildren && expandedTasks.has(t.id)){
+          out.push(...flattenForRendering(t.subtasks, level+1));
+        }
+      });
+      return out;
+    }
+
+    function importanceRank(val){ const map={ 'High':5,'High/Medium':4,'Medium':3,'Medium/Low':2,'Low':1 }; return map[val]||0; }
+    const urgencyRank = importanceRank;
+    function multiCompare(a,b){
+      for(const s of sortBy){
+        const key=s.field; const dir = s.dir==='asc'?1:-1;
+        let av=a[key]??''; let bv=b[key]??'';
+        if(key==='dueDate'){
+          const ad= av? new Date(av).getTime():0; const bd=bv? new Date(bv).getTime():0; if(ad!==bd) return (ad-bd)*dir;
+        }else if(key==='importance'){ const ai=importanceRank(av), bi=importanceRank(bv); if(ai!==bi) return (ai-bi)*dir; }
+        else if(key==='urgency'){ const ai=urgencyRank(av), bi=urgencyRank(bv); if(ai!==bi) return (ai-bi)*dir; }
+        else { const as=String(av).toLowerCase(), bs=String(bv).toLowerCase(); if(as<bs) return -1*dir; if(as>bs) return 1*dir; }
+      }
+      // Default tie-breaker by name
+      const an=(a.name||'').toLowerCase(), bn=(b.name||'').toLowerCase(); if(an<bn) return -1; if(an>bn) return 1; return 0;
+    }
+
+    function groupRows(rows, keys, level=0){
+      if(level>=keys.length || rows.length===0) return rows;
+      const key=keys[level];
+      const map=new Map();
+      rows.forEach(r=>{ const k=(r[key]||'').toString(); if(!map.has(k)) map.set(k,[]); map.get(k).push(r); });
+      const out=[];
+      for(const [gk, arr] of map.entries()){
+        out.push({ __group:true, key, value:gk, level, children: groupRows(arr, keys, level+1) });
+      }
+      return out;
+    }
+
+    function renderGroups(items, body, cols, level){
+      items.forEach(it=>{
+        if(it.__group){
+          const gh=document.createElement('div'); gh.className='group-header'; gh.textContent=`${it.key}: ${it.value || '(empty)'}`; gh.style.paddingLeft=(level*12+4)+'px';
+          body.appendChild(gh);
+          if(Array.isArray(it.children)) renderGroups(it.children, body, cols, level+1);
+        }else{
+          body.appendChild(renderRow(it, cols));
+        }
+      });
+    }
+
+    function renderRow(task, cols, level=0, hasChildren=false){
+  const row=document.createElement('div'); row.className='grid-row'; row.dataset.id=task.id; row.draggable=true;
+      if(task.status==='closed') row.classList.add('is-closed');
+  // Drag handlers
+  row.addEventListener('dragstart', (e)=>{ row.classList.add('dragging'); e.dataTransfer.setData('text/plain', task.id); e.dataTransfer.effectAllowed='move'; });
+  row.addEventListener('dragend', ()=>{ row.classList.remove('dragging'); });
+  row.addEventListener('dragover', (e)=>{ e.preventDefault(); e.dataTransfer.dropEffect='move'; });
+  row.addEventListener('drop', (e)=>{ e.preventDefault(); const srcId=e.dataTransfer.getData('text/plain'); if(!srcId) return; if(moveTaskToParent(srcId, task.id)){ saveWorkPartial({ workTasks }); applyViewAndRender(); } });
+      cols.forEach((c, idx)=>{
+        const cell=document.createElement('div'); cell.className='grid-cell'; cell.style.flex=`0 0 ${c.width||120}px`;
+        // Special rendering for Task name: expander + indentation, and inline edit
+        if(c.key==='name'){
+          const wrap=document.createElement('div'); wrap.style.display='flex'; wrap.style.alignItems='center'; wrap.style.gap='6px';
+          wrap.style.height='100%';
+          const indent=document.createElement('span'); indent.style.display='inline-block'; indent.style.width=(level*16)+'px';
+          wrap.appendChild(indent);
+          if(hasChildren){
+            const btn=document.createElement('button'); btn.textContent = expandedTasks.has(task.id)?'▾':'▸'; btn.title='Toggle subtasks'; btn.style.border='none'; btn.style.background='transparent'; btn.style.cursor='pointer'; btn.style.width='18px'; btn.style.padding='0'; btn.onclick=(e)=>{ e.stopPropagation(); if(expandedTasks.has(task.id)) expandedTasks.delete(task.id); else expandedTasks.add(task.id); applyViewAndRender(); };
+            wrap.appendChild(btn);
+          }else{
+            const spacer=document.createElement('span'); spacer.style.display='inline-block'; spacer.style.width='18px'; wrap.appendChild(spacer);
+          }
+          const textSpan=document.createElement('span'); textSpan.textContent=task.name||''; textSpan.style.flex='1 1 auto'; textSpan.title=task.name||'';
+          // Inline edit: name (text)
+          textSpan.onclick=()=>makeEditable(cell, task, 'name', 'text');
+          wrap.appendChild(textSpan);
+          cell.appendChild(wrap);
+        }else if(c.key==='importance' || c.key==='urgency'){
+          const v=task[c.key]||''; const p=document.createElement('span'); const lc=v.toLowerCase(); p.className='pill '+(lc.includes('high')?'pill-high':lc.includes('medium')?'pill-medium':'pill-low'); p.textContent=v||''; p.style.cursor='pointer';
+          p.onclick=()=>makeEditable(cell, task, c.key, 'select', ['High','High/Medium','Medium','Medium/Low','Low']);
+          cell.appendChild(p);
+        }else if(c.key==='project'){
+          const v=task.project||''; const span=document.createElement('span'); span.textContent=v; span.style.cursor='pointer';
+          span.onclick=()=>{ const opts=[...new Set(['', ...workProjects.map(p=>p.name), v])]; makeEditable(cell, task, 'project', 'select', opts); };
+          cell.appendChild(span);
+        }else if(c.key==='recurring'){
+          const v=!!task.recurring; const pill=document.createElement('span'); pill.className='pill'; pill.textContent=v?'Yes':'No'; pill.style.background=v?'#e7f7de':'#f0f0f0'; pill.style.color=v?'#0b6b28':'#555'; pill.style.cursor='pointer';
+          // Tooltip with details if recurring
+          if(v){
+            const freq = task.frequency||''; const intv = task.interval||'';
+            pill.title = `Recurring: ${freq||'n/a'} ${intv?`(every ${intv})`:''}`.trim();
+          }
+          pill.onclick=()=> makeEditable(cell, task, 'recurring', 'boolean');
+          cell.appendChild(pill);
+        }else if(c.key==='frequency'){
+          const v=task.frequency||''; const span=document.createElement('span'); span.textContent=v; span.style.cursor='pointer';
+          span.onclick=()=> makeEditable(cell, task, 'frequency', 'select', ['', 'daily','weekly','monthly','yearly']);
+          cell.appendChild(span);
+        }else if(c.key==='interval'){
+          const v = (task.interval==null?'':String(task.interval)); const span=document.createElement('span'); span.textContent=v; span.style.cursor='pointer';
+          span.onclick=()=> makeEditable(cell, task, 'interval', 'number');
+          cell.appendChild(span);
+        }else if(c.key==='closedDate'){
+          const v=task.closedDate||''; const span=document.createElement('span'); span.textContent=v; span.style.cursor='pointer';
+          span.onclick=()=> makeEditable(cell, task, 'closedDate', 'date');
+          cell.appendChild(span);
+        }else if(c.key==='status'){
+          // Status cell: complete toggle, timer, add-to-today
+          const wrap=document.createElement('div'); wrap.className='icon-row';
+          // Complete button (tick)
+          const doneBtn=document.createElement('button'); doneBtn.className='icon-btn'; doneBtn.title = (task.status==='closed')? 'Mark as open' : 'Mark as complete';
+          doneBtn.innerHTML = (task.status==='closed')
+            ? '<svg width="18" height="18" viewBox="0 0 20 20" xmlns="http://www.w3.org/2000/svg"><rect x="3" y="3" width="14" height="14" rx="3" fill="#ddd" stroke="#888"/><path d="M6 10l3 3 5-6" stroke="#666" stroke-width="2" fill="none" stroke-linecap="round" stroke-linejoin="round"/></svg>'
+            : '<svg width="18" height="18" viewBox="0 0 20 20" xmlns="http://www.w3.org/2000/svg"><rect x="3" y="3" width="14" height="14" rx="3" fill="#fff" stroke="#888"/><path d="M6 10l3 3 5-6" stroke="#2b8a3e" stroke-width="2" fill="none" stroke-linecap="round" stroke-linejoin="round" opacity="0"/></svg>';
+          doneBtn.onclick=(e)=>{ e.stopPropagation(); const newVal = (task.status==='closed')?'open':'closed'; setTaskField(task.id, 'status', newVal); if(newVal==='closed'){ setTaskField(task.id, 'closedDate', new Date().toISOString().slice(0,10)); } else { setTaskField(task.id,'closedDate',''); } saveWorkPartial({ workTasks }); applyViewAndRender(); };
+          wrap.appendChild(doneBtn);
+          // Timer (clock) button -> startTask('work', name)
+          const timerBtn=document.createElement('button'); timerBtn.className='icon-btn'; timerBtn.title='Start timer';
+          timerBtn.innerHTML='<svg width="18" height="18" viewBox="0 0 20 20" xmlns="http://www.w3.org/2000/svg"><circle cx="10" cy="10" r="8" fill="#C7BBB4"/><path d="M10 5v5l3 2" stroke="#2B2C29" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"/></svg>';
+          timerBtn.onclick=(e)=>{ e.stopPropagation(); if(window.startTask){ startTask('work', task.name); } };
+          wrap.appendChild(timerBtn);
+          // Add to Today (purple plus)
+          const addBtn=document.createElement('button'); addBtn.className='icon-btn'; addBtn.title='Add to Today';
+          addBtn.innerHTML='<svg width="18" height="18" viewBox="0 0 20 20" xmlns="http://www.w3.org/2000/svg"><circle cx="10" cy="10" r="8" fill="#B8A4D9"/><path d="M10 6v8M6 10h8" stroke="#fff" stroke-width="2" stroke-linecap="round"/></svg>';
+          addBtn.onclick=(e)=>{ e.stopPropagation(); addWorkTaskToToday(task.id, task.name); };
+          wrap.appendChild(addBtn);
+          cell.appendChild(wrap);
+        }else if(c.key==='dueDate'){
+          const v=task.dueDate||''; const span=document.createElement('span'); span.textContent = formatDateDDMMYY(v); span.title=v; span.style.cursor='pointer';
+          span.onclick=()=>makeEditable(cell, task, 'dueDate', 'date');
+          cell.appendChild(span);
+        }else{
+          const v=task[c.key]||''; const span=document.createElement('span'); span.textContent=v; span.style.cursor='pointer';
+          span.onclick=()=>makeEditable(cell, task, c.key, 'text');
+          cell.appendChild(span);
+        }
+        row.appendChild(cell);
+      });
+      return row;
+    }
+
+    function makeEditable(cell, task, field, type, options){
+      // Prevent duplicate editors
+      if(cell.querySelector('input,select')) return;
+      const old=cell.innerHTML; // save to restore if needed
+      const commit=(val)=>{ try{ setTaskField(task.id, field, val); saveWorkPartial({ workTasks }); applyViewAndRender(); }catch(e){ console.error(e); cell.innerHTML=old; } };
+      if(type==='text'){
+        const inp=document.createElement('input'); inp.type='text'; inp.value=task[field]||''; inp.style.width='100%'; inp.style.height='28px';
+        inp.onblur=()=>commit(inp.value.trim()); inp.onkeydown=(e)=>{ if(e.key==='Enter'){ inp.blur(); } if(e.key==='Escape'){ cell.innerHTML=old; } };
+        cell.innerHTML=''; cell.appendChild(inp); inp.focus(); inp.select();
+      }else if(type==='select'){
+        const sel=document.createElement('select'); sel.style.width='100%'; sel.style.height='30px';
+        (options||[]).forEach(o=>{ const opt=document.createElement('option'); opt.value=o; opt.textContent=o; sel.appendChild(opt); });
+        sel.value = (task[field]||'');
+        sel.onblur=()=>commit(sel.value); sel.onchange=()=>commit(sel.value);
+        cell.innerHTML=''; cell.appendChild(sel); sel.focus();
+      }else if(type==='boolean'){
+        const sel=document.createElement('select'); sel.style.width='100%'; sel.style.height='30px';
+        [{v:true,l:'Yes'},{v:false,l:'No'}].forEach(o=>{ const opt=document.createElement('option'); opt.value=String(o.v); opt.textContent=o.l; sel.appendChild(opt); });
+        sel.value = String(!!task[field]);
+        sel.onblur=()=>commit(sel.value==='true'); sel.onchange=()=>commit(sel.value==='true');
+        cell.innerHTML=''; cell.appendChild(sel); sel.focus();
+      }else if(type==='number'){
+        const inp=document.createElement('input'); inp.type='number'; inp.value=(task[field]==null? '' : String(task[field])); inp.min='0'; inp.step='1'; inp.style.width='100%'; inp.style.height='28px';
+        inp.onblur=()=>commit(inp.value===''? null : parseInt(inp.value,10));
+        inp.onkeydown=(e)=>{ if(e.key==='Enter'){ inp.blur(); } if(e.key==='Escape'){ cell.innerHTML=old; } };
+        cell.innerHTML=''; cell.appendChild(inp); inp.focus(); inp.select();
+      }else if(type==='date'){
+        const inp=document.createElement('input'); inp.type='date';
+        const v=task[field]; inp.value = (/^\d{4}-\d{2}-\d{2}$/.test(v||''))?v:'';
+        inp.style.width='100%'; inp.style.height='28px';
+        inp.onblur=()=>commit(inp.value||''); inp.onkeydown=(e)=>{ if(e.key==='Enter'){ inp.blur(); } if(e.key==='Escape'){ cell.innerHTML=old; } };
+        cell.innerHTML=''; cell.appendChild(inp); inp.showPicker && inp.showPicker(); inp.focus();
+      }
+    }
+
+    function setTaskField(taskId, field, value){
+      const t=findTaskById(taskId); if(!t) throw new Error('Task not found');
+      t[field]=value;
+    }
+
+    function saveDraftTask(){
+      if(!draftTask) return;
+      const name=(draftTask.name||'').trim();
+      if(!name){ alert('Please enter a task name'); return; }
+      // Assign new ID
+      const id = String(workNextId).padStart(8,'0'); workNextId++;
+      const t={
+        id,
+        parent:null,
+        name: draftTask.name||'',
+        project: draftTask.project||'',
+        dueDate: draftTask.dueDate||'',
+        importance: draftTask.importance||'',
+        urgency: draftTask.urgency||'',
+        recurring: !!draftTask.recurring,
+        frequency: draftTask.frequency||null,
+        interval: (draftTask.interval==null || draftTask.interval==='' ? null : parseInt(draftTask.interval,10)),
+        from: null,
+        status:'open',
+        closedDate:'',
+        subtasks:[],
+        notes: ''
+      };
+      workTasks.push(t);
+      const projectName=t.project||'';
+      if(projectName && (!selectedProjects || !selectedProjects.has(projectName))){ selectedProjects.add(projectName); renderProjectsSidebar(); }
+      draftTask=null;
+      saveWorkPartial({ workTasks, workNextId });
+      applyViewAndRender();
+      // Focus the created row's name for quick edit
+      setTimeout(()=>{
+        const target=document.querySelector(`.grid-row[data-id='${id}'] .grid-cell:first-child span[title]`);
+        if(target){ target.click(); }
+      }, 0);
+    }
+
+    function findTaskById(id){
+      for(const t of (workTasks||[])){
+        const found = findInTree(t, id);
+        if(found) return found;
+      }
+      return null;
+    }
+    function findInTree(node, id){
+      if(node.id===id) return node;
+      if(Array.isArray(node.subtasks)){
+        for(const c of node.subtasks){ const f=findInTree(c,id); if(f) return f; }
+      }
+      return null;
+    }
+
+    function getTaskInfoById(id, list=workTasks, depth=0, parent=null){
+      for(const t of list){
+        if(t.id===id) return { task:t, depth, parent };
+        if(t.subtasks){ const res=getTaskInfoById(id, t.subtasks, depth+1, t); if(res) return res; }
+      }
+      return null;
+    }
+
+    function moveTaskToParent(taskId, newParentId){
+      if(taskId===newParentId) return false;
+      const src=getTaskInfoById(taskId); if(!src) return false;
+      // Prevent making a parent its own descendant
+      if(newParentId){ const dest=getTaskInfoById(newParentId); if(!dest) return false; if(findInTree(src.task, newParentId)) return false; }
+      // Remove from current location
+      if(src.parent){ src.parent.subtasks = src.parent.subtasks.filter(x=>x.id!==taskId); }
+      else { workTasks = workTasks.filter(x=>x.id!==taskId); }
+      // Place into new parent or as root
+      if(newParentId){
+        const parent = findTaskById(newParentId); if(!parent) return false;
+        if(!Array.isArray(parent.subtasks)) parent.subtasks=[];
+        src.task.parent = newParentId;
+        parent.subtasks.unshift(src.task);
+        expandedTasks.add(newParentId);
+      }else{
+        src.task.parent = null;
+        workTasks.unshift(src.task);
+      }
+      return true;
+    }
+
+    function openFilterModal(){
+      const fm=document.getElementById('filterModal');
+      const fieldSel=document.getElementById('filterField');
+      fieldSel.innerHTML='';
+      getVisibleColumns().forEach(c=>{ const o=document.createElement('option'); o.value=c.key; o.textContent=c.label; fieldSel.appendChild(o); });
+      document.getElementById('filterValue').value='';
+      fm.style.display='flex';
+    }
+
+    function applyNewFilter(){
+      const field=document.getElementById('filterField').value;
+      const op=document.getElementById('filterOp').value;
+      const value=document.getElementById('filterValue').value;
+      filters.push({ field, op, value });
+      document.getElementById('filterModal').style.display='none';
+      applyViewAndRender();
+    }
+
+    function toggleGroupBy(field){
+      if(!field) return; const idx=groupBy.indexOf(field);
+      if(idx>=0){ groupBy.splice(idx,1); }
+      else{ if(groupBy.length<2) groupBy.push(field); }
+      applyViewAndRender();
+    }
+
+    function openGroupModal(){
+      const gm=document.getElementById('groupModal');
+      const sel1=document.getElementById('groupLevel1');
+      const sel2=document.getElementById('groupLevel2');
+      const makeOptions=(sel, current)=>{
+        sel.innerHTML='<option value="">(none)</option>';
+        ALL_FIELDS.forEach(f=>{ const o=document.createElement('option'); o.value=f.key; o.textContent=f.label; sel.appendChild(o); });
+        sel.value = current||'';
+      };
+      makeOptions(sel1, groupBy[0]);
+      makeOptions(sel2, groupBy[1]);
+      gm.style.display='flex';
+    }
+    function applyGroupSelection(){
+      const g1=document.getElementById('groupLevel1').value;
+      const g2=document.getElementById('groupLevel2').value;
+      const next=[]; if(g1) next.push(g1); if(g2 && g2!==g1) next.push(g2);
+      groupBy = next;
+      document.getElementById('groupModal').style.display='none';
+      applyViewAndRender();
+    }
+    function clearGroupSelection(){ groupBy=[]; document.getElementById('groupModal').style.display='none'; applyViewAndRender(); }
+
+    function openColumnsModal(){
+      // Ensure Task column is always present
+      const cm=document.getElementById('columnsModal');
+      const chooser=document.getElementById('columnsChooser'); chooser.innerHTML='';
+      ALL_FIELDS.forEach(f=>{
+        const wrap=document.createElement('label'); wrap.style.display='flex'; wrap.style.alignItems='center'; wrap.style.gap='6px';
+        const cb=document.createElement('input'); cb.type='checkbox';
+        const curr=columnsCfg.find(c=>c.key===f.key); const vis=curr?curr.visible!==false:(f.key==='name');
+        cb.checked=vis; if(f.key==='name') cb.disabled=true; // Task always on
+        cb.onchange=()=>{ const c=columnsCfg.find(x=>x.key===f.key) || { key:f.key, label:f.label, width:f.min||120, visible:true }; c.visible=cb.checked; if(!columnsCfg.find(x=>x.key===f.key)) columnsCfg.push(c); };
+        const span=document.createElement('span'); span.textContent=f.label;
+        wrap.appendChild(cb); wrap.appendChild(span); chooser.appendChild(wrap);
+      });
+      cm.style.display='flex';
+    }
+
+    // ===== Views Manager (KEEP when merge happens) =====
+    function getViews(){
+      try{ return JSON.parse(localStorage.getItem('workTest.views')||'[]'); }catch{ return []; }
+    }
+    function setViews(arr){ localStorage.setItem('workTest.views', JSON.stringify(arr)); }
+    function renderViewsList(){
+      const list=document.getElementById('viewsList'); if(!list) return;
+      const views=getViews(); list.innerHTML='';
+      const defName = localStorage.getItem('workTest.defaultView')||'';
+      if(!views.length){ list.innerHTML='<div style="color:var(--color-text-muted);font-style:italic;">No saved views</div>'; return; }
+      views.forEach((v, idx)=>{
+        const row=document.createElement('div'); row.style.display='grid'; row.style.gridTemplateColumns='auto 1fr auto'; row.style.alignItems='center'; row.style.gap='8px'; row.style.padding='6px 4px'; row.style.borderBottom='1px solid #eee';
+        const radio=document.createElement('input'); radio.type='radio'; radio.name='defaultView'; radio.checked=(v.name===defName); radio.title='Default view';
+        radio.onchange=()=>{ if(radio.checked){ localStorage.setItem('workTest.defaultView', v.name); renderViewsList(); } };
+        const a=document.createElement('a'); a.href='#'; a.textContent=v.name; a.onclick=(e)=>{ e.preventDefault(); applyView(v); };
+        const del=document.createElement('button'); del.textContent='Delete'; del.style.border='none'; del.style.background='transparent'; del.style.cursor='pointer'; del.onclick=()=>{ deleteView(idx); };
+        row.appendChild(radio); row.appendChild(a); row.appendChild(del); list.appendChild(row);
+      });
+    }
+  function saveCurrentView(){
+      const name=(document.getElementById('newViewName').value||'').trim(); if(!name) return;
+      const view={ name,
+        columnsCfg: columnsCfg,
+        filters: filters,
+        groupBy: groupBy,
+        selectedProjects: Array.from(selectedProjects||[]),
+        sortBy: sortBy,
+        showClosed: !!showClosed
+      };
+      const views=getViews();
+      const existingIdx=views.findIndex(v=>v.name.toLowerCase()===name.toLowerCase());
+      if(existingIdx>=0) views[existingIdx]=view; else views.push(view);
+      setViews(views);
+      document.getElementById('newViewName').value='';
+      renderViewsList();
+    }
+    function applyView(v){
+      try{
+        columnsCfg = (v.columnsCfg||columnsCfg).map(c=>({ ...c }));
+        filters = (v.filters||[]).map(f=>({ ...f }));
+        groupBy = Array.isArray(v.groupBy)?[...v.groupBy]:[];
+  selectedProjects = new Set(Array.isArray(v.selectedProjects)?v.selectedProjects:[]);
+  if(selectedProjects.size===0){ selectedProjects = new Set((workProjects||[]).map(p=>p.name)); }
+        // Back-compat for older single-sort
+        if(v.sortBy){ sortBy = v.sortBy.map(s=>({ ...s })); }
+        else if(v.sortField){ sortBy = v.sortField ? [{ field:v.sortField, dir:(v.sortDir||'asc') }] : []; }
+        else { sortBy = []; }
+        showClosed = !!v.showClosed;
+        const chk=document.getElementById('showClosedChk'); if(chk) chk.checked=showClosed;
+        renderProjectsSidebar();
+        applyViewAndRender();
+      }catch(e){ console.error('Failed to apply view', e); }
+    }
+    function deleteView(idx){ const views=getViews(); views.splice(idx,1); setViews(views); renderViewsList(); }
+
+    function applyColumnsSelection(){
+      // Normalize order: keep existing order, drop unchecked, then append any newly checked not in order
+      const chosen=new Set();
+      document.querySelectorAll('#columnsChooser input[type="checkbox"]').forEach((cb, i)=>{
+        const label = cb.nextSibling.textContent; const field=ALL_FIELDS.find(f=>f.label===label);
+        if(!field) return; chosen.add(field.key);
+        let c=columnsCfg.find(x=>x.key===field.key); if(!c){ c={ key:field.key, label:field.label, width:field.min||120, visible:true }; columnsCfg.push(c); }
+        c.visible = cb.checked || field.key==='name';
+        if(!c.width) c.width=field.min||120;
+      });
+      // Ensure task column present
+      if(!columnsCfg.find(c=>c.key==='name')) columnsCfg.unshift({ key:'name', label:'Task', width:220, visible:true });
+      document.getElementById('columnsModal').style.display='none';
+      applyViewAndRender();
+    }
+
+    // ===== Settings copy (KEEP when merge happens) =====
+    function renderSettingsProjects(){
+      const container = document.getElementById('workProjects'); if(!container) return;
+      const selDepth = document.getElementById('subtaskDepth'); if(selDepth){ selDepth.value = (window.maxSubDepth||7); selDepth.onchange=()=>{ window.maxSubDepth = parseInt(selDepth.value,10)||1; saveWorkPartial({ maxSubDepth: window.maxSubDepth }); }; }
+      container.innerHTML='';
+      const table=document.createElement('table'); table.className='task-table';
+      const head=document.createElement('tr'); head.innerHTML='<th>Name</th><th>Color</th><th>Action</th>'; table.appendChild(head);
+      (workProjects||[]).forEach(p=>{
+        const tr=document.createElement('tr');
+        const name=document.createElement('td'); name.textContent=p.name; name.style.color=p.color; tr.appendChild(name);
+        const colorTd=document.createElement('td'); const box=document.createElement('div'); box.style.width='30px'; box.style.height='20px'; box.style.border='1px solid #ccc'; box.style.borderRadius='4px'; box.style.background=p.color; colorTd.appendChild(box); tr.appendChild(colorTd);
+        const act=document.createElement('td'); const del=document.createElement('button'); del.textContent='Delete'; del.onclick=()=>{ if(confirm('Delete project?')){ workProjects = workProjects.filter(x=>x!==p); saveWorkPartial({ workProjects }); renderSettingsProjects(); renderProjectsSidebar(); applyViewAndRender(); } }; act.appendChild(del); tr.appendChild(act);
+        table.appendChild(tr);
+      });
+      container.appendChild(table);
+    }
+
+    function addWorkProjectFromSettings(){
+      const name=(document.getElementById('workProjectName').value||'').trim(); const color=document.getElementById('workProjectColor').value||'#ff0000';
+      if(!name || (workProjects||[]).some(p=>p.name===name)) return;
+      workProjects.push({ name, color });
+      document.getElementById('workProjectName').value='';
+      saveWorkPartial({ workProjects });
+      renderSettingsProjects(); renderProjectsSidebar(); applyViewAndRender();
+    }
+
+    // Wire settings buttons after DOM load
+    document.addEventListener('DOMContentLoaded', ()=>{
+      const addBtn=document.getElementById('addProjectBtn'); if(addBtn) addBtn.onclick=addWorkProjectFromSettings;
+      // Render projects list when data loads later
+      setTimeout(renderSettingsProjects, 0);
+    });
+  </script>
+</head>
+<body>
+  <header><h1>Work</h1></header>
+  <div id="nav-placeholder"></div>
+
+  <!-- Tab buttons (KEEP when merge happens) -->
+  <div class="tabs">
+    <button data-tab="tab-overview" onclick="showTab('tab-overview')" class="active">Overview</button>
+    <button data-tab="tab-projects" onclick="showTab('tab-projects')">Work Projects</button>
+    <button data-tab="tab-calendar" onclick="showTab('tab-calendar')">Calendar</button>
+    <button data-tab="tab-meetings" onclick="showTab('tab-meetings')">Meetings</button>
+    <button data-tab="tab-settings" onclick="showTab('tab-settings')">Settings</button>
+  </div>
+
+  <!-- Overview -->
+  <section id="tab-overview" class="tab-content active">
+    <p style="color:var(--color-text-muted);font-style:italic;">Smaller overview UI coming next.</p>
+  </section>
+
+  <!-- Projects -->
+  <section id="tab-projects" class="tab-content">
+    <div class="views-bar">
+      <div class="projects-actions">
+        <button id="viewsBtn">Views</button>
+        <label style="display:inline-flex;align-items:center;gap:6px;margin-left:8px;">
+          <input type="checkbox" id="showClosedChk"> Show closed tasks
+        </label>
+  <button id="addTaskBtn" style="margin-left:8px;">Add Task</button>
+      </div>
+      <div style="color:var(--color-text-muted);font-size:0.9rem;">Select projects to show tasks</div>
+    </div>
+    <div class="projects-layout">
+      <aside class="projects-sidebar">
+        <div style="display:flex;justify-content:space-between;align-items:center;margin-bottom:6px;">
+          <strong>Projects</strong>
+          <button id="toggleAllProjects" style="border:none;background:transparent;cursor:pointer;font-size:12px;">All</button>
+        </div>
+        <div id="projectsList"></div>
+      </aside>
+      <main class="projects-main">
+  <div id="taskDropZone" title="Drop here to move task to top level (remove from parent)">Drop here to move to top level</div>
+  <div id="grid" class="grid">
+          <div id="gridHead" class="grid-head"></div>
+          <div id="gridBody" class="grid-body"></div>
+        </div>
+      </main>
+    </div>
+
+    <!-- Header menu -->
+    <div id="headerMenu" class="header-menu">
+      <button data-action="filter">Filter…</button>
+      <button data-action="group">Group…</button>
+      <button data-action="amend">Amend columns…</button>
+    </div>
+
+    <!-- Views modal -->
+    <div id="viewsModal" class="modal-dlg">
+      <div class="modal-panel">
+        <h3 style="margin-top:0;">Views</h3>
+        <div id="viewsList" style="max-height:40vh;overflow:auto;margin-bottom:0.5rem;"></div>
+        <div style="display:flex;gap:0.5rem;align-items:center;flex-wrap:wrap;">
+          <input id="newViewName" placeholder="View name" style="flex:1;min-width:180px;">
+          <button id="saveViewBtn" class="submit-btn" style="padding:0.4rem 0.8rem;">Save current</button>
+          <button id="closeViewsBtn" class="submit-btn" style="padding:0.4rem 0.8rem;">Close</button>
+        </div>
+      </div>
+    </div>
+
+    <!-- Filter modal -->
+    <div id="filterModal" class="modal-dlg">
+      <div class="modal-panel">
+        <h3 style="margin-top:0;">Add filter</h3>
+        <div style="display:flex;gap:0.5rem;flex-wrap:wrap;align-items:center;margin-bottom:0.5rem;">
+          <select id="filterField"></select>
+          <select id="filterOp">
+            <option value="contains">contains</option>
+            <option value="equals">equals</option>
+            <option value="not_equals">not equals</option>
+            <option value="before">before (date)</option>
+            <option value="after">after (date)</option>
+            <option value="empty">is empty</option>
+            <option value="not_empty">is not empty</option>
+          </select>
+          <input id="filterValue" placeholder="Value" style="flex:1;min-width:160px;">
+        </div>
+        <div style="display:flex;gap:0.5rem;justify-content:flex-end;">
+          <button id="addFilterBtn" class="submit-btn" style="padding:0.4rem 0.8rem;">Add</button>
+          <button id="closeFilterBtn" class="submit-btn" style="padding:0.4rem 0.8rem;">Close</button>
+        </div>
+      </div>
+    </div>
+
+    <!-- Amend columns modal -->
+    <div id="columnsModal" class="modal-dlg">
+      <div class="modal-panel">
+        <h3 style="margin-top:0;">Columns</h3>
+        <div id="columnsChooser" style="display:grid;grid-template-columns:repeat(auto-fill,minmax(160px,1fr));gap:6px;max-height:40vh;overflow:auto;margin-bottom:0.5rem;"></div>
+        <div style="display:flex;gap:0.5rem;justify-content:flex-end;">
+          <button id="applyColumnsBtn" class="submit-btn" style="padding:0.4rem 0.8rem;">Apply</button>
+          <button id="closeColumnsBtn" class="submit-btn" style="padding:0.4rem 0.8rem;">Close</button>
+        </div>
+      </div>
+    </div>
+
+    <!-- Group By modal -->
+    <div id="groupModal" class="modal-dlg">
+      <div class="modal-panel">
+        <h3 style="margin-top:0;">Group By</h3>
+        <div style="display:flex;flex-direction:column;gap:8px;margin-bottom:0.5rem;">
+          <label style="display:flex;gap:8px;align-items:center;">Level 1 <select id="groupLevel1" style="flex:1;"></select></label>
+          <label style="display:flex;gap:8px;align-items:center;">Level 2 <select id="groupLevel2" style="flex:1;"></select></label>
+        </div>
+        <div style="display:flex;gap:0.5rem;justify-content:flex-end;flex-wrap:wrap;">
+          <button id="clearGroupBtn" class="submit-btn" style="padding:0.4rem 0.8rem;background:#eee;">Clear</button>
+          <button id="applyGroupBtn" class="submit-btn" style="padding:0.4rem 0.8rem;">Apply</button>
+          <button id="closeGroupBtn" class="submit-btn" style="padding:0.4rem 0.8rem;">Close</button>
+        </div>
+      </div>
+    </div>
+  </section>
+
+  <!-- Calendar: moved from work.html (KEEP when merge happens) -->
+  <section id="tab-calendar" class="tab-content">
+    <div class="calendar-container">
+      <div id="workCalendar"></div>
+      <div>
+        <h3>Tasks</h3>
+        <div id="calendarTaskList"></div>
+      </div>
+    </div>
+  </section>
+
+  <!-- Meetings: moved from work.html (KEEP when merge happens) -->
+  <section id="tab-meetings" class="tab-content">
+    <button onclick="openMeetingModal()" class="submit-btn">Add Meeting</button>
+    <div id="meetingColumns" class="meeting-grid"></div>
+    <div style="margin-top:1rem;">
+      <div class="toggle subtoggle" onclick="document.getElementById('allMeetings').classList.toggle('hidden')">View All Meetings</div>
+      <div id="allMeetings" class="hidden meeting-grid"></div>
+    </div>
+  </section>
+
+  <!-- Settings (placeholder) -->
+  <section id="tab-settings" class="tab-content">
+    <!-- Settings copied from current Work page (KEEP when merge happens) -->
+    <h3>Max Subtask Depth</h3>
+    <p>This sets how many subtasks you can have nested</p>
+    <label>Depth Level <input type="number" id="subtaskDepth" min="1" max="7" style="width: 80px;"></label>
+    <h3 style="margin-top: 2rem;">Projects</h3>
+    <div style="display: flex; gap: 1rem; margin-bottom: 1rem; align-items: flex-end;">
+      <label>Project Name <input type="text" id="workProjectName"></label>
+      <label>Color <input type="color" id="workProjectColor" value="#ff0000"></label>
+      <button id="addProjectBtn" class="submit-btn" style="padding:0.45rem 0.9rem;">Add</button>
+    </div>
+    <div id="workProjects"></div>
+  </section>
+
+  <!-- Meeting modal (KEEP when merge happens) -->
+  <div id="meetingModal" class="modal hidden">
+    <div class="modal-content">
+      <label>Title<input id="meetTitle"></label>
+      <label>Project<select id="meetProject"></select></label>
+      <label>Date<input type="date" id="meetDate"></label>
+      <label>Attendees
+        <div class="rte-toolbar">
+          <button type="button" onclick="applyRTECommand('meetAttendees','bold')"><b>B</b></button>
+          <button type="button" onclick="applyRTECommand('meetAttendees','italic')"><i>I</i></button>
+          <button type="button" onclick="applyRTECommand('meetAttendees','underline')"><u>U</u></button>
+          <button type="button" onclick="applyRTECommand('meetAttendees','insertUnorderedList')">• List</button>
+          <button type="button" onclick="applyRTECommand('meetAttendees','insertOrderedList')">1. List</button>
+          <label style="display:inline-flex;align-items:center;gap:4px;">A
+            <input type="color" onchange="applyRTECommand('meetAttendees','foreColor',this.value)">
+          </label>
+          <label style="display:inline-flex;align-items:center;gap:4px;">HL
+            <input type="color" onchange="applyRTECommand('meetAttendees','hiliteColor',this.value)">
+          </label>
+        </div>
+        <div id="meetAttendees" class="rte" contenteditable="true"></div>
+      </label>
+      <label>Content
+        <div class="rte-toolbar">
+          <button type="button" onclick="applyRTECommand('meetContent','bold')"><b>B</b></button>
+          <button type="button" onclick="applyRTECommand('meetContent','italic')"><i>I</i></button>
+          <button type="button" onclick="applyRTECommand('meetContent','underline')"><u>U</u></button>
+          <button type="button" onclick="applyRTECommand('meetContent','insertUnorderedList')">• List</button>
+          <button type="button" onclick="applyRTECommand('meetContent','insertOrderedList')">1. List</button>
+          <label style="display:inline-flex;align-items:center;gap:4px;">A
+            <input type="color" onchange="applyRTECommand('meetContent','foreColor',this.value)">
+          </label>
+          <label style="display:inline-flex;align-items:center;gap:4px;">HL
+            <input type="color" onchange="applyRTECommand('meetContent','hiliteColor',this.value)">
+          </label>
+        </div>
+        <div id="meetContent" class="rte" contenteditable="true"></div>
+      </label>
+      <label>Outcomes
+        <div class="rte-toolbar">
+          <button type="button" onclick="applyRTECommand('meetOutcomes','bold')"><b>B</b></button>
+          <button type="button" onclick="applyRTECommand('meetOutcomes','italic')"><i>I</i></button>
+          <button type="button" onclick="applyRTECommand('meetOutcomes','underline')"><u>U</u></button>
+          <button type="button" onclick="applyRTECommand('meetOutcomes','insertUnorderedList')">• List</button>
+          <button type="button" onclick="applyRTECommand('meetOutcomes','insertOrderedList')">1. List</button>
+          <label style="display:inline-flex;align-items:center;gap:4px;">A
+            <input type="color" onchange="applyRTECommand('meetOutcomes','foreColor',this.value)">
+          </label>
+          <label style="display:inline-flex;align-items:center;gap:4px;">HL
+            <input type="color" onchange="applyRTECommand('meetOutcomes','hiliteColor',this.value)">
+          </label>
+        </div>
+        <div id="meetOutcomes" class="rte" contenteditable="true"></div>
+      </label>
+      <div id="attachList"></div>
+      <div style="display:flex;gap:0.5rem;align-items:center;">
+        <input id="attachInput" placeholder="Attachment URL" style="flex:1;">
+        <button onclick="addAttachment()" class="submit-btn" style="padding:0.45rem 0.9rem;">Add</button>
+      </div>
+      <div style="text-align:right;margin-top:0.5rem;display:flex;gap:0.5rem;justify-content:flex-end;flex-wrap:wrap;">
+        <button onclick="saveMeeting()" class="submit-btn">Save</button>
+        <button onclick="deleteMeeting()" class="submit-btn" style="background:#E07A5F;color:#fff;">Delete</button>
+        <button onclick="addFollowUp()" class="submit-btn">Add Follow-Up</button>
+        <button onclick="closeMeetingModal()" class="submit-btn">Close</button>
+      </div>
+    </div>
+  </div>
+
+  <script>
+    // Add-to-Today for Work (reused from work.html)
+    async function addWorkTaskToToday(taskId, taskName){
+      try{
+        const res = await fetch('/api/add-to-today',{ method:'POST', headers:{'Content-Type':'application/json'}, body: JSON.stringify({ taskType: 'work', taskId, taskName }) });
+        const result = await res.json();
+        if(result.status === 'ok'){
+          console.log(`Added to Today: ${taskName}`);
+        }else if(result.status === 'already_exists'){
+          alert('Task is already on today list');
+        }else{
+          alert('Failed to add to Today');
+        }
+      }catch(e){ console.error('Error adding to Today', e); alert('Error adding to Today'); }
+    }
+  </script>
+
+</body>
+</html>

@@ -25,6 +25,8 @@ app.get('/today', (req, res) => res.sendFile(path.join(__dirname, 'today.html'))
 app.get('/gardening', (req, res) => res.sendFile(path.join(__dirname, 'gardening.html')));
 app.get('/diy', (req, res) => res.sendFile(path.join(__dirname, 'diy.html')));
 app.get('/work', (req, res) => res.sendFile(path.join(__dirname, 'work.html')));
+// NEW: temporary test page route for Work (KEEP when merge happens)
+app.get('/work-test', (req, res) => res.sendFile(path.join(__dirname, 'work-test.html')));
 app.get('/finance', (req, res) => res.sendFile(path.join(__dirname, 'finance.html')));
 app.get('/notification', (req, res) => res.sendFile(path.join(__dirname, 'notification.html')));
 
@@ -279,11 +281,21 @@ let financeData = {
   nextPotId: 1
 };
 
+// gardening page data
+let gardeningData = {
+  settings: { locations: [], nextLocationId: 1, plantTypes: [], nextPlantTypeId: 1 },
+  plants: [],
+  nextPlantId: 1,
+  garden: [],
+  futurePlans: []
+};
+
 const INDEX_FILE = path.join(DATA_DIR, 'indexData.json');
 const TODAY_FILE = path.join(DATA_DIR, 'todayData.json');
 const WORK_FILE = path.join(DATA_DIR, 'workData.json');
 const DIY_FILE = path.join(DATA_DIR, 'diyData.json');
 const FINANCE_FILE = path.join(DATA_DIR, 'financeData.json');
+const GARDENING_FILE = path.join(DATA_DIR, 'gardeningData.json');
 const PARENTING_FILE = path.join(DATA_DIR, 'parentingData.json');
 const FAMILY_FRIENDS_FILE = path.join(DATA_DIR, 'familyFriendsData.json');
 const SOUL_FILE = path.join(DATA_DIR, 'soulData.json');
@@ -311,6 +323,7 @@ function initDb() {
   workData = loadJson(WORK_FILE, workData);
   diyData = loadJson(DIY_FILE, diyData);
   financeData = loadJson(FINANCE_FILE, financeData);
+  gardeningData = loadJson(GARDENING_FILE, gardeningData);
   parentingData = loadJson(PARENTING_FILE, parentingData);
   familyFriendsData = loadJson(FAMILY_FRIENDS_FILE, familyFriendsData);
   soulData = loadJson(SOUL_FILE, soulData);
@@ -318,6 +331,14 @@ function initDb() {
   timeTrackerData = loadJson(TIME_TRACKER_FILE, timeTrackerData);
   notificationStats = loadJson(NOTIF_FILE, notificationStats);
   healthData = loadJson(HEALTH_FILE, healthData);
+  // defensive defaults
+  gardeningData.settings = gardeningData.settings || { locations: [], nextLocationId: 1, plantTypes: [], nextPlantTypeId: 1 };
+  gardeningData.settings.locations = gardeningData.settings.locations || [];
+  gardeningData.settings.nextLocationId = gardeningData.settings.nextLocationId || 1;
+  gardeningData.settings.plantTypes = gardeningData.settings.plantTypes || [];
+  gardeningData.settings.nextPlantTypeId = gardeningData.settings.nextPlantTypeId || 1;
+  gardeningData.plants = gardeningData.plants || [];
+  gardeningData.nextPlantId = gardeningData.nextPlantId || 1;
   soulData.meditations = soulData.meditations || [];
   soulData.nextMeditationId = soulData.nextMeditationId || 1;
   soulData.journalTypes = soulData.journalTypes || [];
@@ -469,6 +490,25 @@ app.post('/api/finance-data', (req, res) => {
   fs.writeFileSync(FINANCE_FILE, JSON.stringify(financeData, null, 2));
   res.json({ status: 'ok' });
 });
+
+// gardening endpoints
+app.get('/api/gardening-data', (req, res) => {
+  res.json(gardeningData);
+});
+
+app.post('/api/gardening-data', (req, res) => {
+  gardeningData = req.body || gardeningData;
+  // ensure structure
+  gardeningData.settings = gardeningData.settings || { locations: [], nextLocationId: 1, plantTypes: [], nextPlantTypeId: 1 };
+  gardeningData.settings.locations = gardeningData.settings.locations || [];
+  gardeningData.settings.nextLocationId = gardeningData.settings.nextLocationId || 1;
+  gardeningData.settings.plantTypes = gardeningData.settings.plantTypes || [];
+  gardeningData.settings.nextPlantTypeId = gardeningData.settings.nextPlantTypeId || 1;
+  gardeningData.plants = gardeningData.plants || [];
+  gardeningData.nextPlantId = gardeningData.nextPlantId || 1;
+  fs.writeFileSync(GARDENING_FILE, JSON.stringify(gardeningData, null, 2));
+  res.json({ status: 'ok' });
+});
 // Manual backup endpoint
 app.post('/save-backup', (req, res) => {
   try {
@@ -524,7 +564,7 @@ let healthData = {
   periodCycles: [], // { id, startDate, estEndDate, endDate|null, daily: [{date,intensity:0-3,symptoms:[]}] }
   nextPeriodId: 1,
   healthTypes: [], // ["Headache", "Cold", ...]
-  healthNotes: [], // { id, type, startDate, hasDuration, endDate, intensity, notes }
+  healthNotes: [], // { id, type, startDate, startTime?, hasDuration, endDate, endTime?, intensity, notes }
   nextHealthNoteId: 1
 };
 
@@ -571,7 +611,9 @@ let relationshipsData = {
 // time tracker data
 let timeTrackerData = {
   tasks: [],
-  nextId: 1
+  nextId: 1,
+  activities: [],
+  nextActivityId: 1
 };
 
 // notification stats data
@@ -649,6 +691,11 @@ app.post('/api/family-friends/complete-task', (req, res) => {
 
 // time tracker endpoints
 app.get('/api/time-tracker', (req, res) => {
+  // ensure defaults
+  if (!Array.isArray(timeTrackerData.tasks)) timeTrackerData.tasks = [];
+  if (!Number.isFinite(timeTrackerData.nextId)) timeTrackerData.nextId = 1;
+  if (!Array.isArray(timeTrackerData.activities)) timeTrackerData.activities = [];
+  if (!Number.isFinite(timeTrackerData.nextActivityId)) timeTrackerData.nextActivityId = 1;
   res.json(timeTrackerData);
 });
 
@@ -670,6 +717,157 @@ app.post('/api/time-tracker/stop', (req, res) => {
   res.json(task);
 });
 
+// Add a manual time entry (from-to or duration)
+app.post('/api/time-tracker/add-manual', (req, res) => {
+  try {
+    const {
+      name, source,
+      start, end,
+      startDate, startTime,
+      endDate, endTime,
+      durationMinutes,
+      activityType, // 'linked' | 'reusable' | 'oneoff'
+      link, // optional metadata for linked tasks { page, id, project, type }
+      reusableActivityId,
+    } = req.body || {};
+
+    if (!name || !source) return res.status(400).json({ error: 'name and source required' });
+
+    // Helper to make "sv-SE" timestamp in Europe/London TZ
+    const tzStamp = (d) => new Date(d).toLocaleString('sv-SE', { timeZone: 'Europe/London' }).replace(' ', 'T');
+
+    let startIso = start;
+    let endIso = end;
+
+    // If no direct ISO provided, compute from date/time/duration
+    if (!startIso || !endIso) {
+      // Build from date/time pieces if present
+      if (startDate && startTime) {
+        startIso = `${startDate}T${startTime}`;
+      } else if (startDate && !startTime) {
+        startIso = `${startDate}T00:00:00`;
+      }
+      if (endDate && endTime) {
+        endIso = `${endDate}T${endTime}`;
+      } else if (endDate && !endTime) {
+        endIso = `${endDate}T23:59:59`;
+      }
+
+      // If still missing, use duration to derive one side
+      const dur = Number(durationMinutes);
+      if ((!startIso || !endIso) && Number.isFinite(dur) && dur > 0) {
+        if (!endIso && startIso) {
+          endIso = new Date(new Date(startIso).getTime() + dur * 60000).toISOString();
+        } else if (!startIso && endIso) {
+          startIso = new Date(new Date(endIso).getTime() - dur * 60000).toISOString();
+        } else if (!startIso && !endIso) {
+          // default end now
+          const now = new Date();
+          endIso = now.toISOString();
+          startIso = new Date(now.getTime() - dur * 60000).toISOString();
+        }
+      }
+    }
+
+    if (!startIso || !endIso) return res.status(400).json({ error: 'start/end or duration required' });
+
+    const task = {
+      id: timeTrackerData.nextId++,
+      name,
+      source,
+      start: tzStamp(startIso),
+      end: tzStamp(endIso),
+    };
+    if (activityType) task.activityType = activityType;
+    if (link && typeof link === 'object') task.link = link;
+    if (Number.isFinite(reusableActivityId)) task.reusableActivityId = reusableActivityId;
+
+    if (!Array.isArray(timeTrackerData.tasks)) timeTrackerData.tasks = [];
+    timeTrackerData.tasks.push(task);
+    if (!Array.isArray(timeTrackerData.activities)) timeTrackerData.activities = [];
+    if (!Number.isFinite(timeTrackerData.nextActivityId)) timeTrackerData.nextActivityId = 1;
+    fs.writeFileSync(TIME_TRACKER_FILE, JSON.stringify(timeTrackerData, null, 2));
+    res.json(task);
+  } catch (e) {
+    console.error('add-manual failed', e);
+    res.status(500).json({ error: 'failed to add manual entry' });
+  }
+});
+
+// Update an existing tracked task (edit log)
+app.post('/api/time-tracker/update', (req, res) => {
+  try{
+    const { id, name, source, start, end, link, activityType, reusableActivityId } = req.body || {};
+    if (!Number.isFinite(id)) return res.status(400).json({ error: 'id required' });
+    const t = timeTrackerData.tasks.find(x => x.id === id);
+    if (!t) return res.status(404).json({ error: 'Task not found' });
+    if (name !== undefined) t.name = name;
+    if (source !== undefined) t.source = source;
+    if (start) t.start = new Date(start).toLocaleString('sv-SE', { timeZone: 'Europe/London' }).replace(' ', 'T');
+    if (end) t.end = new Date(end).toLocaleString('sv-SE', { timeZone: 'Europe/London' }).replace(' ', 'T');
+    if (activityType !== undefined) t.activityType = activityType;
+    if (link !== undefined) t.link = link;
+    if (reusableActivityId !== undefined) t.reusableActivityId = reusableActivityId;
+    fs.writeFileSync(TIME_TRACKER_FILE, JSON.stringify(timeTrackerData, null, 2));
+    res.json(t);
+  }catch(e){
+    console.error('update time tracker failed', e);
+    res.status(500).json({ error: 'failed to update task' });
+  }
+});
+
+// Delete a tracked task
+app.post('/api/time-tracker/delete', (req, res) => {
+  try{
+    const { id } = req.body || {};
+    if (!Number.isFinite(id)) return res.status(400).json({ error: 'id required' });
+    const before = timeTrackerData.tasks.length;
+    timeTrackerData.tasks = timeTrackerData.tasks.filter(t => t.id !== id);
+    const removed = before - timeTrackerData.tasks.length;
+    fs.writeFileSync(TIME_TRACKER_FILE, JSON.stringify(timeTrackerData, null, 2));
+    res.json({ success: true, removed });
+  }catch(e){
+    console.error('delete time tracker failed', e);
+    res.status(500).json({ error: 'failed to delete task' });
+  }
+});
+
+// Reusable activities
+app.get('/api/time-tracker/activities', (req, res) => {
+  if (!Array.isArray(timeTrackerData.activities)) timeTrackerData.activities = [];
+  if (!Number.isFinite(timeTrackerData.nextActivityId)) timeTrackerData.nextActivityId = 1;
+  res.json({ activities: timeTrackerData.activities, nextActivityId: timeTrackerData.nextActivityId });
+});
+
+app.post('/api/time-tracker/activities', (req, res) => {
+  try{
+    const { name, source } = req.body || {};
+    if (!name) return res.status(400).json({ error: 'name required' });
+    const act = { id: timeTrackerData.nextActivityId++, name, source: source || 'custom' };
+    if (!Array.isArray(timeTrackerData.activities)) timeTrackerData.activities = [];
+    timeTrackerData.activities.push(act);
+    fs.writeFileSync(TIME_TRACKER_FILE, JSON.stringify(timeTrackerData, null, 2));
+    res.json(act);
+  }catch(e){
+    console.error('add activity failed', e);
+    res.status(500).json({ error: 'failed to add activity' });
+  }
+});
+
+app.delete('/api/time-tracker/activities/:id', (req, res) => {
+  try{
+    const id = Number(req.params.id);
+    if (!Number.isFinite(id)) return res.status(400).json({ error: 'invalid id' });
+    const before = (timeTrackerData.activities || []).length;
+    timeTrackerData.activities = (timeTrackerData.activities || []).filter(a => a.id !== id);
+    fs.writeFileSync(TIME_TRACKER_FILE, JSON.stringify(timeTrackerData, null, 2));
+    res.json({ success: true, removed: before - timeTrackerData.activities.length });
+  }catch(e){
+    console.error('delete activity failed', e);
+    res.status(500).json({ error: 'failed to delete activity' });
+  }
+});
+
 // Notification stats endpoints
 app.get('/api/notification-stats', (req, res) => {
   const { yes = 0, no = 0 } = notificationStats || {};
@@ -682,8 +880,8 @@ app.post('/api/notification-event', (req, res) => {
     if (action !== 'yes' && action !== 'no') return res.status(400).json({ error: 'invalid action' });
     if (!notificationStats || typeof notificationStats !== 'object') notificationStats = { yes: 0, no: 0, events: [] };
     notificationStats[action] = (notificationStats[action] || 0) + 1;
-    const evt = { action, id, tag, ts: ts || new Date().toISOString() };
-    notificationStats.events = Array.isNull(notificationStats.events) ? notificationStats.events : [];
+  const evt = { action, id, tag, ts: ts || new Date().toISOString() };
+  if (!Array.isArray(notificationStats.events)) notificationStats.events = [];
     notificationStats.events.push(evt);
     if (notificationStats.events.length > 100) notificationStats.events = notificationStats.events.slice(-100);
     fs.writeFileSync(NOTIF_FILE, JSON.stringify(notificationStats, null, 2));
@@ -1725,45 +1923,50 @@ function checkAndTriggerExperiences() {
   const data = loadExperienceData();
   const now = new Date();
   let triggeredCount = 0;
-  
+
   console.log(`Checking ${data.experiences.length} experiences for triggers...`);
-  
+
   // Check if notifications are currently paused
   const isCurrentlyPaused = checkIfNotificationsPaused();
   if (isCurrentlyPaused) {
     console.log('⏸️  Notifications are currently paused - skipping triggers');
     return;
   }
-  
-  data.experiences.forEach(async (experience) => {
-    if (experience.status !== 'active' || !experience.nextTrigger) {
-      return;
-    }
-    
-    const triggerTime = new Date(experience.nextTrigger);
-    
-    // Check if it's time to trigger (within 1 minute tolerance)
-    if (triggerTime <= now) {
-      // If awaiting a response, do not trigger again
-      if (experience.pendingResponse) {
-        return;
-      }
-      console.log(`� TRIGGERING: ${experience.name} (was due: ${triggerTime.toLocaleString()})`);
-      triggeredCount++;
-      // Mark waiting for response and clear schedule until response received
-      experience.pendingResponse = true;
-      experience.lastTriggeredAt = new Date().toISOString();
-      experience.nextTrigger = null;
-      saveExperienceData(data);
 
-      // Send push notification
-      await sendExperiencePushNotification(experience);
+  // Iterate explicitly to avoid any accidental outer returns and ensure per-experience gating
+  (async () => {
+    for (const experience of data.experiences) {
+      try {
+        if (experience.status !== 'active' || !experience.nextTrigger) {
+          continue;
+        }
+
+        const triggerTime = new Date(experience.nextTrigger);
+        // If it's time to trigger this specific experience
+        if (triggerTime <= now) {
+          // Only block re-triggering of this same experience if awaiting response
+          if (experience.pendingResponse) {
+            continue;
+          }
+          console.log(`🔔 TRIGGERING: ${experience.name} (was due: ${triggerTime.toLocaleString()})`);
+          triggeredCount++;
+          // Mark waiting for response and clear schedule until response received
+          experience.pendingResponse = true;
+          experience.lastTriggeredAt = new Date().toISOString();
+          experience.nextTrigger = null;
+          saveExperienceData(data);
+          // Send push notification for this experience only
+          await sendExperiencePushNotification(experience);
+        }
+      } catch (e) {
+        console.warn('Experience trigger loop error:', e?.message || e);
+      }
     }
-  });
-  
-  if (triggeredCount > 0) {
-    console.log(`✅ Triggered ${triggeredCount} experience(s)`);
-  }
+
+    if (triggeredCount > 0) {
+      console.log(`✅ Triggered ${triggeredCount} experience(s)`);
+    }
+  })();
 }
 
 function checkIfNotificationsPaused() {

@@ -18,7 +18,7 @@
         "Sat",
         "Sun"
       ],
-      "nextTrigger": "2025-09-07T07:00:00.000Z",
+      "nextTrigger": null,
       "questions": [
         {
           "text": "How rewarding do you expect today to be?",
@@ -55,9 +55,9 @@
       ],
       "id": 4,
       "createdAt": "2025-09-05T06:45:55.497Z",
-      "pendingResponse": false,
-      "lastTriggeredAt": "2025-09-06T07:05:45.188Z",
-      "lastRespondedAt": "2025-09-06T07:05:59.662Z"
+      "pendingResponse": true,
+      "lastTriggeredAt": "2025-09-12T07:00:18.049Z",
+      "lastRespondedAt": "2025-09-11T09:46:38.298Z"
     },
     {
       "name": "Reward ",
@@ -77,7 +77,7 @@
         "Sat",
         "Sun"
       ],
-      "nextTrigger": "2025-09-06T19:30:00.000Z",
+      "nextTrigger": null,
       "questions": [
         {
           "text": "How rewarding was today?",
@@ -98,9 +98,9 @@
       ],
       "id": 5,
       "createdAt": "2025-09-05T06:46:26.841Z",
-      "pendingResponse": false,
-      "lastTriggeredAt": "2025-09-06T00:46:40.822Z",
-      "lastRespondedAt": "2025-09-06T00:46:54.286Z"
+      "pendingResponse": true,
+      "lastTriggeredAt": "2025-09-15T07:37:48.425Z",
+      "lastRespondedAt": "2025-09-11T21:31:56.843Z"
     },
     {
       "name": "Mood",
@@ -144,13 +144,17 @@
             "Powerful",
             "Independent"
           ]
+        },
+        {
+          "text": "Anything of Note?",
+          "type": "text"
         }
       ],
       "id": 6,
       "createdAt": "2025-09-05T07:41:50.503Z",
       "pendingResponse": true,
-      "lastTriggeredAt": "2025-09-06T18:31:05.543Z",
-      "lastRespondedAt": "2025-09-06T14:30:42.238Z"
+      "lastTriggeredAt": "2025-09-15T07:37:49.045Z",
+      "lastRespondedAt": "2025-09-12T05:39:28.717Z"
     },
     {
       "name": "MH",
@@ -170,7 +174,7 @@
         "Sat",
         "Sun"
       ],
-      "nextTrigger": "2025-09-06T19:30:00.000Z",
+      "nextTrigger": null,
       "questions": [
         {
           "text": "Little interest or pleasure in doing things",
@@ -191,9 +195,9 @@
       ],
       "id": 7,
       "createdAt": "2025-09-05T07:43:06.972Z",
-      "pendingResponse": false,
-      "lastTriggeredAt": "2025-09-05T19:30:12.616Z",
-      "lastRespondedAt": "2025-09-05T19:38:18.121Z"
+      "pendingResponse": true,
+      "lastTriggeredAt": "2025-09-15T07:37:49.264Z",
+      "lastRespondedAt": "2025-09-11T21:32:11.493Z"
     }
   ],
   "responses": [
@@ -499,8 +503,815 @@
       ],
       "id": 20,
       "timestamp": "2025-09-06T14:30:42.238Z"
+    },
+    {
+      "experienceId": 6,
+      "answers": [
+        {
+          "questionIndex": 0,
+          "value": "Pleased"
+        },
+        {
+          "questionIndex": 1,
+          "value": "Wide-awake"
+        },
+        {
+          "questionIndex": 2,
+          "value": "Neutral"
+        }
+      ],
+      "id": 21,
+      "timestamp": "2025-09-06T19:13:11.919Z"
+    },
+    {
+      "experienceId": 6,
+      "answers": [
+        {
+          "questionIndex": 0,
+          "value": "Pleased"
+        },
+        {
+          "questionIndex": 1,
+          "value": "Wide-awake"
+        },
+        {
+          "questionIndex": 2,
+          "value": "Neutral"
+        }
+      ],
+      "id": 22,
+      "timestamp": "2025-09-06T19:13:31.405Z"
+    },
+    {
+      "experienceId": 5,
+      "answers": [
+        {
+          "questionIndex": 0,
+          "value": "6"
+        }
+      ],
+      "id": 23,
+      "timestamp": "2025-09-06T19:37:25.621Z"
+    },
+    {
+      "experienceId": 7,
+      "answers": [
+        {
+          "questionIndex": 0,
+          "value": "No"
+        },
+        {
+          "questionIndex": 1,
+          "value": "No"
+        }
+      ],
+      "id": 24,
+      "timestamp": "2025-09-06T19:37:37.145Z"
+    },
+    {
+      "experienceId": 6,
+      "answers": [
+        {
+          "questionIndex": 0,
+          "value": "Pleased"
+        },
+        {
+          "questionIndex": 1,
+          "value": "Neutral"
+        },
+        {
+          "questionIndex": 2,
+          "value": "Powerful"
+        }
+      ],
+      "id": 25,
+      "timestamp": "2025-09-06T19:37:54.419Z"
+    },
+    {
+      "experienceId": 4,
+      "answers": [
+        {
+          "questionIndex": 0,
+          "value": "6"
+        },
+        {
+          "questionIndex": 1,
+          "value": "3"
+        }
+      ],
+      "id": 26,
+      "timestamp": "2025-09-07T08:19:46.293Z"
+    },
+    {
+      "experienceId": 4,
+      "answers": [
+        {
+          "questionIndex": 0,
+          "value": "6"
+        },
+        {
+          "questionIndex": 1,
+          "value": "3"
+        }
+      ],
+      "id": 27,
+      "timestamp": "2025-09-07T08:20:08.993Z"
+    },
+    {
+      "experienceId": 6,
+      "answers": [
+        {
+          "questionIndex": 0,
+          "value": "Pleased"
+        },
+        {
+          "questionIndex": 1,
+          "value": "Neutral"
+        },
+        {
+          "questionIndex": 2,
+          "value": "Neutral"
+        }
+      ],
+      "id": 28,
+      "timestamp": "2025-09-07T08:20:36.112Z"
+    },
+    {
+      "experienceId": 6,
+      "answers": [
+        {
+          "questionIndex": 0,
+          "value": "Neutral"
+        },
+        {
+          "questionIndex": 1,
+          "value": "Wide-awake"
+        },
+        {
+          "questionIndex": 2,
+          "value": "Powerlessness"
+        }
+      ],
+      "id": 29,
+      "timestamp": "2025-09-07T12:29:52.022Z"
+    },
+    {
+      "experienceId": 8,
+      "type": "notification_action",
+      "data": {
+        "responseIndex": 0,
+        "action": "response-0"
+      },
+      "timestamp": "2025-09-07T14:01:19.889Z",
+      "id": 30
+    },
+    {
+      "experienceId": 8,
+      "type": "notification_action",
+      "data": {
+        "responseIndex": 0,
+        "action": "response-0"
+      },
+      "timestamp": "2025-09-07T17:29:38.364Z",
+      "id": 31
+    },
+    {
+      "experienceId": 6,
+      "answers": [
+        {
+          "questionIndex": 0,
+          "value": "Pleased"
+        },
+        {
+          "questionIndex": 1,
+          "value": "Wide-awake"
+        },
+        {
+          "questionIndex": 2,
+          "value": "Powerlessness"
+        }
+      ],
+      "id": 32,
+      "timestamp": "2025-09-07T17:29:56.904Z"
+    },
+    {
+      "experienceId": 5,
+      "answers": [
+        {
+          "questionIndex": 0,
+          "value": "6"
+        }
+      ],
+      "id": 33,
+      "timestamp": "2025-09-07T20:51:28.039Z"
+    },
+    {
+      "experienceId": 8,
+      "type": "notification_action",
+      "data": {
+        "responseIndex": 0,
+        "action": "response-0"
+      },
+      "timestamp": "2025-09-07T20:51:51.568Z",
+      "id": 34
+    },
+    {
+      "experienceId": 7,
+      "answers": [
+        {
+          "questionIndex": 0,
+          "value": "No"
+        },
+        {
+          "questionIndex": 1,
+          "value": "No"
+        }
+      ],
+      "id": 35,
+      "timestamp": "2025-09-07T20:52:29.365Z"
+    },
+    {
+      "experienceId": 8,
+      "type": "notification_action",
+      "data": {
+        "responseIndex": 0,
+        "action": "response-0"
+      },
+      "timestamp": "2025-09-08T05:11:59.155Z",
+      "id": 36
+    },
+    {
+      "experienceId": 8,
+      "type": "notification_action",
+      "data": {
+        "responseIndex": 0,
+        "action": "response-0"
+      },
+      "timestamp": "2025-09-08T05:12:06.616Z",
+      "id": 37
+    },
+    {
+      "experienceId": 6,
+      "answers": [
+        {
+          "questionIndex": 0,
+          "value": "Pleased"
+        },
+        {
+          "questionIndex": 1,
+          "value": "Wide-awake"
+        },
+        {
+          "questionIndex": 2,
+          "value": "Powerlessness"
+        }
+      ],
+      "id": 38,
+      "timestamp": "2025-09-08T05:12:24.234Z"
+    },
+    {
+      "experienceId": 4,
+      "answers": [
+        {
+          "questionIndex": 0,
+          "value": "6"
+        },
+        {
+          "questionIndex": 1,
+          "value": "2"
+        }
+      ],
+      "id": 39,
+      "timestamp": "2025-09-08T08:04:37.957Z"
+    },
+    {
+      "experienceId": 8,
+      "type": "notification_action",
+      "data": {
+        "responseIndex": 1,
+        "action": "response-1"
+      },
+      "timestamp": "2025-09-08T08:12:34.130Z",
+      "id": 40
+    },
+    {
+      "experienceId": 6,
+      "answers": [
+        {
+          "questionIndex": 0,
+          "value": "Neutral"
+        },
+        {
+          "questionIndex": 1,
+          "value": "Neutral"
+        },
+        {
+          "questionIndex": 2,
+          "value": "Neutral"
+        }
+      ],
+      "id": 41,
+      "timestamp": "2025-09-08T10:51:08.610Z"
+    },
+    {
+      "experienceId": 6,
+      "answers": [
+        {
+          "questionIndex": 0,
+          "value": "Neutral"
+        },
+        {
+          "questionIndex": 1,
+          "value": "Neutral"
+        },
+        {
+          "questionIndex": 2,
+          "value": "Neutral"
+        }
+      ],
+      "id": 42,
+      "timestamp": "2025-09-08T10:51:21.102Z"
+    },
+    {
+      "experienceId": 8,
+      "type": "notification_action",
+      "data": {
+        "responseIndex": 1,
+        "action": "response-1"
+      },
+      "timestamp": "2025-09-08T11:12:51.413Z",
+      "id": 43
+    },
+    {
+      "experienceId": 6,
+      "answers": [
+        {
+          "questionIndex": 0,
+          "value": "Neutral"
+        },
+        {
+          "questionIndex": 1,
+          "value": "Wide-awake"
+        },
+        {
+          "questionIndex": 2,
+          "value": "Dependent"
+        }
+      ],
+      "id": 44,
+      "timestamp": "2025-09-08T13:11:35.886Z"
+    },
+    {
+      "experienceId": 6,
+      "answers": [
+        {
+          "questionIndex": 0,
+          "value": "Neutral"
+        },
+        {
+          "questionIndex": 1,
+          "value": "Neutral"
+        },
+        {
+          "questionIndex": 2,
+          "value": "Neutral"
+        },
+        {
+          "questionIndex": 3,
+          "value": ""
+        }
+      ],
+      "id": 45,
+      "timestamp": "2025-09-08T17:16:15.553Z"
+    },
+    {
+      "experienceId": 7,
+      "answers": [
+        {
+          "questionIndex": 0,
+          "value": "No"
+        },
+        {
+          "questionIndex": 1,
+          "value": "Yes"
+        }
+      ],
+      "id": 46,
+      "timestamp": "2025-09-08T19:30:36.459Z"
+    },
+    {
+      "experienceId": 5,
+      "answers": [
+        {
+          "questionIndex": 0,
+          "value": "6"
+        }
+      ],
+      "id": 47,
+      "timestamp": "2025-09-08T19:31:43.079Z"
+    },
+    {
+      "experienceId": 6,
+      "answers": [
+        {
+          "questionIndex": 0,
+          "value": "Neutral"
+        },
+        {
+          "questionIndex": 1,
+          "value": "Dull"
+        },
+        {
+          "questionIndex": 2,
+          "value": "Powerlessness"
+        },
+        {
+          "questionIndex": 3,
+          "value": "Just remembering some stuff and feel sad ... Also headache"
+        }
+      ],
+      "id": 48,
+      "timestamp": "2025-09-08T19:32:08.237Z"
+    },
+    {
+      "experienceId": 6,
+      "answers": [
+        {
+          "questionIndex": 0,
+          "value": "Unsatisfied"
+        },
+        {
+          "questionIndex": 1,
+          "value": "Neutral"
+        },
+        {
+          "questionIndex": 2,
+          "value": "Powerlessness"
+        },
+        {
+          "questionIndex": 3,
+          "value": "struggling with focus"
+        }
+      ],
+      "id": 49,
+      "timestamp": "2025-09-09T07:23:44.804Z"
+    },
+    {
+      "experienceId": 4,
+      "answers": [
+        {
+          "questionIndex": 0,
+          "value": "7"
+        },
+        {
+          "questionIndex": 1,
+          "value": "2"
+        }
+      ],
+      "id": 50,
+      "timestamp": "2025-09-09T07:24:06.694Z"
+    },
+    {
+      "experienceId": 6,
+      "answers": [
+        {
+          "questionIndex": 0,
+          "value": "Pleased"
+        },
+        {
+          "questionIndex": 1,
+          "value": "Wide-awake"
+        },
+        {
+          "questionIndex": 2,
+          "value": "Powerful"
+        },
+        {
+          "questionIndex": 3,
+          "value": "Had a better day with Stephane being reassuring and feeling on top.of things... But feel like I want .ore"
+        }
+      ],
+      "id": 51,
+      "timestamp": "2025-09-09T17:38:16.677Z"
+    },
+    {
+      "experienceId": 5,
+      "answers": [
+        {
+          "questionIndex": 0,
+          "value": "7"
+        }
+      ],
+      "id": 52,
+      "timestamp": "2025-09-09T19:44:38.313Z"
+    },
+    {
+      "experienceId": 5,
+      "answers": [
+        {
+          "questionIndex": 0,
+          "value": "7"
+        }
+      ],
+      "id": 53,
+      "timestamp": "2025-09-09T19:44:44.667Z"
+    },
+    {
+      "experienceId": 5,
+      "answers": [
+        {
+          "questionIndex": 0,
+          "value": "7"
+        }
+      ],
+      "id": 54,
+      "timestamp": "2025-09-09T19:44:52.606Z"
+    },
+    {
+      "experienceId": 7,
+      "answers": [
+        {
+          "questionIndex": 0,
+          "value": "No"
+        },
+        {
+          "questionIndex": 1,
+          "value": "No"
+        }
+      ],
+      "id": 55,
+      "timestamp": "2025-09-09T19:45:18.007Z"
+    },
+    {
+      "experienceId": 8,
+      "type": "notification_action",
+      "data": {
+        "responseIndex": 1,
+        "action": "response-1"
+      },
+      "timestamp": "2025-09-09T19:45:30.636Z",
+      "id": 56
+    },
+    {
+      "experienceId": 4,
+      "answers": [
+        {
+          "questionIndex": 0,
+          "value": "3"
+        },
+        {
+          "questionIndex": 1,
+          "value": "5"
+        }
+      ],
+      "id": 57,
+      "timestamp": "2025-09-10T10:30:53.646Z"
+    },
+    {
+      "experienceId": 6,
+      "answers": [
+        {
+          "questionIndex": 0,
+          "value": "Neutral"
+        },
+        {
+          "questionIndex": 1,
+          "value": "Neutral"
+        },
+        {
+          "questionIndex": 2,
+          "value": "Powerlessness"
+        },
+        {
+          "questionIndex": 3,
+          "value": "I'll do oll"
+        }
+      ],
+      "id": 58,
+      "timestamp": "2025-09-10T10:31:16.767Z"
+    },
+    {
+      "experienceId": 6,
+      "answers": [
+        {
+          "questionIndex": 0,
+          "value": "Unsatisfied"
+        },
+        {
+          "questionIndex": 1,
+          "value": "Dull"
+        },
+        {
+          "questionIndex": 2,
+          "value": "Neutral"
+        },
+        {
+          "questionIndex": 3,
+          "value": "So annoyed and sleepy and ill"
+        }
+      ],
+      "id": 59,
+      "timestamp": "2025-09-10T18:16:25.736Z"
+    },
+    {
+      "experienceId": 4,
+      "answers": [
+        {
+          "questionIndex": 0,
+          "value": "5"
+        },
+        {
+          "questionIndex": 1,
+          "value": "7"
+        }
+      ],
+      "id": 60,
+      "timestamp": "2025-09-11T09:14:09.350Z"
+    },
+    {
+      "experienceId": 4,
+      "answers": [
+        {
+          "questionIndex": 0,
+          "value": "6"
+        },
+        {
+          "questionIndex": 1,
+          "value": "5"
+        }
+      ],
+      "id": 61,
+      "timestamp": "2025-09-11T09:45:38.004Z"
+    },
+    {
+      "experienceId": 6,
+      "answers": [
+        {
+          "questionIndex": 0,
+          "value": "Unsatisfied"
+        },
+        {
+          "questionIndex": 1,
+          "value": "Neutral"
+        },
+        {
+          "questionIndex": 2,
+          "value": "Neutral"
+        },
+        {
+          "questionIndex": 3,
+          "value": "Very ill and spending the day with kari"
+        }
+      ],
+      "id": 62,
+      "timestamp": "2025-09-11T09:45:58.365Z"
+    },
+    {
+      "experienceId": 7,
+      "answers": [
+        {
+          "questionIndex": 0,
+          "value": "No"
+        },
+        {
+          "questionIndex": 1,
+          "value": "No"
+        }
+      ],
+      "id": 63,
+      "timestamp": "2025-09-11T09:46:14.452Z"
+    },
+    {
+      "experienceId": 8,
+      "type": "notification_action",
+      "data": {
+        "responseIndex": 0,
+        "action": "response-0"
+      },
+      "timestamp": "2025-09-11T09:46:29.661Z",
+      "id": 64
+    },
+    {
+      "experienceId": 4,
+      "answers": [
+        {
+          "questionIndex": 0,
+          "value": "7"
+        },
+        {
+          "questionIndex": 1,
+          "value": "4"
+        }
+      ],
+      "id": 65,
+      "timestamp": "2025-09-11T09:46:38.298Z"
+    },
+    {
+      "experienceId": 8,
+      "type": "notification_action",
+      "data": {
+        "responseIndex": 1,
+        "action": "response-1"
+      },
+      "timestamp": "2025-09-11T13:01:24.400Z",
+      "id": 66
+    },
+    {
+      "experienceId": 6,
+      "answers": [
+        {
+          "questionIndex": 0,
+          "value": "Pleased"
+        },
+        {
+          "questionIndex": 1,
+          "value": "Wide-awake"
+        },
+        {
+          "questionIndex": 2,
+          "value": "Neutral"
+        },
+        {
+          "questionIndex": 3,
+          "value": ""
+        }
+      ],
+      "id": 67,
+      "timestamp": "2025-09-11T16:44:01.008Z"
+    },
+    {
+      "experienceId": 6,
+      "answers": [
+        {
+          "questionIndex": 0,
+          "value": "Pleased"
+        },
+        {
+          "questionIndex": 1,
+          "value": "Neutral"
+        },
+        {
+          "questionIndex": 2,
+          "value": "Neutral"
+        },
+        {
+          "questionIndex": 3,
+          "value": ""
+        }
+      ],
+      "id": 68,
+      "timestamp": "2025-09-11T21:31:47.708Z"
+    },
+    {
+      "experienceId": 5,
+      "answers": [
+        {
+          "questionIndex": 0,
+          "value": "7"
+        }
+      ],
+      "id": 69,
+      "timestamp": "2025-09-11T21:31:56.843Z"
+    },
+    {
+      "experienceId": 7,
+      "answers": [
+        {
+          "questionIndex": 0,
+          "value": "No"
+        },
+        {
+          "questionIndex": 1,
+          "value": "No"
+        }
+      ],
+      "id": 70,
+      "timestamp": "2025-09-11T21:32:11.493Z"
+    },
+    {
+      "experienceId": 6,
+      "answers": [
+        {
+          "questionIndex": 0,
+          "value": "Pleased"
+        },
+        {
+          "questionIndex": 1,
+          "value": "Wide-awake"
+        },
+        {
+          "questionIndex": 2,
+          "value": "Neutral"
+        },
+        {
+          "questionIndex": 3,
+          "value": ""
+        }
+      ],
+      "id": 71,
+      "timestamp": "2025-09-12T05:39:28.717Z"
     }
   ],
-  "nextExperienceId": 8,
-  "nextResponseId": 21
+  "nextExperienceId": 9,
+  "nextResponseId": 72
 }

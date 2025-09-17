@@ -2,10 +2,96 @@
   "healthTypes": [
     "Feeling Ill",
     "Really Ill",
-    "Medicine"
+    "Medicine",
+    "Emotions"
   ],
-  "healthNotes": [],
-  "nextHealthNoteId": 1,
+  "healthNotes": [
+    {
+      "id": "00000001",
+      "type": "Medicine",
+      "startDate": "2025-09-07",
+      "hasDuration": false,
+      "endDate": "",
+      "intensity": 0,
+      "notes": "9.35"
+    },
+    {
+      "id": "00000002",
+      "type": "Emotions",
+      "startDate": "2025-09-07",
+      "hasDuration": false,
+      "endDate": "",
+      "intensity": 0,
+      "notes": "Stress... tyring to work around techology, calling Monzo to resolve the fraudulant thng"
+    },
+    {
+      "id": "00000003",
+      "type": "Emotions",
+      "startDate": "2025-09-08",
+      "startTime": "12:17",
+      "hasDuration": true,
+      "endDate": "2025-09-08",
+      "endTime": "14:18",
+      "intensity": 4,
+      "notes": "Was flustered, forgetful, was doing MRI test...  Very very flustered and scattered... "
+    },
+    {
+      "id": "00000004",
+      "type": "Feeling Ill",
+      "startDate": "2025-09-08",
+      "startTime": "18:16",
+      "hasDuration": false,
+      "endDate": "",
+      "endTime": "",
+      "intensity": 6,
+      "notes": "Headache... I might be thirsty... Or it might be my contacts. Day 2 i felt weak. Day 3 i felt a lot better"
+    },
+    {
+      "id": "00000005",
+      "type": "Emotions",
+      "startDate": "2025-09-08",
+      "startTime": "20:30",
+      "hasDuration": false,
+      "endDate": "",
+      "endTime": "",
+      "intensity": 0,
+      "notes": "A bit sad thinking about some messages from in laws"
+    },
+    {
+      "id": "00000006",
+      "type": "Emotions",
+      "startDate": "2025-09-10",
+      "startTime": "11:31",
+      "hasDuration": false,
+      "endDate": "",
+      "endTime": "",
+      "intensity": 0,
+      "notes": "Sadness and feeling like nothing I do will ever be enough and just sad and hurt by in laws? Not sure just feel sd"
+    },
+    {
+      "id": "00000007",
+      "type": "Feeling Ill",
+      "startDate": "2025-09-09",
+      "startTime": "00:16",
+      "hasDuration": true,
+      "endDate": "",
+      "endTime": "",
+      "intensity": 3,
+      "notes": "A cough and sore throat "
+    },
+    {
+      "id": "00000008",
+      "type": "Medicine",
+      "startDate": "2025-09-12",
+      "startTime": "12:08",
+      "hasDuration": false,
+      "endDate": "",
+      "endTime": "",
+      "intensity": 0,
+      "notes": "half medicine"
+    }
+  ],
+  "nextHealthNoteId": 9,
   "periodCycles": [],
   "nextPeriodId": 1
 }

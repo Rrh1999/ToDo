@@ -132,7 +132,97 @@
       "source": "work",
       "start": "2025-09-05T12:32:34",
       "end": "2025-09-05T13:41:07"
+    },
+    {
+      "id": 30,
+      "name": "Finance need to.... Think about credit card put back... ",
+      "source": "todo",
+      "start": "2025-09-07T11:49:11",
+      "end": "2025-09-07T11:57:05"
+    },
+    {
+      "id": 32,
+      "name": "Emails",
+      "source": "work",
+      "start": "2025-09-09T09:42:11",
+      "end": "2025-09-09T09:54:45"
+    },
+    {
+      "id": 33,
+      "name": "Introduction Write Up",
+      "source": "work",
+      "start": "2025-09-09T09:30:00",
+      "end": "2025-09-09T10:30:00",
+      "activityType": "oneoff"
+    },
+    {
+      "id": 36,
+      "name": "Introduction Write Up",
+      "source": "work",
+      "start": "2025-09-09T15:33:22",
+      "end": "2025-09-09T18:38:24"
+    },
+    {
+      "id": 40,
+      "name": "Social Work Visit",
+      "source": "work",
+      "start": "2025-09-10T09:30:00",
+      "end": "2025-09-10T10:30:00",
+      "activityType": "oneoff"
+    },
+    {
+      "id": 42,
+      "name": "Participant in study",
+      "source": "custom",
+      "start": "2025-09-10T10:30:00",
+      "end": "2025-09-10T13:00:00",
+      "activityType": "oneoff"
+    },
+    {
+      "id": 43,
+      "name": "Do my essay and thesis",
+      "source": "work",
+      "start": "2025-09-15T09:57:49",
+      "end": "2025-09-15T11:28:00"
+    },
+    {
+      "id": 44,
+      "name": "Do my essay and thesis",
+      "source": "work",
+      "start": "2025-09-15T13:09:04",
+      "end": "2025-09-15T16:15:23"
+    },
+    {
+      "id": 46,
+      "name": "Check in on Jules",
+      "source": "work",
+      "start": "2025-09-17T09:19:13",
+      "end": "2025-09-17T09:19:43"
+    },
+    {
+      "id": 47,
+      "name": "Check in on Jules",
+      "source": "work",
+      "start": "2025-09-17T09:19:40",
+      "end": "2025-09-17T09:19:44"
+    },
+    {
+      "id": 48,
+      "name": "meeting",
+      "source": "work",
+      "start": "2025-09-16T11:00:00",
+      "end": "2025-09-16T12:00:00",
+      "activityType": "oneoff"
+    },
+    {
+      "id": 49,
+      "name": "Check in on Jules",
+      "source": "work",
+      "start": "2025-09-17T09:50:47",
+      "end": "2025-09-17T10:02:00"
     }
   ],
-  "nextId": 30
+  "nextId": 50,
+  "activities": [],
+  "nextActivityId": 1
 }

@@ -185,17 +185,21 @@
     function addHealthNote(){
       const type = (document.getElementById('hnType')||{}).value;
       const start = (document.getElementById('hnStart')||{}).value;
+  const startTime = (document.getElementById('hnStartTime')||{}).value;
       const hasDur = (document.getElementById('hnHasDuration')||{}).value === 'yes';
       const end = hasDur ? (document.getElementById('hnEnd')||{}).value : '';
+  const endTime = hasDur ? (document.getElementById('hnEndTime')||{}).value : '';
       const intensity = hasDur ? Number((document.getElementById('hnIntensity')||{}).value||0) : 0;
       const notes = (document.getElementById('hnNotes')||{}).value||'';
       if(!type||!start) return;
-      const item = { id: String(nextHealthNoteId++).padStart(8,'0'), type, startDate: start, hasDuration: hasDur, endDate: end||'', intensity: intensity||0, notes };
+  const item = { id: String(nextHealthNoteId++).padStart(8,'0'), type, startDate: start, startTime: startTime||'', hasDuration: hasDur, endDate: end||'', endTime: endTime||'', intensity: intensity||0, notes };
       healthNotes.push(item);
       document.getElementById('hnStart').value='';
+  const stEl=document.getElementById('hnStartTime'); if(stEl) stEl.value='';
       document.getElementById('hnHasDuration').value='no';
       toggleHealthDuration();
       document.getElementById('hnEnd').value='';
+  const etEl=document.getElementById('hnEndTime'); if(etEl) etEl.value='';
       document.getElementById('hnIntensity').value='';
       document.getElementById('hnNotes').value='';
       renderHealthNotes();
@@ -211,9 +215,15 @@
       const table=document.createElement('table'); table.className='task-table';
       const head=document.createElement('tr'); head.innerHTML='<th>Type</th><th>Start</th><th>End</th><th>Intensity</th><th>Notes</th><th>Action</th>';
       table.appendChild(head);
-      healthNotes.slice().sort((a,b)=> (a.startDate||'').localeCompare(b.startDate||'')).forEach(h=>{
+      healthNotes.slice().sort((a,b)=> {
+        const ad = `${a.startDate||''}T${(a.startTime||'00:00')}`;
+        const bd = `${b.startDate||''}T${(b.startTime||'00:00')}`;
+        return ad.localeCompare(bd);
+      }).forEach(h=>{
         const tr=document.createElement('tr');
-        tr.innerHTML=`<td>${h.type||''}</td><td>${h.startDate||''}</td><td>${h.hasDuration?(h.endDate||''):''}</td>`;
+        const startDisp = `${h.startDate||''}${h.startTime? ' '+h.startTime : ''}`;
+        const endDisp = h.hasDuration ? `${h.endDate||''}${h.endTime? ' '+h.endTime : ''}` : '';
+        tr.innerHTML=`<td>${h.type||''}</td><td>${startDisp}</td><td>${endDisp}</td>`;
         const intensityTd=document.createElement('td');
         const intInput=document.createElement('input'); intInput.type='number'; intInput.min='0'; intInput.max='10'; intInput.value=h.intensity||0; intInput.style.width='5rem';
         intInput.onchange=()=>{ h.intensity=Number(intInput.value||0); saveHealthData(); };
@@ -229,11 +239,17 @@
         editBtn.onclick=()=>{
           const t=prompt('Type:', h.type||''); if(t===null) return;
           const s=prompt('Start date (YYYY-MM-DD):', h.startDate||''); if(s===null) return;
+          const st=prompt('Start time (HH:MM, 24h, optional):', h.startTime||''); if(st===null) return;
           const hd=confirm('Has duration? Click OK for Yes, Cancel for No');
           let e=''; let inten=h.intensity||0;
-          if(hd){ e=prompt('End date (YYYY-MM-DD):', h.endDate||'')||''; inten=Number(prompt('Intensity (0-10):', String(inten))||inten); }
+          let et='';
+          if(hd){
+            e=prompt('End date (YYYY-MM-DD):', h.endDate||'')||'';
+            et=prompt('End time (HH:MM, 24h, optional):', h.endTime||'')||'';
+            inten=Number(prompt('Intensity (0-10):', String(inten))||inten);
+          }
           const n=prompt('Notes:', h.notes||''); if(n===null) return;
-          h.type=t.trim(); h.startDate=s; h.hasDuration=hd; h.endDate=hd?e:''; h.intensity=inten; h.notes=n||'';
+          h.type=t.trim(); h.startDate=s; h.startTime=st||''; h.hasDuration=hd; h.endDate=hd?e:''; h.endTime=hd?et:''; h.intensity=inten; h.notes=n||'';
           saveHealthData(); renderHealthNotes();
         };
         const delBtn=document.createElement('button');
@@ -245,6 +261,33 @@
         table.appendChild(tr);
       });
       container.appendChild(table);
+    }
+
+    // Europe/London current date/time helpers
+    function londonNowParts(){
+      const now = new Date();
+      const parts = new Intl.DateTimeFormat('en-GB', {
+        timeZone: 'Europe/London', year: 'numeric', month: '2-digit', day: '2-digit',
+        hour: '2-digit', minute: '2-digit', hour12: false
+      }).formatToParts(now);
+      const map = {};
+      parts.forEach(p=>{ map[p.type]=p.value; });
+      return map; // {year, month, day, hour, minute}
+    }
+    function londonDateISO(){ const p=londonNowParts(); return `${p.year}-${p.month}-${p.day}`; }
+    function londonTimeHM(){ const p=londonNowParts(); return `${p.hour}:${p.minute}`; }
+
+    function openAddHealthNoteForm(){
+      // Toggle the form visibility
+      toggle('addHealthNoteForm');
+      const dateEl = document.getElementById('hnStart');
+      const timeEl = document.getElementById('hnStartTime');
+      const form = document.getElementById('addHealthNoteForm');
+      if(form && !form.classList.contains('hidden')){
+        // Only prefill if empty
+        if(dateEl && !dateEl.value){ dateEl.value = londonDateISO(); }
+        if(timeEl && !timeEl.value){ timeEl.value = londonTimeHM(); }
+      }
     }
 
     // Period tracker
@@ -374,12 +417,13 @@
         </div>
       </div>
 
-      <div class="toggle add-toggle" onclick="toggle('addHealthNoteForm')">Add Health Note</div>
+  <div class="toggle add-toggle" onclick="openAddHealthNoteForm()">Add Health Note</div>
       <div id="addHealthNoteForm" class="hidden subtoggle form-grid">
         <label>Type
           <select id="hnType"></select>
         </label>
-        <label>Start Date<input type="date" id="hnStart"></label>
+  <label>Start Date<input type="date" id="hnStart"></label>
+  <label>Start Time<input type="time" id="hnStartTime" step="60"></label>
         <label>Has Duration
           <select id="hnHasDuration" onchange="toggleHealthDuration()">
             <option value="no">No</option>
@@ -389,6 +433,7 @@
         <div id="hnDurationFields" class="hidden" style="grid-column:1/-1;">
           <div class="form-grid">
             <label>End Date<input type="date" id="hnEnd"></label>
+            <label>End Time<input type="time" id="hnEndTime" step="60"></label>
             <label>Intensity<input type="number" id="hnIntensity" min="0" max="10" placeholder="0-10"></label>
           </div>
         </div>
@@ -611,6 +656,39 @@
       <div class="modal-footer">
         <button onclick="submitSurvey()" class="submit-btn">Submit</button>
         <button onclick="closeSurveyModal()" class="cancel-btn">Cancel</button>
+      </div>
+    </div>
+  </div>
+
+  <!-- Responses Viewer Modal -->
+  <div id="responsesModal" class="modal hidden">
+    <div class="modal-content">
+      <div class="modal-header">
+        <h3 id="responsesTitle">Responses</h3>
+        <span class="close" onclick="closeResponsesModal()">&times;</span>
+      </div>
+      <div class="modal-body">
+        <div id="responsesContent" style="max-height:60vh; overflow:auto;"></div>
+      </div>
+      <div class="modal-footer">
+        <button onclick="closeResponsesModal()" class="cancel-btn">Close</button>
+      </div>
+    </div>
+  </div>
+
+  <!-- Edit Experience Modal -->
+  <div id="editExperienceModal" class="modal hidden">
+    <div class="modal-content">
+      <div class="modal-header">
+        <h3>Edit Experience</h3>
+        <span class="close" onclick="closeEditExperienceModal()">&times;</span>
+      </div>
+      <div class="modal-body">
+        <div class="form-grid" id="editExperienceForm"></div>
+      </div>
+      <div class="modal-footer">
+        <button onclick="saveEditedExperience()" class="submit-btn">Save</button>
+        <button onclick="closeEditExperienceModal()" class="cancel-btn">Cancel</button>
       </div>
     </div>
   </div>
@@ -1029,11 +1107,23 @@ function renderExperiences() {
       <td>${triggerText}</td>
       <td>${statusBadge}</td>
       <td>${nextTrigger}</td>
-      <td style="text-align: center;">
+  <td style="text-align: center;">
         <button onclick="triggerExperience(${experience.id})" title="Trigger Now" style="background: none; border: none; cursor: pointer; padding: 4px; margin: 0 2px;">
           <svg width="18" height="18" viewBox="0 0 20 20" fill="none" xmlns="http://www.w3.org/2000/svg">
             <circle cx="10" cy="10" r="8" fill="#28a745"/>
             <polygon points="8,6 8,14 14,10" fill="white"/>
+          </svg>
+        </button>
+        <button onclick="viewExperienceResponses(${experience.id})" title="View Responses" style="background: none; border: none; cursor: pointer; padding: 4px; margin: 0 2px;">
+          <svg width="18" height="18" viewBox="0 0 20 20" fill="none" xmlns="http://www.w3.org/2000/svg">
+            <circle cx="10" cy="10" r="8" fill="#6c757d"/>
+            <path d="M4 10s2.5-4 6-4 6 4 6 4-2.5 4-6 4-6-4-6-4z" fill="#fff"/>
+            <circle cx="10" cy="10" r="2" fill="#6c757d"/>
+          </svg>
+        </button>
+        <button onclick="editExperience(${experience.id})" title="Edit" style="background: none; border: none; cursor: pointer; padding: 4px; margin: 0 2px;">
+          <svg width="18" height="18" viewBox="0 0 20 20" fill="none" xmlns="http://www.w3.org/2000/svg">
+            <path d="M12 3l5 5-8 8H4v-5l8-8z" stroke="#495057" stroke-width="1.5" fill="#adb5bd"/>
           </svg>
         </button>
         ${experience.pendingResponse ? `<button onclick="respondToExperience(${experience.id})" title="Respond" style="background: none; border: none; cursor: pointer; padding: 4px; margin: 0 2px;">
@@ -1122,6 +1212,215 @@ function respondToExperience(id) {
   }
 }
 window.respondToExperience = respondToExperience;
+
+async function viewExperienceResponses(experienceId){
+  try{
+    const exp = experiences.find(e=>e.id===experienceId);
+    if(!exp) return;
+    const modal = document.getElementById('responsesModal');
+    const title = document.getElementById('responsesTitle');
+    const body = document.getElementById('responsesContent');
+    if(!modal||!title||!body) return;
+    title.textContent = `Responses: ${exp.name}`;
+    const resp = await fetch('/api/experience-responses');
+    const all = await resp.json();
+    const rows = (all||[]).filter(r=>Number(r.experienceId)===Number(experienceId));
+    if(rows.length===0){
+      body.innerHTML = '<p style="opacity:.7">No responses yet.</p>';
+    } else {
+      const qMap = (exp.questions||[]);
+      body.innerHTML = rows.map(r=>{
+        const time = r.timestamp ? new Date(r.timestamp).toLocaleString() : '';
+        if (Array.isArray(r.answers)) {
+          const ansHtml = r.answers.map(a=>{
+            const q = qMap[a.questionIndex] || {}; const t = q.text || `Q${(a.questionIndex||0)+1}`;
+            return `<div><strong>${t}:</strong> ${String(a.value)}</div>`;
+          }).join('');
+          return `<div class="surface" style="margin:.5rem 0;padding:.5rem;"><div style="opacity:.8">${time}</div>${ansHtml}</div>`;
+        }
+        return `<div class="surface" style="margin:.5rem 0;padding:.5rem;"><div style="opacity:.8">${time}</div><pre style="white-space:pre-wrap">${JSON.stringify(r, null, 2)}</pre></div>`;
+      }).join('');
+    }
+    modal.classList.remove('hidden'); modal.style.display='block';
+  }catch(e){ console.error('viewExperienceResponses failed:', e); }
+}
+window.viewExperienceResponses = viewExperienceResponses;
+
+function closeResponsesModal(){ const m=document.getElementById('responsesModal'); if(m){ m.style.display='none'; m.classList.add('hidden'); } }
+window.closeResponsesModal = closeResponsesModal;
+
+let editingExperience = null;
+function editExperience(id){
+  const exp = experiences.find(e=>e.id===id); if(!exp) return;
+  editingExperience = JSON.parse(JSON.stringify(exp));
+  const modal = document.getElementById('editExperienceModal');
+  const form = document.getElementById('editExperienceForm');
+  if(!modal||!form) return;
+  const daysOpts = ['Mon','Tue','Wed','Thu','Fri','Sat','Sun'];
+  const daysHtml = daysOpts.map(d=>`<option value="${d}" ${Array.isArray(exp.daysOfWeek)&&exp.daysOfWeek.includes(d)?'selected':''}>${d}</option>`).join('');
+  const questions = (exp.questions||[]).map((q,i)=>{
+    if(q.type==='scale'){
+      return `<div class="question-item"><button type="button" onclick="this.parentElement.remove()" title="Remove">✖</button>
+        <label>Question Text<input type="text" name="questionText" value="${q.text||''}" /></label>
+        <label>Question Type<select name="questionType" onchange="onQuestionTypeChange(this)"><option value="select">Multiple Choice</option><option value="text">Free Text</option><option value="scale" selected>Sliding Scale</option></select></label>
+        <div class="q-scale" data-for="scale" style="display:grid;grid-template-columns:repeat(2,minmax(120px,1fr));gap:.5rem;">
+          <label>Min<input type="number" name="scaleMin" value="${Number.isFinite(q.min)?q.min:0}" /></label>
+          <label>Max<input type="number" name="scaleMax" value="${Number.isFinite(q.max)?q.max:10}" /></label>
+        </div>
+      </div>`;
+    } else if(q.type==='text'){
+      return `<div class="question-item"><button type="button" onclick="this.parentElement.remove()" title="Remove">✖</button>
+        <label>Question Text<input type="text" name="questionText" value="${q.text||''}" /></label>
+        <label>Question Type<select name="questionType" onchange="onQuestionTypeChange(this)"><option value="select">Multiple Choice</option><option value="text" selected>Free Text</option><option value="scale">Sliding Scale</option></select></label>
+      </div>`;
+    } else {
+      const opts = (q.options||[]).join(', ');
+      return `<div class="question-item"><button type="button" onclick="this.parentElement.remove()" title="Remove">✖</button>
+        <label>Question Text<input type="text" name="questionText" value="${q.text||''}" /></label>
+        <label>Question Type<select name="questionType" onchange="onQuestionTypeChange(this)"><option value="select" selected>Multiple Choice</option><option value="text">Free Text</option><option value="scale">Sliding Scale</option></select></label>
+        <label class="q-opt" data-for="select">Options (comma separated)<input type="text" name="questionOptions" value="${opts}" /></label>
+      </div>`;
+    }
+  }).join('');
+  form.innerHTML = `
+    <label>Name<input type="text" id="editExpName" value="${exp.name||''}"></label>
+    <label>Description<textarea id="editExpDesc">${exp.description||''}</textarea></label>
+    <label>Trigger Type<select id="editTriggerType">
+      <option value="set" ${exp.triggerType==='set'?'selected':''}>Set Time/Day</option>
+      <option value="recurring" ${exp.triggerType==='recurring'?'selected':''}>Recurring</option>
+    </select></label>
+    <div id="editSetTimeOptions" class="${exp.triggerType==='set'?'':'hidden'}" style="grid-column:1/-1;">
+      <div class="form-grid">
+        <label>Times of Day<input type="text" id="editTimesOfDay" value="${(exp.timesOfDay||[]).join(', ')}"></label>
+        <label>Days of Week<select id="editDaysOfWeek" multiple>${daysHtml}</select></label>
+      </div>
+    </div>
+    <div id="editRecurringOptions" class="${exp.triggerType==='recurring'?'':'hidden'}" style="grid-column:1/-1;">
+      <div class="form-grid">
+        <label>Interval Number<input type="number" id="editIntervalNumber" value="${exp.intervalNumber||1}"></label>
+        <label>Interval Type<select id="editIntervalType">
+          <option value="minutes" ${exp.intervalType==='minutes'?'selected':''}>Minutes</option>
+          <option value="hours" ${exp.intervalType==='hours'?'selected':''}>Hours</option>
+          <option value="days" ${exp.intervalType==='days'?'selected':''}>Days</option>
+        </select></label>
+      </div>
+    </div>
+    <label>Response Type<select id="editResponseType">
+      <option value="1-2" ${exp.responseType==='1-2'?'selected':''}>1-2 Responses</option>
+      <option value="more" ${exp.responseType==='more'?'selected':''}>More than 2 (Survey)</option>
+    </select></label>
+    <div id="editSimpleResponses" class="${exp.responseType==='1-2'?'':'hidden'}" style="grid-column:1/-1;">
+      <label>Responses (comma separated)<input type="text" id="editResponseOptions" value="${(exp.responses||[]).join(', ')}"></label>
+    </div>
+    <div id="editSurveyQuestions" class="${exp.responseType==='more'?'':'hidden'}" style="grid-column:1/-1;">
+      <h4>Survey Questions</h4>
+      <div id="editQuestionsList">${questions}</div>
+      <button type="button" onclick="addQuestionToEdit()" class="submit-btn">+ Add Question</button>
+    </div>
+  `;
+  modal.classList.remove('hidden'); modal.style.display='block';
+  // wire toggles
+  const trigSel = document.getElementById('editTriggerType');
+  const respSel = document.getElementById('editResponseType');
+  const setBlock = document.getElementById('editSetTimeOptions');
+  const recBlock = document.getElementById('editRecurringOptions');
+  const simpleBlock = document.getElementById('editSimpleResponses');
+  const surveyBlock = document.getElementById('editSurveyQuestions');
+  if(trigSel){
+    trigSel.addEventListener('change', ()=>{
+      const val = trigSel.value;
+      if (val==='set'){ setBlock.classList.remove('hidden'); recBlock.classList.add('hidden'); }
+      else { recBlock.classList.remove('hidden'); setBlock.classList.add('hidden'); }
+    });
+  }
+  if(respSel){
+    respSel.addEventListener('change', ()=>{
+      const val = respSel.value;
+      if (val==='1-2'){ simpleBlock.classList.remove('hidden'); surveyBlock.classList.add('hidden'); }
+      else { surveyBlock.classList.remove('hidden'); simpleBlock.classList.add('hidden'); }
+    });
+  }
+}
+window.editExperience = editExperience;
+
+function closeEditExperienceModal(){ const m=document.getElementById('editExperienceModal'); if(m){ m.style.display='none'; m.classList.add('hidden'); } editingExperience=null; }
+window.closeEditExperienceModal = closeEditExperienceModal;
+
+function addQuestionToEdit(){
+  const host = document.getElementById('editQuestionsList'); if(!host) return;
+  const wrap = document.createElement('div');
+  wrap.className='question-item';
+  wrap.innerHTML = `
+    <button type="button" onclick="this.parentElement.remove()" title="Remove">✖</button>
+    <label>Question Text<input type="text" name="questionText" placeholder="e.g., How are you?" /></label>
+    <label>Question Type<select name="questionType" onchange="onQuestionTypeChange(this)"><option value="select">Multiple Choice</option><option value="text">Free Text</option><option value="scale">Sliding Scale</option></select></label>
+    <label class="q-opt" data-for="select">Options (comma separated)<input type="text" name="questionOptions" placeholder="Yes, No, Maybe" /></label>
+    <div class="q-scale q-opt hidden" data-for="scale" style="display:grid;grid-template-columns:repeat(2,minmax(120px,1fr));gap:.5rem;">
+      <label>Min<input type="number" name="scaleMin" placeholder="0" /></label>
+      <label>Max<input type="number" name="scaleMax" placeholder="10" /></label>
+    </div>`;
+  host.appendChild(wrap);
+}
+window.addQuestionToEdit = addQuestionToEdit;
+
+async function saveEditedExperience(){
+  try{
+    const exp = editingExperience; if(!exp) return;
+    exp.name = (document.getElementById('editExpName')||{}).value||'';
+    exp.description = (document.getElementById('editExpDesc')||{}).value||'';
+    exp.triggerType = (document.getElementById('editTriggerType')||{}).value||exp.triggerType;
+    if (exp.triggerType==='recurring'){
+      exp.intervalNumber = Number((document.getElementById('editIntervalNumber')||{}).value||1);
+      exp.intervalType = (document.getElementById('editIntervalType')||{}).value||'minutes';
+      exp.timesOfDay = undefined; exp.daysOfWeek = undefined;
+    } else {
+      const times = ((document.getElementById('editTimesOfDay')||{}).value||'').split(',').map(s=>s.trim()).filter(Boolean);
+      const daysSel = document.getElementById('editDaysOfWeek');
+      const days = daysSel ? Array.from(daysSel.selectedOptions).map(o=>o.value) : [];
+      exp.timesOfDay = times; exp.daysOfWeek = days; exp.intervalNumber = undefined; exp.intervalType = undefined;
+    }
+    exp.responseType = (document.getElementById('editResponseType')||{}).value||exp.responseType;
+    if (exp.responseType==='1-2'){
+      const s = (document.getElementById('editResponseOptions')||{}).value||'';
+      exp.responses = s.split(',').map(x=>x.trim()).filter(Boolean).slice(0,2);
+      exp.questions = undefined;
+    } else {
+      const qs = [];
+      const nodes = document.querySelectorAll('#editSurveyQuestions .question-item');
+      nodes.forEach(node=>{
+        const text = (node.querySelector('input[name="questionText"]')||{}).value||'';
+        const type = (node.querySelector('select[name="questionType"]')||{}).value||'select';
+        if(type==='scale'){
+          const min = Number((node.querySelector('input[name="scaleMin"]')||{}).value||0);
+          const max = Number((node.querySelector('input[name="scaleMax"]')||{}).value||10);
+          qs.push({ text, type, min, max });
+        } else if(type==='text'){
+          qs.push({ text, type });
+        } else {
+          const optsStr = (node.querySelector('input[name="questionOptions"]')||{}).value||'';
+          const options = optsStr.split(',').map(s=>s.trim()).filter(Boolean);
+          qs.push({ text, type:'select', options });
+        }
+      });
+      exp.questions = qs;
+    }
+    // Recompute nextTrigger if experience is active
+    try{
+      if (exp.status === 'active'){
+        if (exp.triggerType === 'recurring') {
+          exp.nextTrigger = calculateNextRecurringTrigger(exp.intervalNumber, exp.intervalType);
+        } else if (exp.triggerType === 'set') {
+          exp.nextTrigger = calculateNextSetTrigger(exp.timesOfDay || [], exp.daysOfWeek || []);
+        }
+      }
+    } catch {}
+    const res = await fetch(`/api/experiences/${exp.id}`, { method:'PUT', headers:{'Content-Type':'application/json'}, body: JSON.stringify(exp) });
+    if(!res.ok) throw new Error(`Server responded ${res.status}`);
+    closeEditExperienceModal();
+    await loadExperiences();
+  }catch(e){ console.error('saveEditedExperience failed:', e); alert('Failed to save: '+e.message); }
+}
+window.saveEditedExperience = saveEditedExperience;
 
 // Make sure the page loads experiences when DOM is ready
 document.addEventListener('DOMContentLoaded', function() {
@@ -1242,7 +1541,8 @@ async function showSimpleNotification(title, body, responses = ['Yes', 'No'], ta
       return;
     }
     const registration = await navigator.serviceWorker.ready;
-    const actions = (responses || []).slice(0, 2).map((r, i) => ({ action: `resp-${i}`, title: r }));
+  // Use action ids aligned with the Service Worker click handler
+  const actions = (responses || []).slice(0, 2).map((r, i) => ({ action: `response-${i}`, title: r }));
     await registration.showNotification(title, {
       body,
       tag,
@@ -1279,6 +1579,17 @@ function showSurveyModal(experience) {
           <div class="survey-question">
             <div class="survey-q-text">${safeText}</div>
             <input type="text" class="survey-input" data-q-index="${idx}" placeholder="Type your answer" />
+          </div>
+        `;
+      }
+      if (q.type === 'scale') {
+        const min = Number.isFinite(q.min) ? q.min : 0;
+        const max = Number.isFinite(q.max) ? q.max : 10;
+        const mid = Math.round((min + max) / 2);
+        return `
+          <div class="survey-question">
+            <div class="survey-q-text">${safeText} <span class="survey-scale-value" data-q-index="${idx}" style="opacity:.8;margin-left:.25rem;">(${mid})</span></div>
+            <input type="range" class="survey-scale" min="${min}" max="${max}" value="${mid}" step="1" data-q-index="${idx}" oninput="updateScaleValue(${idx}, this.value)">
           </div>
         `;
       }
@@ -1319,9 +1630,13 @@ async function submitSurvey() {
       if (q.type === 'text') {
         const input = contentEl.querySelector(`.survey-input[data-q-index="${idx}"]`);
         answers.push({ questionIndex: idx, value: (input && input.value) || '' });
+      } else if (q.type === 'scale') {
+        const input = contentEl.querySelector(`.survey-scale[data-q-index="${idx}"]`);
+        const value = input ? input.value : '';
+        answers.push({ questionIndex: idx, value });
       } else {
         // find selected option button
-  const selected = contentEl.querySelector(`.option-btn.selected[data-q-index="${idx}"]`) || contentEl.querySelector(`.option-btn[data-q-index="${idx}"][aria-pressed="true"]`);
+        const selected = contentEl.querySelector(`.option-btn.selected[data-q-index="${idx}"]`) || contentEl.querySelector(`.option-btn[data-q-index="${idx}"][aria-pressed="true"]`);
         const value = selected ? selected.getAttribute('data-value') : '';
         answers.push({ questionIndex: idx, value });
       }
@@ -1338,6 +1653,14 @@ async function submitSurvey() {
   }
 }
 window.submitSurvey = submitSurvey;
+
+function updateScaleValue(idx, val){
+  try{
+    const el = document.querySelector(`.survey-scale-value[data-q-index="${idx}"]`);
+    if (el) el.textContent = `(${val})`;
+  }catch{}
+}
+window.updateScaleValue = updateScaleValue;
 
 // Single-choice selector for survey options
 function selectSurveyOption(qIndex, value, btn) {
@@ -1379,11 +1702,16 @@ function addQuestion() {
   div.innerHTML = `
     <button type="button" onclick="removeQuestion(this.parentElement)" title="Remove">✖</button>
     <label>Question Text<input type="text" name="questionText" placeholder="e.g., How do you feel?" /></label>
-    <label>Question Type<select name="questionType">
+    <label>Question Type<select name="questionType" onchange="onQuestionTypeChange(this)">
       <option value="select">Multiple Choice</option>
       <option value="text">Free Text</option>
+      <option value="scale">Sliding Scale</option>
     </select></label>
-    <label>Options (comma separated)<input type="text" name="questionOptions" placeholder="Yes, No, Maybe" /></label>
+    <label class="q-opt" data-for="select">Options (comma separated)<input type="text" name="questionOptions" placeholder="Yes, No, Maybe" /></label>
+    <div class="q-scale q-opt hidden" data-for="scale" style="display:grid;grid-template-columns:repeat(2,minmax(120px,1fr));gap:.5rem;">
+      <label>Min<input type="number" name="scaleMin" placeholder="0" /></label>
+      <label>Max<input type="number" name="scaleMax" placeholder="10" /></label>
+    </div>
   `;
   container.appendChild(div);
 }
@@ -1391,6 +1719,17 @@ function addQuestion() {
 function removeQuestion(el) {
   if (!el) return;
   try { el.remove(); } catch {}
+}
+
+function onQuestionTypeChange(sel){
+  try{
+    const root = sel.closest('.question-item');
+    if (!root) return;
+    const type = sel.value;
+    root.querySelectorAll('.q-opt').forEach(n=>n.classList.add('hidden'));
+    const show = root.querySelector(`.q-opt[data-for="${type}"]`);
+    if (show) show.classList.remove('hidden');
+  }catch(e){ /* ignore */ }
 }
 
 function calculateNextRecurringTrigger(intervalNumber, intervalType) {
@@ -1458,9 +1797,17 @@ async function addExperience() {
       nodes.forEach(node => {
         const text = (node.querySelector('input[name="questionText"]') || {}).value || '';
         const type = (node.querySelector('select[name="questionType"]') || {}).value || 'select';
-        const optsStr = (node.querySelector('input[name="questionOptions"]') || {}).value || '';
-        const options = optsStr.split(',').map(s => s.trim()).filter(Boolean);
-        questions.push({ text, type, options });
+        if (type === 'scale') {
+          const min = Number((node.querySelector('input[name="scaleMin"]') || {}).value || 0);
+          const max = Number((node.querySelector('input[name="scaleMax"]') || {}).value || 10);
+          questions.push({ text, type, min, max });
+        } else if (type === 'text') {
+          questions.push({ text, type });
+        } else {
+          const optsStr = (node.querySelector('input[name="questionOptions"]') || {}).value || '';
+          const options = optsStr.split(',').map(s => s.trim()).filter(Boolean);
+          questions.push({ text, type: 'select', options });
+        }
       });
       exp.questions = questions;
     }

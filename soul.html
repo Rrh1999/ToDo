@@ -380,7 +380,7 @@ function viewJournal(id){
       if(m.startsWith('data:audio')) return `<audio controls src="${m}" style="width:100%;margin-top:0.5rem;"></audio>`;
       return `<a href="${m}" target="_blank">Download file</a>`;
     }).join('');
-    modal.innerHTML=`<div class=\"modal\"><div class=\"modal-content\"><div class=\"modal-header\"><h3>${j.title}</h3><span class=\"close\" onclick=\"closeModal()\">&times;</span></div><div class=\"modal-body\"><p><strong>Date:</strong> ${j.date}</p><p><strong>Type:</strong> ${t?t.name:''}</p><p>${j.text}</p>${mediaHtml}</div><div class=\"modal-footer\" style=\"text-align:right\"><button class=\"btn\" onclick=\"deleteJournal(${j.id})\">Delete</button></div></div></div>`;
+  modal.innerHTML=`<div class=\"modal\"><div class=\"modal-content\"><div class=\"modal-header\"><h3>${j.title}</h3><span class=\"close\" onclick=\"closeModal()\">&times;</span></div><div class=\"modal-body\"><p><strong>Date:</strong> ${j.date}</p><p><strong>Type:</strong> ${t?t.name:''}</p><p>${j.text}</p>${mediaHtml}</div><div class=\"modal-footer\" style=\"text-align:right\"><button class=\"btn\" onclick=\"editJournal(${j.id})\">Edit</button><button class=\"btn\" style=\"margin-left:0.5rem\" onclick=\"deleteJournal(${j.id})\">Delete</button></div></div></div>`;
   modal.classList.remove('hidden');
 }
 
@@ -389,6 +389,73 @@ function deleteJournal(id){
   renderJournals();
   saveSoul();
   closeModal();
+}
+
+// Edit existing journal entry
+function editJournal(id){
+  const j=journals.find(x=>x.id===id); if(!j) return;
+  const modal=document.getElementById('modalContainer');
+  const typeOptions = ['<option value="">--Type--</option>']
+    .concat(journalTypes.map(t=>`<option value="${t.id}" ${String(j.type)===String(t.id)?'selected':''}>${t.name}</option>`))
+    .join('');
+  const existingMedia = (j.media||[]).map((m,idx)=>{
+    const thumb = m.startsWith('data:image') ? `<img src="${m}" style="width:60px;height:60px;object-fit:cover;border-radius:4px;">`
+                 : m.startsWith('data:video') ? `<span style="display:inline-block;width:60px;height:60px;border-radius:4px;background:#ddd;color:#333;display:flex;align-items:center;justify-content:center;">Video</span>`
+                 : m.startsWith('data:audio') ? `<span style="display:inline-block;width:60px;height:60px;border-radius:4px;background:#ddd;color:#333;display:flex;align-items:center;justify-content:center;">Audio</span>`
+                 : `<a href="${m}" target="_blank">file</a>`;
+    return `<div style="display:flex;align-items:center;gap:0.5rem;margin:0.25rem 0;">${thumb}<button class="btn" style="background:#E07A5F" onclick="removeJournalMedia(${j.id},${idx})">Remove</button></div>`;
+  }).join('');
+  modal.innerHTML = `
+    <div class="modal">
+      <div class="modal-content" style="max-width:700px;">
+        <div class="modal-header"><h3>Edit Journal</h3><span class="close" onclick="closeModal()">&times;</span></div>
+        <div class="modal-body form-grid">
+          <label>Title<input type="text" id="editJournalTitle" value="${j.title}"></label>
+          <label>Date<input type="date" id="editJournalDate" value="${j.date}"></label>
+          <label>Type<select id="editJournalType">${typeOptions}</select></label>
+          <label style="grid-column:1/-1;">Text<textarea id="editJournalText">${j.text||''}</textarea></label>
+          <div style="grid-column:1/-1;">
+            <div style="font-weight:bold;margin-bottom:0.25rem;">Existing Media</div>
+            <div>${existingMedia || '<span style="opacity:.7">No attachments.</span>'}</div>
+          </div>
+          <label style="grid-column:1/-1;">Add Media<input type="file" id="editJournalMedia" accept="image/*,video/*,audio/*" multiple></label>
+        </div>
+        <div class="modal-footer" style="text-align:right">
+          <button class="btn" onclick="updateJournal(${j.id})">Save</button>
+        </div>
+      </div>
+    </div>`;
+  modal.classList.remove('hidden');
+}
+
+function removeJournalMedia(journalId, mediaIndex){
+  const j = journals.find(x=>x.id===journalId); if(!j) return;
+  j.media = (j.media||[]).filter((_,idx)=>idx!==mediaIndex);
+  saveSoul();
+  editJournal(journalId); // refresh modal view
+}
+
+function updateJournal(id){
+  const j=journals.find(x=>x.id===id); if(!j) return;
+  j.title = document.getElementById('editJournalTitle').value.trim();
+  j.date = document.getElementById('editJournalDate').value;
+  j.type = document.getElementById('editJournalType').value;
+  j.text = document.getElementById('editJournalText').value.trim();
+
+  const files = Array.from(document.getElementById('editJournalMedia').files||[]);
+  if(files.length){
+    const readers = files.map(f=>new Promise(res=>{ const r=new FileReader(); r.onload=()=>res(r.result); r.readAsDataURL(f); }));
+    Promise.all(readers).then(media=>{
+      j.media = (j.media||[]).concat(media);
+      renderJournals();
+      saveSoul();
+      closeModal();
+    });
+  } else {
+    renderJournals();
+    saveSoul();
+    closeModal();
+  }
 }
 
 /* Motto functions */

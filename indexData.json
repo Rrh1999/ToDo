@@ -51,12 +51,14 @@
       "missedDates": [
         "2025-08-17",
         "2025-08-24",
-        "2025-08-31"
+        "2025-08-31",
+        "2025-09-07",
+        "2025-09-14"
       ],
       "status": "open",
       "startDate": "2025-07-28",
       "closedDate": "",
-      "dateLastChecked": "2025-09-06"
+      "dateLastChecked": "2025-09-17"
     },
     {
       "id": "00000003",
@@ -72,16 +74,19 @@
         "2025-08-13",
         "2025-08-11",
         "2025-08-25",
-        "2025-09-01"
+        "2025-09-01",
+        "2025-09-11"
       ],
       "missedDates": [
         "2025-08-04",
-        "2025-08-18"
+        "2025-08-18",
+        "2025-09-08",
+        "2025-09-15"
       ],
       "status": "open",
       "startDate": "2025-07-28",
       "closedDate": "",
-      "dateLastChecked": "2025-09-06"
+      "dateLastChecked": "2025-09-17"
     },
     {
       "id": "00000004",
@@ -98,18 +103,21 @@
         "2025-08-14",
         "2025-08-12",
         "2025-08-29",
-        "2025-09-02"
+        "2025-09-02",
+        "2025-09-05"
       ],
       "missedDates": [
         "2025-07-29",
         "2025-08-05",
         "2025-08-19",
-        "2025-08-26"
+        "2025-08-26",
+        "2025-09-09",
+        "2025-09-16"
       ],
       "status": "open",
       "startDate": "2025-07-28",
       "closedDate": "",
-      "dateLastChecked": "2025-09-06"
+      "dateLastChecked": "2025-09-17"
     },
     {
       "id": "00000005",
@@ -124,18 +132,21 @@
         "2025-07-28",
         "2025-08-09",
         "2025-08-16",
-        "2025-09-01"
+        "2025-09-01",
+        "2025-09-14"
       ],
       "missedDates": [
         "2025-08-04",
         "2025-08-11",
         "2025-08-18",
-        "2025-08-25"
+        "2025-08-25",
+        "2025-09-08",
+        "2025-09-15"
       ],
       "status": "open",
       "startDate": "2025-07-28",
       "closedDate": "",
-      "dateLastChecked": "2025-09-06"
+      "dateLastChecked": "2025-09-17"
     },
     {
       "id": "00000006",
@@ -155,12 +166,14 @@
       "missedDates": [
         "2025-08-17",
         "2025-08-24",
-        "2025-08-31"
+        "2025-08-31",
+        "2025-09-07",
+        "2025-09-14"
       ],
       "status": "open",
       "startDate": "2025-07-28",
       "closedDate": "",
-      "dateLastChecked": "2025-09-06"
+      "dateLastChecked": "2025-09-17"
     },
     {
       "id": "00000007",
@@ -175,16 +188,18 @@
         "2025-07-28",
         "2025-08-03",
         "2025-08-10",
-        "2025-08-31"
+        "2025-08-31",
+        "2025-09-14"
       ],
       "missedDates": [
         "2025-08-17",
-        "2025-08-24"
+        "2025-08-24",
+        "2025-09-07"
       ],
       "status": "open",
       "startDate": "2025-07-28",
       "closedDate": "",
-      "dateLastChecked": "2025-09-06"
+      "dateLastChecked": "2025-09-17"
     },
     {
       "id": "00000008",
@@ -205,12 +220,13 @@
       "missedDates": [
         "2025-08-23",
         "2025-08-30",
-        "2025-09-06"
+        "2025-09-06",
+        "2025-09-13"
       ],
       "status": "open",
       "startDate": "2025-07-28",
       "closedDate": "",
-      "dateLastChecked": "2025-09-06"
+      "dateLastChecked": "2025-09-17"
     },
     {
       "id": "00000009",
@@ -226,16 +242,19 @@
         "2025-08-03",
         "2025-08-10",
         "2025-08-18",
-        "2025-08-31"
+        "2025-08-31",
+        "2025-09-07",
+        "2025-09-15"
       ],
       "missedDates": [
         "2025-08-17",
-        "2025-08-24"
+        "2025-08-24",
+        "2025-09-14"
       ],
       "status": "open",
       "startDate": "2025-07-28",
       "closedDate": "",
-      "dateLastChecked": "2025-09-06"
+      "dateLastChecked": "2025-09-17"
     },
     {
       "id": "00000012",
@@ -256,7 +275,8 @@
         "2025-08-19",
         "2025-08-22",
         "2025-08-29",
-        "2025-09-01"
+        "2025-09-01",
+        "2025-09-08"
       ],
       "missedDates": [
         "2025-08-01",
@@ -269,12 +289,16 @@
         "2025-08-25",
         "2025-08-27",
         "2025-09-03",
-        "2025-09-05"
+        "2025-09-05",
+        "2025-09-10",
+        "2025-09-12",
+        "2025-09-15",
+        "2025-09-17"
       ],
       "status": "open",
       "startDate": "2025-07-28",
       "closedDate": "",
-      "dateLastChecked": "2025-09-06"
+      "dateLastChecked": "2025-09-17"
     },
     {
       "id": "00000013",
@@ -294,12 +318,14 @@
       "missedDates": [
         "2025-08-03",
         "2025-08-24",
-        "2025-08-31"
+        "2025-08-31",
+        "2025-09-07",
+        "2025-09-14"
       ],
       "status": "open",
       "startDate": "2025-07-28",
       "closedDate": "",
-      "dateLastChecked": "2025-09-06"
+      "dateLastChecked": "2025-09-17"
     },
     {
       "id": "00000035",
@@ -315,17 +341,19 @@
         "2025-08-11",
         "2025-08-10",
         "2025-08-19",
-        "2025-09-01"
+        "2025-09-01",
+        "2025-09-08"
       ],
       "missedDates": [
         "2025-08-04",
         "2025-08-18",
-        "2025-08-25"
+        "2025-08-25",
+        "2025-09-15"
       ],
       "status": "open",
       "startDate": "2025-07-28",
       "closedDate": "",
-      "dateLastChecked": "2025-09-06"
+      "dateLastChecked": "2025-09-17"
     },
     {
       "id": "00000036",
@@ -379,12 +407,22 @@
         "2025-09-02",
         "2025-09-03",
         "2025-09-04",
-        "2025-09-05"
+        "2025-09-05",
+        "2025-09-07",
+        "2025-09-08",
+        "2025-09-09",
+        "2025-09-10",
+        "2025-09-11",
+        "2025-09-12",
+        "2025-09-14",
+        "2025-09-15",
+        "2025-09-16",
+        "2025-09-17"
       ],
       "status": "open",
       "startDate": "2025-07-28",
       "closedDate": "",
-      "dateLastChecked": "2025-09-06"
+      "dateLastChecked": "2025-09-17"
     },
     {
       "id": "00000037",
@@ -409,7 +447,9 @@
         "2025-08-26",
         "2025-08-28",
         "2025-09-01",
-        "2025-09-05"
+        "2025-09-05",
+        "2025-09-08",
+        "2025-09-11"
       ],
       "missedDates": [
         "2025-08-01",
@@ -427,12 +467,17 @@
         "2025-08-29",
         "2025-08-30",
         "2025-09-03",
-        "2025-09-06"
+        "2025-09-06",
+        "2025-09-10",
+        "2025-09-12",
+        "2025-09-13",
+        "2025-09-15",
+        "2025-09-17"
       ],
       "status": "open",
       "startDate": "2025-07-28",
       "closedDate": "",
-      "dateLastChecked": "2025-09-06"
+      "dateLastChecked": "2025-09-17"
     },
     {
       "id": "00000060",
@@ -446,17 +491,19 @@
       "completedDates": [
         "2025-08-10",
         "2025-08-18",
-        "2025-09-01"
+        "2025-09-01",
+        "2025-09-08"
       ],
       "missedDates": [
         "2025-08-04",
         "2025-08-11",
-        "2025-08-25"
+        "2025-08-25",
+        "2025-09-15"
       ],
       "status": "open",
       "startDate": "2025-08-02",
       "closedDate": "",
-      "dateLastChecked": "2025-09-06"
+      "dateLastChecked": "2025-09-17"
     },
     {
       "id": "00000069",
@@ -476,12 +523,14 @@
         "2025-08-10",
         "2025-08-17",
         "2025-08-24",
-        "2025-08-31"
+        "2025-08-31",
+        "2025-09-07",
+        "2025-09-14"
       ],
       "status": "open",
       "startDate": "2025-08-03",
       "closedDate": "",
-      "dateLastChecked": "2025-09-06"
+      "dateLastChecked": "2025-09-17"
     },
     {
       "id": "00000115",
@@ -497,19 +546,25 @@
       "completedDates": [
         "2025-08-20",
         "2025-08-25",
-        "2025-09-05"
+        "2025-09-05",
+        "2025-09-16"
       ],
       "missedDates": [
         "2025-08-22",
         "2025-08-27",
         "2025-08-29",
         "2025-09-01",
-        "2025-09-03"
+        "2025-09-03",
+        "2025-09-08",
+        "2025-09-10",
+        "2025-09-12",
+        "2025-09-15",
+        "2025-09-17"
       ],
       "status": "open",
       "startDate": "2025-08-18",
       "closedDate": "",
-      "dateLastChecked": "2025-09-06"
+      "dateLastChecked": "2025-09-17"
     }
   ],
   "oneOffTasks": [
@@ -777,20 +832,6 @@
       "missedDates": []
     },
     {
-      "id": "00000047",
-      "name": "Stairgate",
-      "project": "Family",
-      "importance": "Medium",
-      "urgency": "Medium",
-      "dueDate": "",
-      "startDate": "2025-07-30",
-      "status": "open",
-      "closedDate": "",
-      "taskType": "One-off",
-      "completedDates": [],
-      "missedDates": []
-    },
-    {
       "id": "00000048",
       "name": "Find out how to clean inside of squidged",
       "project": "Chores",
@@ -846,10 +887,12 @@
       "urgency": "Medium",
       "dueDate": "",
       "startDate": "2025-07-30",
-      "status": "open",
-      "closedDate": "",
+      "status": "closed",
+      "closedDate": "2025-09-07",
       "taskType": "One-off",
-      "completedDates": [],
+      "completedDates": [
+        "2025-09-07"
+      ],
       "missedDates": []
     },
     {
@@ -970,10 +1013,12 @@
       "urgency": "High",
       "dueDate": "",
       "startDate": "2025-08-03",
-      "status": "open",
-      "closedDate": "",
+      "status": "closed",
+      "closedDate": "2025-09-08",
       "taskType": "One-off",
-      "completedDates": [],
+      "completedDates": [
+        "2025-09-08"
+      ],
       "missedDates": []
     },
     {
@@ -1253,10 +1298,12 @@
       "urgency": "Medium",
       "dueDate": "",
       "startDate": "2025-08-30",
-      "status": "open",
-      "closedDate": "",
+      "status": "closed",
+      "closedDate": "2025-09-11",
       "taskType": "One-off",
-      "completedDates": [],
+      "completedDates": [
+        "2025-09-11"
+      ],
       "missedDates": []
     },
     {
@@ -1302,6 +1349,144 @@
       "taskType": "One-off",
       "completedDates": [],
       "missedDates": []
+    },
+    {
+      "id": "00000159",
+      "name": "Contact the electrician and ask what he did to turn off electric ",
+      "project": "Chores",
+      "importance": "Medium",
+      "urgency": "Medium",
+      "dueDate": "",
+      "startDate": "2025-09-06",
+      "status": "closed",
+      "closedDate": "2025-09-08",
+      "taskType": "One-off",
+      "completedDates": [
+        "2025-09-08"
+      ],
+      "missedDates": []
+    },
+    {
+      "id": "00000163",
+      "name": "Contact graham about work and availability!",
+      "project": "Finance",
+      "importance": "High",
+      "urgency": "High",
+      "dueDate": "",
+      "startDate": "2025-09-06",
+      "status": "closed",
+      "closedDate": "2025-09-08",
+      "taskType": "One-off",
+      "completedDates": [
+        "2025-09-08"
+      ],
+      "missedDates": []
+    },
+    {
+      "id": "00000164",
+      "name": "Finance need to.... Think about credit card put back... ",
+      "project": "Finance",
+      "importance": "High",
+      "urgency": "High",
+      "dueDate": "",
+      "startDate": "2025-09-06",
+      "status": "closed",
+      "closedDate": "2025-09-12",
+      "taskType": "One-off",
+      "completedDates": [
+        "2025-09-12"
+      ],
+      "missedDates": []
+    },
+    {
+      "id": "00000165",
+      "name": "Chase for package that didn't arrive from amazon",
+      "project": "Finance",
+      "importance": "High",
+      "urgency": "High",
+      "dueDate": "",
+      "startDate": "2025-09-06",
+      "status": "open",
+      "closedDate": "",
+      "taskType": "One-off",
+      "completedDates": [],
+      "missedDates": []
+    },
+    {
+      "id": "00000166",
+      "name": "Request more meds",
+      "project": "Self Care",
+      "importance": "High",
+      "urgency": "High",
+      "dueDate": "",
+      "startDate": "2025-09-07",
+      "status": "closed",
+      "closedDate": "2025-09-08",
+      "taskType": "One-off",
+      "completedDates": [
+        "2025-09-08"
+      ],
+      "missedDates": []
+    },
+    {
+      "id": "00000167",
+      "name": "Chase the speedy return on monzo",
+      "project": "Finance",
+      "importance": "Medium",
+      "urgency": "Medium",
+      "dueDate": "2025-09-14",
+      "startDate": "2025-09-07",
+      "status": "closed",
+      "closedDate": "2025-09-12",
+      "taskType": "One-off",
+      "completedDates": [
+        "2025-09-12"
+      ],
+      "missedDates": []
+    },
+    {
+      "id": "00000168",
+      "name": "Your tooth feels like it's falling out hurting",
+      "project": "Self Care",
+      "importance": "High",
+      "urgency": "High",
+      "dueDate": "",
+      "startDate": "2025-09-07",
+      "status": "open",
+      "closedDate": "",
+      "taskType": "One-off",
+      "completedDates": [],
+      "missedDates": []
+    },
+    {
+      "id": "00000169",
+      "name": "request more meds",
+      "project": "Self Care",
+      "importance": "High",
+      "urgency": "High",
+      "dueDate": "",
+      "startDate": "2025-09-08",
+      "status": "closed",
+      "closedDate": "2025-09-08",
+      "taskType": "One-off",
+      "completedDates": [
+        "2025-09-08"
+      ],
+      "missedDates": []
+    },
+    {
+      "id": "00000172",
+      "name": "send thank you to  erika",
+      "project": "Self Care",
+      "importance": "Medium",
+      "urgency": "Medium",
+      "dueDate": "",
+      "startDate": "2025-09-15",
+      "status": "open",
+      "closedDate": "",
+      "taskType": "One-off",
+      "completedDates": [],
+      "missedDates": []
     }
   ],
   "recurringTasks": [
@@ -1311,7 +1496,7 @@
       "project": "Self Care",
       "importance": "High/Medium",
       "urgency": "High/Medium",
-      "dueDate": "2025-09-09",
+      "dueDate": "2025-09-16",
       "frequency": "daily",
       "interval": 4,
       "from": "today",
@@ -1324,11 +1509,13 @@
         "2025-08-06",
         "2025-08-14",
         "2025-08-25",
-        "2025-09-06"
+        "2025-09-06",
+        "2025-09-09",
+        "2025-09-11"
       ],
       "missedDates": [],
-      "lastCompleted": "2025-09-05",
-      "lastDiff": -1
+      "lastCompleted": "2025-09-12",
+      "lastDiff": 1
     },
     {
       "id": "00000026",
@@ -1357,7 +1544,7 @@
       "project": "Self Care",
       "importance": "Medium/Low",
       "urgency": "Medium/Low",
-      "dueDate": "2025-07-31",
+      "dueDate": "2025-12-06",
       "frequency": "monthly",
       "interval": 3,
       "from": "today",
@@ -1365,10 +1552,12 @@
       "status": "open",
       "closedDate": "",
       "taskType": "Recurring",
-      "completedDates": [],
+      "completedDates": [
+        "2025-07-31"
+      ],
       "missedDates": [],
-      "lastCompleted": "",
-      "lastDiff": 0
+      "lastCompleted": "2025-09-06",
+      "lastDiff": 37
     },
     {
       "id": "00000033",
@@ -1435,11 +1624,117 @@
       "project": "Chores",
       "importance": "Medium",
       "urgency": "Medium",
-      "dueDate": "2025-09-06",
+      "dueDate": "2025-10-01",
       "frequency": "weekly",
       "interval": 2,
       "from": "today",
       "startDate": "2025-09-06",
+      "status": "open",
+      "closedDate": "",
+      "taskType": "Recurring",
+      "completedDates": [
+        "2025-09-06",
+        "2025-09-06",
+        "2025-09-22"
+      ],
+      "missedDates": [],
+      "lastCompleted": "2025-09-17",
+      "lastDiff": -5
+    },
+    {
+      "id": "00000158",
+      "name": "Check gut feeling",
+      "project": "Self Care",
+      "importance": "Medium",
+      "urgency": "Medium",
+      "dueDate": "2025-09-30",
+      "frequency": "monthly",
+      "interval": 1,
+      "from": "intended",
+      "startDate": "2025-09-30",
+      "status": "open",
+      "closedDate": "",
+      "taskType": "Recurring",
+      "completedDates": [],
+      "missedDates": [],
+      "lastCompleted": "",
+      "lastDiff": 0
+    },
+    {
+      "id": "00000160",
+      "name": "Write in journal ",
+      "project": "Soul",
+      "importance": "Medium",
+      "urgency": "Medium",
+      "dueDate": "2025-09-11",
+      "frequency": "daily",
+      "interval": 5,
+      "from": "intended",
+      "startDate": "2025-09-11",
+      "status": "open",
+      "closedDate": "",
+      "taskType": "Recurring",
+      "completedDates": [
+        "2025-09-11"
+      ],
+      "missedDates": [],
+      "lastCompleted": "2025-09-17",
+      "lastDiff": 6
+    },
+    {
+      "id": "00000162",
+      "name": "Read a motto ",
+      "project": "Soul",
+      "importance": "Medium/Low",
+      "urgency": "Medium/Low",
+      "dueDate": "2025-09-07",
+      "frequency": "daily",
+      "interval": 1,
+      "from": "intended",
+      "startDate": "2025-09-07",
+      "status": "open",
+      "closedDate": "",
+      "taskType": "Recurring",
+      "completedDates": [
+        "2025-09-07",
+        "2025-09-07"
+      ],
+      "missedDates": [],
+      "lastCompleted": "2025-09-17",
+      "lastDiff": 10
+    },
+    {
+      "id": "00000171",
+      "name": "Weigh and measure kari",
+      "project": "Family",
+      "importance": "Medium",
+      "urgency": "Medium",
+      "dueDate": "2025-10-12",
+      "frequency": "monthly",
+      "interval": 1,
+      "from": "intended",
+      "startDate": "2025-09-12",
+      "status": "open",
+      "closedDate": "",
+      "taskType": "Recurring",
+      "completedDates": [
+        "2025-09-12"
+      ],
+      "missedDates": [],
+      "lastCompleted": "2025-09-17",
+      "lastDiff": 5
+    },
+    {
+      "id": "00000173",
+      "name": "Kari Letter",
+      "project": "Family",
+      "importance": "Medium",
+      "urgency": "Medium",
+      "dueDate": "2025-09-30",
+      "frequency": "monthly",
+      "interval": 1,
+      "from": "intended",
+      "startDate": "2025-09-30",
       "status": "open",
       "closedDate": "",
       "taskType": "Recurring",
@@ -1458,7 +1753,9 @@
       "urgency": "High",
       "completedDates": [
         "2025-08-21",
-        "2025-08-22"
+        "2025-08-22",
+        "2025-09-08",
+        "2025-09-12"
       ],
       "status": "open"
     },
@@ -1472,7 +1769,36 @@
       "status": "open"
     }
   ],
-  "bigTasks": [],
+  "bigTasks": [
+    {
+      "id": "00000156",
+      "name": "Meta analysis automator",
+      "project": "Finance",
+      "importance": "High",
+      "urgency": "High",
+      "dueDate": "",
+      "startDate": "2025-09-06",
+      "status": "open",
+      "closedDate": "",
+      "taskType": "Big",
+      "completedDates": [],
+      "missedDates": []
+    },
+    {
+      "id": "00000157",
+      "name": "Gilab jamun",
+      "project": "Finance",
+      "importance": "High",
+      "urgency": "High",
+      "dueDate": "",
+      "startDate": "2025-09-06",
+      "status": "open",
+      "closedDate": "",
+      "taskType": "Big",
+      "completedDates": [],
+      "missedDates": []
+    }
+  ],
   "deletedTasks": [
     {
       "id": "00000001",
@@ -1602,6 +1928,20 @@
       "urgency": "High",
       "dueDate": "",
       "startDate": "2025-09-05",
+      "status": "open",
+      "closedDate": "",
+      "taskType": "One-off",
+      "completedDates": [],
+      "missedDates": []
+    },
+    {
+      "id": "00000047",
+      "name": "Stairgate",
+      "project": "Family",
+      "importance": "Medium",
+      "urgency": "Medium",
+      "dueDate": "",
+      "startDate": "2025-07-30",
       "status": "open",
       "closedDate": "",
       "taskType": "One-off",
@@ -1793,6 +2133,22 @@
       "cost": "",
       "month": "",
       "bought": false
+    },
+    {
+      "id": "00000161",
+      "name": "Electricity monitor for car",
+      "project": "Finance",
+      "cost": "",
+      "month": "",
+      "bought": false
+    },
+    {
+      "id": "00000170",
+      "name": "Stainless steel oven trays",
+      "project": "Chores",
+      "cost": "",
+      "month": "",
+      "bought": false
     }
   ],
   "longTermList": [
@@ -1864,12 +2220,128 @@
   ],
   "todayList": [
     {
-      "id": 25,
-      "type": "oneoff",
-      "originalId": "00000053",
-      "name": "Get everyones bday as a list",
+      "id": 88,
+      "type": "work",
+      "originalId": "00000022",
+      "name": "Check in on Jules",
+      "completed": true,
+      "addedAt": "2025-09-17T08:19:51.497Z"
+    },
+    {
+      "id": 79,
+      "type": "weekly",
+      "originalId": "00000037",
+      "name": "Quabble Wellbeing",
       "completed": false,
-      "addedAt": "2025-09-05T07:59:52.132Z"
+      "addedAt": "2025-09-17T06:13:40.851Z"
+    },
+    {
+      "id": 82,
+      "type": "weekly",
+      "originalId": "00000035",
+      "name": "Positivity Journal",
+      "completed": false,
+      "addedAt": "2025-09-17T06:13:55.965Z"
+    },
+    {
+      "type": "work",
+      "id": "00000048"
+    },
+    {
+      "id": 67,
+      "type": "weekly",
+      "originalId": "00000002",
+      "name": "Cut Nails",
+      "completed": false,
+      "addedAt": "2025-09-11T07:43:31.831Z"
+    },
+    {
+      "id": 85,
+      "type": "recurring",
+      "originalId": "00000034",
+      "name": "Back up Photos",
+      "completed": false,
+      "addedAt": "2025-09-17T06:15:17.780Z"
+    },
+    {
+      "id": 68,
+      "type": "weekly",
+      "originalId": "00000069",
+      "name": "Review spending",
+      "completed": false,
+      "addedAt": "2025-09-11T07:43:45.463Z"
+    },
+    {
+      "id": 70,
+      "type": "oneoff",
+      "originalId": "00000076",
+      "name": "cancel proton",
+      "completed": false,
+      "addedAt": "2025-09-11T07:44:17.269Z"
+    },
+    {
+      "type": "oneoff",
+      "id": "00000076"
+    },
+    {
+      "id": 77,
+      "type": "oneoff",
+      "originalId": "00000165",
+      "name": "Chase for package that didn't arrive from amazon",
+      "completed": false,
+      "addedAt": "2025-09-12T06:51:45.777Z"
+    },
+    {
+      "id": 78,
+      "type": "weekly",
+      "originalId": "00000006",
+      "name": "Chane Bedding",
+      "completed": false,
+      "addedAt": "2025-09-15T08:59:00.128Z"
+    },
+    {
+      "id": 80,
+      "type": "weekly",
+      "originalId": "00000012",
+      "name": "Reply to Friends",
+      "completed": false,
+      "addedAt": "2025-09-17T06:13:41.852Z"
+    },
+    {
+      "id": 81,
+      "type": "weekly",
+      "originalId": "00000060",
+      "name": "Check physiatry UK emails",
+      "completed": false,
+      "addedAt": "2025-09-17T06:13:43.274Z"
+    },
+    {
+      "id": 86,
+      "type": "work",
+      "originalId": "00000023",
+      "name": "Contact for fiurther Data",
+      "completed": false,
+      "addedAt": "2025-09-17T08:14:11.696Z"
+    },
+    {
+      "type": "oneoff",
+      "id": "00000087"
+    },
+    {
+      "id": 87,
+      "type": "work",
+      "originalId": "00000090",
+      "name": "Check for duplicate data sources",
+      "completed": false,
+      "addedAt": "2025-09-17T08:19:46.611Z"
+    },
+    {
+      "id": 89,
+      "type": "work",
+      "originalId": "00000094",
+      "name": "Send email to everyone saying I have passed",
+      "completed": false,
+      "addedAt": "2025-09-17T08:34:12.541Z"
     },
     {
       "id": 26,
@@ -1886,22 +2358,6 @@
       "name": "How to get rust off trays",
       "completed": false,
       "addedAt": "2025-09-05T08:00:01.592Z"
-    },
-    {
-      "id": 29,
-      "type": "recurring",
-      "originalId": "00000139",
-      "name": "Hoover Spider Weds",
-      "completed": false,
-      "addedAt": "2025-09-05T08:00:31.117Z"
-    },
-    {
-      "id": 30,
-      "type": "recurring",
-      "originalId": "00000058",
-      "name": "Clear Emails",
-      "completed": false,
-      "addedAt": "2025-09-05T08:00:32.932Z"
     },
     {
       "id": 1756721674582,
@@ -1937,14 +2393,6 @@
     },
     {
       "type": "oneoff",
-      "id": "00000076"
-    },
-    {
-      "type": "oneoff",
-      "id": "00000087"
-    },
-    {
-      "type": "oneoff",
       "id": "00000090"
     },
     {
@@ -1952,7 +2400,7 @@
       "type": "work",
       "originalId": "00000051",
       "name": "Complete the Data Form",
-      "completed": false,
+      "completed": true,
       "addedAt": "2025-08-28T08:36:35.697Z"
     },
     {
@@ -1978,10 +2426,6 @@
       "name": "Download calm",
       "completed": false,
       "addedAt": "2025-09-01T10:15:16.169Z"
-    },
-    {
-      "type": "work",
-      "id": "00000048"
     },
     {
       "id": 1756721773935,
@@ -2072,18 +2516,6 @@
       "addedAt": "2025-09-01T11:25:53.522Z"
     },
     {
-      "type": "weekly",
-      "id": "00000069"
-    },
-    {
-      "type": "oneoff",
-      "id": "00000053"
-    },
-    {
-      "type": "recurring",
-      "id": "00000058"
-    },
-    {
       "id": 1756728107495,
       "type": "work",
       "originalId": "00000063",
@@ -2140,7 +2572,7 @@
       "type": "work",
       "originalId": "00000051",
       "name": "Complete the Data Form",
-      "completed": false,
+      "completed": true,
       "addedAt": "2025-09-05T06:01:23.308Z"
     },
     {
@@ -2148,7 +2580,7 @@
       "type": "work",
       "originalId": "00000052",
       "name": "Complete the Main Form",
-      "completed": false,
+      "completed": true,
       "addedAt": "2025-09-05T06:01:27.997Z"
     },
     {
@@ -2180,7 +2612,7 @@
       "type": "work",
       "originalId": "00000064",
       "name": "Arrange the scanning training",
-      "completed": false,
+      "completed": true,
       "addedAt": "2025-09-05T06:01:41.980Z"
     },
     {
@@ -2294,6 +2726,14 @@
       "name": "Chane Bedding",
       "completed": false,
       "addedAt": "2025-09-05T06:21:38.190Z"
+    },
+    {
+      "id": 69,
+      "type": "weekly",
+      "originalId": "00000009",
+      "name": "Prep Kari's Bag",
+      "completed": false,
+      "addedAt": "2025-09-11T07:43:51.274Z"
     }
   ],
   "todayQuickHistory": [
@@ -2319,7 +2759,7 @@
       "done": false
     }
   ],
-  "nextId": 156,
+  "nextId": 174,
   "deletedShoppingItems": [
     {
       "id": "00000137",
