@@ -17,6 +17,20 @@
 <script src="nav-loader.js"></script>
 
 <section>
+  <h2>Quick Start Timer</h2>
+  <div class="quick-start surface">
+    <div class="qs-row">
+      <div class="qs-input-wrap">
+        <input id="qs_input" class="qs-input" type="text" placeholder="Search tasks or type a custom name…" autocomplete="off" />
+        <div id="qs_list" class="qs-list hidden"></div>
+      </div>
+      <button id="qs_start" class="btn" style="white-space:nowrap;">Start timer</button>
+    </div>
+    <div class="qs-hint">Tip: Click the box to see all tasks from Index, Work, DIY, Parenting. Type to filter. Enter starts the top match.</div>
+  </div>
+</section>
+
+<section>
   <h2>Weekly Calendar</h2>
   <div style="text-align:center;margin-bottom:0.5rem;">
     <button onclick="changeWeek(-1)">&#8592;</button>
@@ -56,8 +70,13 @@ function renderCalendar(){
   const tasks=window.getAllTrackedTasks?window.getAllTrackedTasks():[];
   const container=document.getElementById('calendarGrid');
   if(!container) return;
-  // If a mini popover is open, log and close before re-rendering the grid
-  try{ closeMiniPopover('calendar-rerender', /*clearSel*/true); }catch{}
+  // Avoid re-rendering while the mini popover is open to prevent UI jumping
+  if(document.getElementById('slotPopover')){ return; }
+  // Remember scroll positions to restore after re-render
+  const prevBody = container.querySelector('.cal-body-row');
+  const prevCalScroll = prevBody ? prevBody.scrollTop : 0;
+  const prevPageScroll = window.scrollY;
+  // If no popover, proceed to rebuild grid
   const days=['Mon','Tue','Wed','Thu','Fri','Sat','Sun'];
   const startLabel=new Date(calendarStart);
   const endLabel=new Date(calendarStart); endLabel.setDate(endLabel.getDate()+6);
@@ -118,11 +137,24 @@ function renderCalendar(){
 
   wireCalendarInteractions(container);
   renderCalendarEvents(tasks);
+  // Restore scroll positions
+  try{
+    body.scrollTop = prevCalScroll;
+    // Defer page scroll restore a tick in case layout shifted
+    setTimeout(()=>{ window.scrollTo(0, prevPageScroll); }, 0);
+  }catch{}
 }
 
 function el(tag, cls, text){ const x=document.createElement(tag); if(cls) x.className=cls; if(text!=null) x.textContent=text; return x; }
 
 function getDayDate(dayIndex){ const d=new Date(calendarStart); d.setDate(calendarStart.getDate()+dayIndex); return d; }
+function toLocalISODate(date){
+  // Build YYYY-MM-DD using local time (avoid UTC shift of toISOString)
+  const y = date.getFullYear();
+  const m = String(date.getMonth()+1).padStart(2,'0');
+  const d = String(date.getDate()).padStart(2,'0');
+  return `${y}-${m}-${d}`;
+}
 function minutesToSlot(min){ return Math.round(min/15); }
 function slotToMinutes(slot){ return slot*15; }
 function withinViewMinutes(date){ return date.getHours()*60 + date.getMinutes() - CAL_CONF.startHour*60; }
@@ -146,7 +178,8 @@ function renderCalendarEvents(tasks){
     const dayIdx=(s.getDay()+6)%7;
     const dayStart=new Date(getDayDate(dayIdx)); dayStart.setHours(0,0,0,0);
     const startMin = Math.max(viewStartMin, Math.min(viewEndMin, (s - dayStart)/60000));
-    const endMinRaw = e? (e - dayStart)/60000 : startMin + 30; // default 30m running
+  const now = new Date();
+  const endMinRaw = e? (e - dayStart)/60000 : Math.max(startMin + 15, Math.min(viewEndMin, (now - dayStart)/60000)); // running ends at now
     const endMin = Math.max(viewStartMin, Math.min(viewEndMin, endMinRaw));
     if(endMin <= viewStartMin || startMin >= viewEndMin) return; // out of view
     const startSlot = Math.floor((startMin - viewStartMin)/15);
@@ -173,6 +206,7 @@ function renderCalendarEvents(tasks){
       group.forEach(ev=>{
         const block=document.createElement('div');
         block.className='event-block';
+  if(!ev.t.end) block.classList.add('running');
         block.dataset.id=String(ev.t.id);
         block.dataset.dayIndex=String(dayIdx);
         block.dataset.startSlot=String(ev.startSlot);
@@ -182,10 +216,11 @@ function renderCalendarEvents(tasks){
         const handleTop=document.createElement('div'); handleTop.className='resize-handle top';
         const handleBot=document.createElement('div'); handleBot.className='resize-handle bottom';
         const label=document.createElement('div'); label.className='event-label'; label.textContent=ev.t.name||'Untitled';
-        const ctr=document.createElement('div'); ctr.style.display='flex'; ctr.style.gap='.25rem'; ctr.style.alignItems='center';
-        const edit=document.createElement('button'); edit.className='event-edit'; edit.innerHTML='✎'; edit.title='Edit'; edit.onclick=(e)=>{ e.stopPropagation(); if(window.openEditTimeModal) window.openEditTimeModal(ev.t.id); };
+  const ctr=document.createElement('div'); ctr.style.display='flex'; ctr.style.gap='.25rem'; ctr.style.alignItems='center';
+  const dup=document.createElement('button'); dup.className='event-edit'; dup.innerHTML='⧉'; dup.title='Duplicate'; dup.onclick=async(e)=>{ e.stopPropagation(); try{ await window.duplicateTrackedTask(ev.t.id); }catch{ alert('Duplicate failed'); } };
+  const edit=document.createElement('button'); edit.className='event-edit'; edit.innerHTML='✎'; edit.title='Edit'; edit.onclick=(e)=>{ e.stopPropagation(); if(window.openEditTimeModal) window.openEditTimeModal(ev.t.id); };
         const del=document.createElement('button'); del.className='event-edit'; del.innerHTML='🗑'; del.title='Delete'; del.onclick=async(e)=>{ e.stopPropagation(); try{ await window.deleteTrackedTask(ev.t.id); }catch{ alert('Delete failed'); } };
-        ctr.appendChild(edit); ctr.appendChild(del);
+  ctr.appendChild(dup); ctr.appendChild(edit); ctr.appendChild(del);
         block.appendChild(handleTop);
         block.appendChild(handleBot);
         block.appendChild(label);
@@ -266,20 +301,34 @@ function enableDragAndResize(block, task){
       const slotDelta = Math.round(dy/slotH);
       let newStart = Math.min(Math.max(0, orig.start + slotDelta), totalSlots - duration);
       let newEnd = newStart + duration;
+      // If pointer moved into a different day column, reparent the block for live feedback
+      const prevDay = Number(block.dataset.dayIndex);
+      if(dayIdx!=null && dayIdx!==prevDay){
+        const newCol=document.querySelector(`#calendarGrid .day-col[data-day-index="${dayIdx}"]`);
+        if(newCol){
+          if(Number.isFinite(prevDay)) reflowDayColumn(prevDay);
+          newCol.appendChild(block);
+          reflowDayColumn(dayIdx);
+        }
+      }
       positionEventBlock(block, newStart, newEnd, orig.col, orig.colCount, slotH);
       block.dataset.dayIndex=String(dayIdx);
       block.dataset.startSlot=String(newStart);
       block.dataset.endSlot=String(newEnd);
+      // Reflow within same day to keep overlapping widths accurate during drag
+      if(dayIdx===prevDay || prevDay==null){ reflowDayColumn(dayIdx); }
     } else if(mode==='resize-top'){
       const slotDelta = Math.round(dy/slotH);
       let newStart = Math.max(0, Math.min(orig.start + slotDelta, orig.end-1));
       positionEventBlock(block, newStart, orig.end, orig.col, orig.colCount, slotH);
       block.dataset.startSlot=String(newStart);
+      reflowDayColumn(Number(block.dataset.dayIndex));
     } else if(mode==='resize-bottom'){
       const slotDelta = Math.round(dy/slotH);
       let newEnd = Math.min(totalSlots, Math.max(orig.start+1, orig.end + slotDelta));
       positionEventBlock(block, orig.start, newEnd, orig.col, orig.colCount, slotH);
       block.dataset.endSlot=String(newEnd);
+      reflowDayColumn(Number(block.dataset.dayIndex));
     }
   };
 
@@ -292,7 +341,7 @@ function enableDragAndResize(block, task){
     const newEnd=Number(block.dataset.endSlot);
     if(newDay===orig.day && newStart===orig.start && newEnd===orig.end){ mode=null; return; }
     try{
-      const d=getDayDate(newDay); const dateStr=d.toISOString().slice(0,10);
+      const d=getDayDate(newDay); const dateStr=toLocalISODate(d);
       const viewStartMin = CAL_CONF.startHour*60;
       const startMin=viewStartMin + slotToMinutes(newStart);
       const endMin=viewStartMin + slotToMinutes(newEnd);
@@ -314,6 +363,43 @@ function getDayFromClientX(clientX){
     if(clientX>=r.left && clientX<=r.right) return i;
   }
   return null;
+}
+
+// Lightweight reflow: recompute overlapping columns for the target day for visual width correctness during live drag
+function reflowDayColumn(dayIdx){
+  try{
+    const col = document.querySelector(`#calendarGrid .day-col[data-day-index="${dayIdx}"]`);
+    if(!col) return;
+    const slotH = getSlotHeight();
+    const blocks = [...col.querySelectorAll('.event-block')].map(b=>({
+      el:b,
+      startSlot:Number(b.dataset.startSlot),
+      endSlot:Number(b.dataset.endSlot)
+    }));
+    // Build conflict groups
+    const overlaps=(a,b)=> !(a.endSlot<=b.startSlot || b.endSlot<=a.startSlot);
+    const used=new Set(); const groups=[];
+    for(let i=0;i<blocks.length;i++){
+      if(used.has(i)) continue; const q=[i]; used.add(i); const g=[];
+      while(q.length){
+        const idx=q.shift(); const ev=blocks[idx]; g.push(ev);
+        for(let j=0;j<blocks.length;j++){ if(used.has(j)) continue; if(overlaps(blocks[idx], blocks[j])){ used.add(j); q.push(j);} }
+      }
+      groups.push(g);
+    }
+    groups.forEach(g=>{
+      g.sort((a,b)=> a.startSlot - b.startSlot || (b.endSlot - a.endSlot));
+      const cols=[];
+      g.forEach(ev=>{
+        let assigned=-1; for(let i=0;i<cols.length;i++){ if(ev.startSlot>=cols[i]){ assigned=i; break; } }
+        if(assigned===-1){ assigned=cols.length; cols.push(ev.endSlot); } else { cols[assigned]=ev.endSlot; }
+        ev._col=assigned; ev._colCount=Math.max(cols.length, ev._colCount||0);
+      });
+      g.forEach(ev=>{
+        positionEventBlock(ev.el, ev.startSlot, ev.endSlot, ev._col, Math.max(...g.map(x=>x._colCount||1), cols.length), slotH);
+      });
+    });
+  }catch{}
 }
 
 let _dragState=null; // {dayIndex,startSlot,currentSlot}
@@ -441,15 +527,15 @@ function openMiniPopover(dayIndex,startSlot,endSlot){
     const startTime=(pop.querySelector('#sp_start')||{}).value||'';
     const endTime=(pop.querySelector('#sp_end')||{}).value||'';
     const d=getDayDate(dayIndex);
-    const startDate=d.toISOString().slice(0,10);
+    const startDate=toLocalISODate(d);
     const endDate=startDate;
     try{
       const payload={ name: name || (opt? opt.getAttribute('data-name'):''), source: src||'custom', activityType:'oneoff', startDate, startTime, endDate, endTime };
       if(opt && opt.value){ payload.activityType='linked'; payload.link={ id: opt.value, page: opt.getAttribute('data-page'), type: opt.getAttribute('data-type'), project: opt.getAttribute('data-project') }; }
-      const res=await fetch('/api/time-tracker/add-manual',{method:'POST',headers:{'Content-Type':'application/json'},body:JSON.stringify(payload)});
-      if(!res.ok) throw new Error(await res.text());
-      await window.loadTimeTracker();
-      closeMiniPopover('save-success', true);
+  const res=await fetch('/api/time-tracker/add-manual',{method:'POST',headers:{'Content-Type':'application/json'},body:JSON.stringify(payload)});
+  if(!res.ok) throw new Error(await res.text());
+  closeMiniPopover('save-success', true);
+  await window.loadTimeTracker();
     }catch(err){ alert('Failed to save: '+err.message); }
   };
   // Close on outside click
@@ -501,7 +587,7 @@ function renderTrackerTable(){
   table.className='task-table';
   table.innerHTML='<tr><th>Task</th><th>Source</th><th>Start</th><th>End</th><th>Actions</th></tr>';
   tasks.forEach(t=>{
-    const actions = `<button class="btn-outline" onclick="openEditTimeModal(${t.id})">Edit</button> <button class="btn-outline" onclick="deleteTime(${t.id})">Delete</button>`;
+  const actions = `<button class="btn-outline" onclick="(async()=>{try{await window.duplicateTrackedTask(${t.id});}catch(e){alert('Duplicate failed')}})()">Duplicate</button> <button class="btn-outline" onclick="openEditTimeModal(${t.id})">Edit</button> <button class="btn-outline" onclick="deleteTime(${t.id})">Delete</button>`;
     table.innerHTML+=`<tr><td>${t.name}</td><td>${t.source}</td><td>${t.start}</td><td>${t.end||''}</td><td>${actions}</td></tr>`;
   });
   container.innerHTML='';
@@ -525,7 +611,13 @@ function openEditTimeModal(id){
 
 function closeTimeModal(){
   const m=document.getElementById('timeModal');
-  if(m){ m.remove(); }
+  if(m){
+    try{
+      if(m._escHandler) document.removeEventListener('keydown', m._escHandler);
+      if(m._clickHandler) m.removeEventListener('mousedown', m._clickHandler);
+    }catch{}
+    m.remove();
+  }
 }
 
 function buildTimeModal({mode, task}){
@@ -594,6 +686,12 @@ function buildTimeModal({mode, task}){
     </div>
   </div>`;
   document.body.appendChild(m);
+  // ESC key and click-outside to close
+  const onKey=(ev)=>{ if(ev.key==='Escape'){ closeTimeModal(); } };
+  const onClick=(ev)=>{ const content=m.querySelector('.modal-content'); if(content && !content.contains(ev.target)){ closeTimeModal(); } };
+  m._escHandler = onKey; m._clickHandler = onClick;
+  document.addEventListener('keydown', onKey);
+  m.addEventListener('mousedown', onClick);
   // After attaching, populate lists and show sections
   wireTimeModalSections({mode, task});
   // Robust prefill when editing (includes async-loaded selects)
@@ -745,6 +843,101 @@ async function saveTimeModal(mode,id){
 window.openAddTimeModal=openAddTimeModal;
 window.openEditTimeModal=openEditTimeModal;
 window.deleteTime=async(id)=>{ try{ await window.deleteTrackedTask(id); }catch(e){ alert('Failed to delete'); } };
+
+// ---- Quick Start Timer (search across pages) ----
+let _qsAllTasks = [];
+function flattenTasks(list, page, source, parents=[], inheritProject=''){
+  const out=[];
+  (list||[]).forEach(t=>{
+    const name = t?.name || '';
+    const project = t?.project || inheritProject || '';
+    const displayName = parents.length ? parents.join(' › ') + ' › ' + name : name;
+    out.push({ id: String(t?.id ?? ''), name, project, page, source, displayName });
+    if(Array.isArray(t?.subtasks) && t.subtasks.length){
+      out.push(...flattenTasks(t.subtasks, page, source, [...parents, name], project));
+    }
+  });
+  return out;
+}
+async function loadQuickStartTasks(){
+  try{
+    const [idxR, workR, diyR, famR] = await Promise.all([
+      fetch('/api/index-data').then(r=>r.ok?r.json():{weeklyTasks:[],oneOffTasks:[]}).catch(()=>({weeklyTasks:[],oneOffTasks:[]})),
+      fetch('/api/work-data').then(r=>r.ok?r.json():{workTasks:[]}).catch(()=>({workTasks:[]})),
+      fetch('/api/diy-data').then(r=>r.ok?r.json():{diyTasks:[]}).catch(()=>({diyTasks:[]})),
+      fetch('/api/family-friends-data').then(r=>r.ok?r.json():{tasks:[]}).catch(()=>({tasks:[]})),
+    ]);
+    _qsAllTasks = [
+      ...flattenTasks([...(idxR.weeklyTasks||[]), ...(idxR.oneOffTasks||[])], 'index', 'todo'),
+      ...flattenTasks((workR.workTasks||[]), 'work', 'work'),
+      ...flattenTasks((diyR.diyTasks||[]), 'diy', 'diy'),
+      ...flattenTasks((famR.tasks||[]), 'family-friends', 'parenting'),
+    ].filter(t=>t && (t.displayName || t.name));
+    renderQsList('');
+  }catch{}
+}
+function renderQsList(filter){
+  const listEl = document.getElementById('qs_list'); if(!listEl) return;
+  const q = String(filter||'').trim().toLowerCase();
+  const items = _qsAllTasks.filter(t => {
+    const nm = (t.displayName || t.name || '').toLowerCase();
+    return !q || nm.includes(q);
+  });
+  if(!items.length){ listEl.innerHTML = '<div class="qs-empty">No matching tasks</div>'; listEl.classList.remove('hidden'); return; }
+  listEl.innerHTML = items.slice(0,100).map(t=>`<div class="qs-item" data-id="${t.id}" data-source="${t.source}" data-page="${t.page}" data-project="${t.project}" data-name="${t.displayName || t.name}">
+    <div class="qs-name">${t.displayName || t.name}</div>
+    <div class="qs-meta">${t.page}/${t.project||'General'}</div>
+  </div>`).join('');
+  listEl.classList.remove('hidden');
+}
+function wireQuickStart(){
+  const input = document.getElementById('qs_input');
+  const list = document.getElementById('qs_list');
+  const btn = document.getElementById('qs_start');
+  if(!input||!list||!btn) return;
+  let selected = null;
+  input.addEventListener('focus', ()=>{ renderQsList(input.value); list.classList.remove('hidden'); });
+  input.addEventListener('input', ()=>{ selected=null; renderQsList(input.value); });
+  input.addEventListener('keydown', (e)=>{
+    if(e.key==='Enter'){
+      e.preventDefault();
+      // If there is a selected, use it; else take the top item; else start custom
+      const chosen = selected || list.querySelector('.qs-item');
+      if(chosen){
+        startFromItem(chosen);
+      } else {
+        startCustom();
+      }
+    }
+  });
+  list.addEventListener('mousedown', (e)=>{
+    const item = e.target.closest('.qs-item'); if(!item) return;
+    e.preventDefault();
+    selected = item;
+    startFromItem(item);
+  });
+  document.addEventListener('mousedown', (e)=>{
+    if(!list.contains(e.target) && e.target!==input){ list.classList.add('hidden'); }
+  });
+  btn.addEventListener('click', ()=>{
+    const chosen = selected || list.querySelector('.qs-item');
+    if(chosen){ startFromItem(chosen); } else { startCustom(); }
+  });
+  function startFromItem(el){
+    const name = el.getAttribute('data-name')||'';
+    const source = el.getAttribute('data-source')||'custom';
+    input.value = name; list.classList.add('hidden');
+    if(window.startTask) window.startTask(source, name);
+  }
+  function startCustom(){
+    const name = (input.value||'').trim(); if(!name) return;
+    if(window.startTask) window.startTask('custom', name);
+    list.classList.add('hidden');
+  }
+}
+
+// init quick start on load
+document.addEventListener('DOMContentLoaded', ()=>{ loadQuickStartTasks(); wireQuickStart(); });
 </script>
 </body>
 </html>

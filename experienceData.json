@@ -18,7 +18,7 @@
         "Sat",
         "Sun"
       ],
-      "nextTrigger": null,
+      "nextTrigger": "2025-09-18T07:00:00.000Z",
       "questions": [
         {
           "text": "How rewarding do you expect today to be?",
@@ -55,9 +55,9 @@
       ],
       "id": 4,
       "createdAt": "2025-09-05T06:45:55.497Z",
-      "pendingResponse": true,
-      "lastTriggeredAt": "2025-09-12T07:00:18.049Z",
-      "lastRespondedAt": "2025-09-11T09:46:38.298Z"
+      "pendingResponse": false,
+      "lastTriggeredAt": "2025-09-17T11:57:04.453Z",
+      "lastRespondedAt": "2025-09-17T11:57:10.183Z"
     },
     {
       "name": "Reward ",
@@ -110,7 +110,7 @@
       "status": "active",
       "intervalNumber": 4,
       "intervalType": "hours",
-      "nextTrigger": null,
+      "nextTrigger": "2025-09-17T15:57:38.551Z",
       "questions": [
         {
           "text": "Valence Rating",
@@ -152,9 +152,9 @@
       ],
       "id": 6,
       "createdAt": "2025-09-05T07:41:50.503Z",
-      "pendingResponse": true,
-      "lastTriggeredAt": "2025-09-15T07:37:49.045Z",
-      "lastRespondedAt": "2025-09-12T05:39:28.717Z"
+      "pendingResponse": false,
+      "lastTriggeredAt": "2025-09-17T11:57:12.384Z",
+      "lastRespondedAt": "2025-09-17T11:57:38.551Z"
     },
     {
       "name": "MH",
@@ -1310,8 +1310,46 @@
       ],
       "id": 71,
       "timestamp": "2025-09-12T05:39:28.717Z"
+    },
+    {
+      "experienceId": 4,
+      "answers": [
+        {
+          "questionIndex": 0,
+          "value": "4"
+        },
+        {
+          "questionIndex": 1,
+          "value": "5"
+        }
+      ],
+      "id": 72,
+      "timestamp": "2025-09-17T11:57:10.183Z"
+    },
+    {
+      "experienceId": 6,
+      "answers": [
+        {
+          "questionIndex": 0,
+          "value": "Neutral"
+        },
+        {
+          "questionIndex": 1,
+          "value": "Wide-awake"
+        },
+        {
+          "questionIndex": 2,
+          "value": "Neutral"
+        },
+        {
+          "questionIndex": 3,
+          "value": "Not sure feel a lot of stuff right now torn between feeling better about work to not, feeling better about family to not"
+        }
+      ],
+      "id": 73,
+      "timestamp": "2025-09-17T11:57:38.551Z"
     }
   ],
   "nextExperienceId": 9,
-  "nextResponseId": 72
+  "nextResponseId": 74
 }

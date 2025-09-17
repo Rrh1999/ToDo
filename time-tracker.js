@@ -4,6 +4,10 @@ let _refreshTimer=null;
 
 async function loadTimeTracker(){
   try{
+    // Do not refresh while user is interacting with popovers/modals or dragging
+    if (document.getElementById('slotPopover') || document.getElementById('timeModal') || document.querySelector('#calendarGrid .event-block.dragging')) {
+      return;
+    }
     const res=await fetch('/api/time-tracker');
     if(res.ok){
       const data=await res.json();
@@ -24,8 +28,20 @@ function updateRunningDisplay(){
     const wrapper=document.createElement('div');
     wrapper.style.display='inline-flex';
     wrapper.style.alignItems='center';
+    wrapper.style.gap = '0.35rem';
+    wrapper.style.padding = '0.25rem 0.5rem';
+    wrapper.style.border = '1px solid var(--color-border)';
+    wrapper.style.borderRadius = '999px';
+    wrapper.style.background = 'var(--color-table-alt)';
     const label=document.createElement('span');
-    label.textContent=`${t.name} since ${t.start}`;
+    try{
+      const since = new Date(t.start);
+      const time = since.toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' });
+      const date = since.toLocaleDateString();
+      label.textContent=`${t.name} — started ${time} · ${date}`;
+    }catch{
+      label.textContent=`${t.name} since ${t.start}`;
+    }
     wrapper.appendChild(label);
     const stop=document.createElement('button');
     stop.innerHTML='<svg width="16" height="16" viewBox="0 0 20 20" fill="none" xmlns="http://www.w3.org/2000/svg"><circle cx="10" cy="10" r="8" fill="#E07A5F"/><path d="M6 6l8 8M14 6l-8 8" stroke="#fff" stroke-width="2" stroke-linecap="round"/></svg>';
@@ -77,12 +93,8 @@ if (document.readyState === 'loading') {
   // Defer a tick to allow nav injection to complete
   setTimeout(loadTimeTracker, 0);
 }
-// Keep in sync across tabs and on long-lived pages
-try{
-  if(_refreshTimer) clearInterval(_refreshTimer);
-  _refreshTimer = setInterval(loadTimeTracker, 20000);
-  document.addEventListener('visibilitychange', ()=>{ if(!document.hidden) loadTimeTracker(); });
-}catch{}
+// Event-driven only (no periodic or visibility refreshes)
+try{ if(_refreshTimer) { clearInterval(_refreshTimer); _refreshTimer=null; } }catch{}
 // Expose helpers so nav-loader or pages can refresh UI explicitly
 window.updateRunningDisplay=updateRunningDisplay;
 window.loadTimeTracker=loadTimeTracker;
@@ -110,4 +122,22 @@ window.deleteTrackedTask=async (id)=>{
   updateRunningDisplay();
   if(typeof renderTrackerTable==='function') renderTrackerTable();
   if(typeof renderCalendar==='function') renderCalendar();
+};
+
+// Duplicate a tracked task (clone all main fields)
+window.duplicateTrackedTask = async (id)=>{
+  const t = allTasks.find(x=>x.id===id);
+  if(!t) throw new Error('Task not found');
+  const payload = {
+    name: t.name,
+    source: t.source || 'custom',
+    start: t.start,
+    end: t.end || t.start,
+    activityType: t.activityType,
+    link: t.link,
+    reusableActivityId: t.reusableActivityId
+  };
+  const res = await fetch('/api/time-tracker/add-manual',{method:'POST',headers:{'Content-Type':'application/json'},body:JSON.stringify(payload)});
+  if(!res.ok) throw new Error(await res.text());
+  await loadTimeTracker();
 };
